@@ -1,0 +1,30 @@
+# Sprint Goal — Sprint 1
+
+Collected at Sprint Planning, at the start of the sprint.
+
+| | |
+|---|---|
+| **Sprint** | Sprint 1 of 8 (16-week capstone, 2-week sprints) |
+| **Sprint Dates** | 9/9/2026 – 9/18/2026 |
+| **Team** | Gaige Bache, Garrett Miller |
+| **Product Advisor** | Daniel DeFrance |
+| **Product Advisor Approval** | 9/18/2026 |
+
+## Goal
+
+> Prove the core architecture end to end: an athlete can log a single lift (exercise, weight, reps) on the Android app and see it saved and displayed back, reliably, on a real or emulated device.
+
+## Why This Goal
+
+This is a 2-person, 16-week capstone. Before building the data-science layer (e1RM, volume, overtraining detection) or any coach-facing feature, the team needs proof that the basic log → save → display pipeline works.
+
+A thin, demoable slice also gives the team something to show at the earliest sprint review, rather than partial work across many features.
+
+## Documented Change to the Goal
+
+During Sprint 1 planning and execution, the team descoped two pieces of work:
+
+- **User authentication:** moved to Sprint 2.
+- **Backend API:** replaced with local-only persistence (Room database on-device) and moved to Sprint 2.
+
+This let the log → save → display goal still be demoed end to end within the 2-week window. The Sprint Goal itself (a working local log-and-view flow) did not change, only the implementation approach used to reach it.

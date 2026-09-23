@@ -1,0 +1,23 @@
+# Sprint Backlog — Sprint 1
+
+Work selected for Sprint 1, broken into visible work units.
+
+| # | Work Unit | In Scope? | Status | Owner | Notes (incl. changes learned during sprint) |
+|---|-----------|-----------|--------|-------|---------------------------------------------|
+| 1 | Project setup: shared repo, dev environment, project board | Yes | ✅ Complete | Both | GitHub is set up; starter project code delivered. Pending import into Android Studio and first push. |
+| 2 | Database schema: LiftSet entity, DAO, AppDatabase (Room) | Yes | 🟡 In Progress | Both | Code written and delivered; not yet verified running on a device/emulator. |
+| 3 | Auth: signup/login | No | ⬜ Not Started | Both | Descoped from Sprint 1 during planning (see Sprint Goal). Moved to Sprint 2. |
+| 4 | Backend API: create-set endpoint | No | ⬜ Not Started | Both | Descoped; replaced by local Room persistence for Sprint 1. Moved to Sprint 2. |
+| 5 | Backend API: list-sets endpoint | No | ⬜ Not Started | Both | Descoped for the same reason as above. Moved to Sprint 2. |
+| 6 | Local persistence via Room (added in place of the backend API) | Yes | 🟡 In Progress | Both | Added mid-sprint once the team decided to descope the API. This is the replacement work unit. |
+| 7 | ViewModel wiring Room ↔ Compose UI | Yes | 🟡 In Progress | Both | Code written and delivered; not yet verified running on a device/emulator. |
+| 8 | Frontend: log-a-set form (Compose UI) | Yes | 🟡 In Progress | Both | Code written and delivered; pending build/verify. |
+| 9 | Frontend: view logged sets (history list, Compose UI) | Yes | 🟡 In Progress | Both | Code written and delivered; pending build/verify. |
+
+## Summary
+
+| In-Scope Units | Complete | In Progress | Not Started | Blocked |
+|:---:|:---:|:---:|:---:|:---:|
+| 6 | 1 | 5 | 0 | 0 |
+
+*Three work units (auth and both backend endpoints) were descoped mid-sprint and are excluded from the in-scope count.*
