@@ -1,0 +1,42 @@
+# Burndown Chart — Sprint 1
+
+X-axis: sprint day. Y-axis: in-scope work units remaining (from the Sprint Backlog).
+
+```mermaid
+---
+config:
+  xyChart:
+    width: 800
+    height: 400
+---
+xychart-beta
+    title "Sprint 1 Burndown (Ideal vs Actual)"
+    x-axis ["D1 9/9", "D2 9/10", "D3 9/11", "D4 9/12", "D5 9/13", "D6 9/14", "D7 9/15", "D8 9/16", "D9 9/17", "D10 9/18"]
+    y-axis "Work units remaining" 0 --> 6
+    line [6.0, 5.3, 4.7, 4.0, 3.3, 2.7, 2.0, 1.3, 0.7, 0.0]
+    line [5, 4, 4, 3.5, 3, 2, 2.4, 1.5, 1, 0]
+```
+
+*The first line is **Ideal** and the second is **Actual**.*
+
+## How Remaining Work Is Calculated
+
+- A work unit counts as remaining until its status on the Sprint Backlog is set to Complete.
+- Only work units marked in scope count (6 of 9; the other 3 were descoped mid-sprint, see the Sprint Goal).
+- Ideal is a straight line from the scope total (6) down to zero across the 10 sprint days.
+- Actual is recorded by hand at the end of each work day, since it is the evidence of real progress.
+
+## Daily Data
+
+| Day | Date | Ideal Remaining | Actual Remaining |
+|:---:|:---:|:---:|:---:|
+| 1 | 9/9/2026 | 6.0 | 5 |
+| 2 | 9/10/2026 | 5.3 | 4 |
+| 3 | 9/11/2026 | 4.7 | 4 |
+| 4 | 9/12/2026 | 4.0 | 3.5 |
+| 5 | 9/13/2026 | 3.3 | 3 |
+| 6 | 9/14/2026 | 2.7 | 2 |
+| 7 | 9/15/2026 | 2.0 | 2.4 |
+| 8 | 9/16/2026 | 1.3 | 1.5 |
+| 9 | 9/17/2026 | 0.7 | 1 |
+| 10 | 9/18/2026 | 0.0 | 0 |
