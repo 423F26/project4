@@ -1,0 +1,23 @@
+# Product Backlog — Lift Tracker Capstone (Sprint 1)
+
+Ordered by priority. The top of the list is the most important work to pull into a sprint next.
+
+**15 items:** 1 complete, 2 in progress, 12 not started. Items 3 and 4 were descoped from Sprint 1 and moved to Sprint 2.
+
+| # | Item | Type | Description | Target Sprint | Status | Notes / Value |
+|---|------|------|-------------|---------------|--------|---------------|
+| 1 | Coach & staff needs interview (Sean Herrin, Director of Football S&C) | Research | Validate roster-view, position-group benchmarking, return-to-baseline, and export/report concepts directly with the intended key user before building them. | Sprint 1 | ✅ Complete | Meeting scheduled following email outreach; highest priority. Findings will reshape items 8–11. |
+| 2 | Local vertical slice: log a set, save it, view history | Feature | Android app (Kotlin/Compose + local Room DB): log exercise/weight/reps and see it persisted and displayed. Proves the core pipeline end to end. | Sprint 1 | 🟡 In Progress | Starter code delivered; pending build/verify and push to GitHub. |
+| 3 | User accounts / authentication | Feature | Signup/login so lift data is tied to a specific athlete; required before any multi-user or coach-facing view. | Sprint 2 | ⬜ Not Started | Descoped out of Sprint 1; see the documented change in the Sprint Goal. |
+| 4 | Backend API + database (multi-user) | Feature | Server-side API and shared database so data syncs across devices and a coach can see more than one athlete. | Sprint 2 | ⬜ Not Started | Descoped out of Sprint 1; replaced by local-only storage to hit the Sprint 1 demo goal. |
+| 5 | Workout history view & basic trend charts | Feature | Per-exercise history and a simple chart of weight/reps over time. | Sprint 2–3 | ⬜ Not Started | |
+| 6 | Estimated 1RM calculation per set (Epley/Brzycki) | Feature | Normalizes strength across different rep ranges so sets can be compared on one scale. | Sprint 3 | ⬜ Not Started | Foundation for volume and trend analysis below. |
+| 7 | Weekly training volume aggregation per muscle group | Feature | Sets × reps × weight rolled up per muscle group per week. | Sprint 3 | ⬜ Not Started | Depends on item 6. |
+| 8 | Overtraining / undertraining detection logic | Feature | Compares volume trend against an athlete's own rolling baseline and flags concerning patterns. | Sprint 3–4 | ⬜ Not Started | Key product differentiator; validate the flagging logic with Coach Herrin (item 1) before finalizing. |
+| 9 | Coach roster dashboard (multi-athlete view) | Feature | One screen showing every athlete's training status, sortable by risk, instead of per-athlete profiles. | Sprint 4–5 | ⬜ Not Started | Pending validation with Coach Herrin (item 1). |
+| 10 | Position-group benchmarking | Feature | Compares an athlete's lifts against their own position group rather than the whole roster. | Sprint 5 | ⬜ Not Started | Pending validation with Coach Herrin (item 1). |
+| 11 | Return-to-baseline tracker | Feature | Flags athletes ramping volume too quickly after time off (injury, break). | Sprint 5 | ⬜ Not Started | Pending validation with Coach Herrin (item 1). |
+| 12 | Exportable / printable coach reports | Feature | A quick, printable summary a coach could reference before a session. | Sprint 6 | ⬜ Not Started | Pending validation with Coach Herrin (item 1). |
+| 13 | Social sharing: body-weight-to-lift ratio comparisons | Feature | Wilks-style score so athletes can compare fairly across body sizes. | Sprint 6–7 | ⬜ Not Started | |
+| 14 | Testing pass: core logging flow | Testing | Verify the log-a-set-and-view-history flow on multiple devices/screen sizes. | Ongoing | ⬜ Not Started | |
+| 15 | Setup documentation / README for reviewers | Documentation | Build/run instructions so instructors and the Product Advisor can run the app themselves. | Ongoing | 🟡 In Progress | Sprint 1 README drafted alongside starter code. |
