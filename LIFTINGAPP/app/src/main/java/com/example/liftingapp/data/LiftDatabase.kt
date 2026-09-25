@@ -1,4 +1,4 @@
-package com.example.lifttracker.data
+package com.example.liftingapp.data
 
 import android.content.Context
 import androidx.room.Database

@@ -1,4 +1,4 @@
-package com.example.lifttracker.data
+package com.example.liftingapp.data
 
 class LiftRepository(private val dao: LiftDao) {
     fun getEntriesForExercise(exercise: String) = dao.getEntriesForExercise(exercise)

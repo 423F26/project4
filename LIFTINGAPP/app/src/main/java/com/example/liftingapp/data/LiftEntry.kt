@@ -1,5 +1,5 @@
 #!/usr/bin/env kotlin
-package com.example.lifttracker.data
+package com.example.liftingapp.data
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

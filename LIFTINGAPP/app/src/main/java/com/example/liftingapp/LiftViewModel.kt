@@ -1,10 +1,10 @@
-package com.example.lifttracker
+package com.example.liftingapp
 
 import android.app.Application
 import androidx.lifecycle.*
-import com.example.lifttracker.data.LiftDatabase
-import com.example.lifttracker.data.LiftEntry
-import com.example.lifttracker.data.LiftRepository
+import com.example.liftingapp.data.LiftDatabase
+import com.example.liftingapp.data.LiftEntry
+import com.example.liftingapp.data.LiftRepository
 import kotlinx.coroutines.launch
 
 class LiftViewModel(application: Application) : AndroidViewModel(application) {
