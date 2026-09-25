@@ -1,12 +1,11 @@
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android")
-    id("kotlin-kapt")
+    id("com.google.devtools.ksp")
 }
 
 android {
     namespace = "com.example.liftingapp"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.example.liftingapp"
@@ -27,10 +26,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = "17"
-    }
-
     buildFeatures {
         viewBinding = true
     }
@@ -45,7 +40,7 @@ dependencies {
     // Room
     implementation("androidx.room:room-runtime:2.8.4")
     implementation("androidx.room:room-ktx:2.8.4")
-    kapt("androidx.room:room-compiler:2.8.4")
+    ksp("androidx.room:room-compiler:2.8.4")
 
     // Chart
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
