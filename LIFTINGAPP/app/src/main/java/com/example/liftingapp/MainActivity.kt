@@ -1,29 +1,23 @@
 package com.example.liftingapp
 
 import android.os.Bundle
-import android.text.InputType
 import android.view.View
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
-import android.widget.EditText
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.example.liftingapp.databinding.ActivityMainBinding
-import com.github.mikephil.charting.components.XAxis
-import com.github.mikephil.charting.data.Entry
-import com.github.mikephil.charting.data.LineData
-import com.github.mikephil.charting.data.LineDataSet
-import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import com.example.liftingapp.ui.HistoryTab
+import com.example.liftingapp.ui.LeaderboardTab
+import com.example.liftingapp.ui.LogTab
+import com.google.android.material.tabs.TabLayout
 
+/**
+ * Views + ViewBinding, like project4. The Log tab is Garrett's spinner/chart/FAB screen;
+ * History and Leaderboard are separate tabs. Each tab's wiring lives in ui/ to keep this file short.
+ */
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var viewModel: LiftViewModel
-    private val exercises = listOf("Bench", "Squat", "Deadlift")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,75 +26,34 @@ class MainActivity : AppCompatActivity() {
 
         viewModel = ViewModelProvider(this)[LiftViewModel::class.java]
 
-        setupSpinner()
-        setupChart()
-        setupFab()
-        observeData()
+        LogTab(this, binding.logTab, viewModel)
+        HistoryTab(this, binding.historyTab, viewModel)
+        LeaderboardTab(this, binding.leaderboardTab, viewModel)
+
+        setupTabs(savedInstanceState?.getInt(KEY_TAB) ?: 0)
     }
 
-    private fun setupSpinner() {
-        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, exercises)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.exerciseSpinner.adapter = adapter
+    private fun setupTabs(initialTab: Int) {
+        val pages: List<View> = listOf(binding.logTab.root, binding.historyTab.root, binding.leaderboardTab.root)
+        listOf("Log", "History", "Leaderboard").forEach { binding.tabs.addTab(binding.tabs.newTab().setText(it)) }
 
-        binding.exerciseSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                viewModel.setExercise(exercises[position])
-            }
-            override fun onNothingSelected(parent: AdapterView<*>?) {}
-        }
+        fun show(index: Int) = pages.forEachIndexed { i, page -> page.visibility = if (i == index) View.VISIBLE else View.GONE }
+
+        binding.tabs.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab) = show(tab.position)
+            override fun onTabUnselected(tab: TabLayout.Tab) {}
+            override fun onTabReselected(tab: TabLayout.Tab) {}
+        })
+        binding.tabs.getTabAt(initialTab)?.select()
+        show(initialTab)
     }
 
-    private fun setupChart() {
-        binding.liftChart.apply {
-            description.isEnabled = false
-            axisRight.isEnabled = false
-            xAxis.position = XAxis.XAxisPosition.BOTTOM
-            xAxis.granularity = 1f
-            setTouchEnabled(true)
-            setPinchZoom(true)
-        }
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putInt(KEY_TAB, binding.tabs.selectedTabPosition)
     }
 
-    private fun setupFab() {
-        binding.addWeightFab.setOnClickListener { showAddWeightDialog() }
-    }
-
-    private fun showAddWeightDialog() {
-        val input = EditText(this).apply {
-            hint = "Weight (lbs)"
-            inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
-        }
-
-        AlertDialog.Builder(this)
-            .setTitle("Add ${binding.exerciseSpinner.selectedItem} weight")
-            .setView(input)
-            .setPositiveButton("Add") { _, _ ->
-                input.text.toString().toFloatOrNull()?.let { weight ->
-                    val exercise = binding.exerciseSpinner.selectedItem as String
-                    viewModel.addEntry(exercise, weight)
-                }
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
-    }
-
-    private fun observeData() {
-        viewModel.entries.observe(this) { entries ->
-            val chartEntries = entries.mapIndexed { index, lift -> Entry(index.toFloat(), lift.weight) }
-
-            val dateFormat = SimpleDateFormat("M/d", Locale.getDefault())
-            binding.liftChart.xAxis.valueFormatter =
-                IndexAxisValueFormatter(entries.map { dateFormat.format(Date(it.date)) })
-
-            val dataSet = LineDataSet(chartEntries, binding.exerciseSpinner.selectedItem as? String ?: "").apply {
-                setDrawValues(false)
-                lineWidth = 2f
-                circleRadius = 4f
-            }
-
-            binding.liftChart.data = LineData(dataSet)
-            binding.liftChart.invalidate()
-        }
+    private companion object {
+        const val KEY_TAB = "selected_tab"
     }
 }

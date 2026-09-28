@@ -5,7 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [LiftEntry::class], version = 1, exportSchema = false)
+@Database(entities = [Athlete::class, LiftEntry::class], version = 2, exportSchema = false)
 abstract class LiftDatabase : RoomDatabase() {
     abstract fun liftDao(): LiftDao
 
@@ -18,7 +18,13 @@ abstract class LiftDatabase : RoomDatabase() {
                     context.applicationContext,
                     LiftDatabase::class.java,
                     "lift_database"
-                ).build().also { INSTANCE = it }
+                )
+                    // The schema changed (new table + new columns), so the version went 1 -> 2.
+                    // While developing, it's fine to wipe old test data on a version bump.
+                    // Before real athletes use the app, replace this with a proper Migration.
+                    .fallbackToDestructiveMigration(dropAllTables = true)
+                    .build()
+                    .also { INSTANCE = it }
             }
     }
 }
