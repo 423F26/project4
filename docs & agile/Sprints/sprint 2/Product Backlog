@@ -1,0 +1,24 @@
+# Product Backlog — Lift Tracker Capstone (Sprint 2)
+
+Ordered by priority. Updated at the end of Sprint 2.
+
+**16 items:** 6 complete, 3 in progress, 7 not started. Items 3 and 4 were descoped again and moved to Sprint 3.
+
+| # | Item | Type | Description | Target Sprint | Status | Notes / Value |
+|---|------|------|-------------|---------------|--------|---------------|
+| 1 | Coach & staff needs interview (Sean Herrin, Director of Football S&C) | Research | Validate roster-view, position-group benchmarking, return-to-baseline, and export/report concepts with the intended key user. | Sprint 1 | ✅ Complete | Findings shape items 8–12. |
+| 2 | Local vertical slice: log a set, save it, view history | Feature | Android app with local Room DB: log exercise/weight/reps and see it persisted and displayed. | Sprint 1–2 | ✅ Complete | Built and verified on emulator in Sprint 2. |
+| 3 | User accounts / authentication | Feature | Signup/login so lift data is tied to a specific athlete. | Sprint 3 | ⬜ Not Started | Descoped from Sprint 2; local athlete roster covers the demo for now. |
+| 4 | Backend API + database (multi-user) | Feature | Server-side API and shared database so data syncs across devices. | Sprint 3 | ⬜ Not Started | Descoped from Sprint 2. |
+| 5 | Workout history view & basic trend charts | Feature | Per-exercise history and a chart of weight over time. | Sprint 2 | ✅ Complete | History tab + per-athlete progress line chart on the Log tab. |
+| 6 | Estimated 1RM calculation per set (Epley/Brzycki) | Feature | Normalizes strength across rep ranges. | Sprint 2 | ✅ Complete | Epley implemented and unit tested; Brzycki not added. |
+| 7 | Weekly training volume aggregation per muscle group | Feature | Sets × reps × weight rolled up per muscle group per week. | Sprint 3 | ⬜ Not Started | e1RM (item 6) is now in place. |
+| 8 | Overtraining / undertraining detection logic | Feature | Compares volume trend against an athlete's own rolling baseline. | Sprint 3–4 | ⬜ Not Started | Depends on item 7. |
+| 9 | Coach roster dashboard (multi-athlete view) | Feature | One screen showing every athlete's training status, sortable by risk. | Sprint 4–5 | ⬜ Not Started | Athlete roster data now exists. |
+| 10 | Position-group benchmarking | Feature | Compares an athlete's lifts against their own position group. | Sprint 5 | 🟡 In Progress | Position group is stored on each athlete; comparison view not built. |
+| 11 | Return-to-baseline tracker | Feature | Flags athletes ramping volume too quickly after time off. | Sprint 5 | ⬜ Not Started | |
+| 12 | Exportable / printable coach reports | Feature | A printable summary a coach could reference before a session. | Sprint 6 | ⬜ Not Started | |
+| 13 | Social sharing: body-weight-to-lift ratio comparisons | Feature | Fair comparisons across body sizes. | Sprint 2 | ✅ Complete | Pound-for-pound (e1RM ÷ body weight) ranking on the Leaderboard. Wilks scoring could replace it later. |
+| 14 | Testing pass: core logging flow | Testing | Verify log-a-set and history flows; unit test core logic. | Ongoing | 🟡 In Progress | StrengthTest and LeaderboardTest added; multi-device testing still to do. |
+| 15 | Setup documentation / README for reviewers | Documentation | Build/run instructions for instructors and the Product Advisor. | Ongoing | 🟡 In Progress | |
+| 16 | Teammate leaderboard | Feature | Rank athletes by best e1RM or pound-for-pound for a chosen lift. | Sprint 2 | ✅ Complete | Added at Sprint 2 planning as the "one working feature." |

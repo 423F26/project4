@@ -1,0 +1,24 @@
+# Sprint Backlog — Sprint 2
+
+Work selected for Sprint 2 (9/23/2026 – 10/2/2026), broken into visible work units.
+
+| # | Work Unit | In Scope? | Status | Owner | Notes (incl. changes learned during sprint) |
+|---|-----------|-----------|--------|-------|---------------------------------------------|
+| 1 | Gradle sync fix, dependency update, repo directory cleanup | Yes | ✅ Complete | Garrett Miller | Removed the old 423-4 directory and got LIFTINGAPP syncing in Android Studio. |
+| 2 | Sprint 1 carry-over: build and verify the app on an emulator | Yes | ✅ Complete | Garrett Miller | Closes out the "pending build/verify" items left from Sprint 1. |
+| 3 | Data layer: Athlete entity, LiftEntry with reps + athlete foreign key, DAO queries, LiftDatabase, Repository | Yes | ✅ Complete | Gaige Bache | Room on-device storage (still local-only). Deleting an athlete cascades to their sets. |
+| 4 | Estimated 1RM (Epley) calculation + unit tests | Yes | ✅ Complete | Gaige Bache | `Strength.estimatedOneRepMax`; reps capped at 20 since e1RM is unreliable above that. `StrengthTest` covers it. |
+| 5 | Athlete roster: add-athlete dialog (name, position group, body weight) | Yes | ✅ Complete | Gaige Bache | Position group stored now so position-group benchmarking can use it later. |
+| 6 | Log tab: athlete + exercise pickers, log-set dialog, per-athlete progress line chart | Yes | ✅ Complete | Gaige Bache | Exercises: Bench, Squat, Deadlift, Power Clean. |
+| 7 | History tab: all logged sets, newest first, with athlete name | Yes | ✅ Complete | Garrett Miller | |
+| 8 | Leaderboard tab: rank teammates by e1RM or pound-for-pound + unit tests | Yes | ✅ Complete | Gaige Bache | The "one working feature" from the Sprint Goal. `LeaderboardTest` covers ranking logic. |
+| 9 | Auth: signup/login | No | ⬜ Not Started | Both | Descoped again; moved to Sprint 3. Local roster covers the demo need for now. |
+| 10 | Backend API + shared database | No | ⬜ Not Started | Both | Descoped again; moved to Sprint 3. |
+
+## Summary
+
+| In-Scope Units | Complete | In Progress | Not Started | Blocked |
+|:---:|:---:|:---:|:---:|:---:|
+| 8 | 8 | 0 | 0 | 0 |
+
+*Auth and the backend API were carried from Sprint 1 but descoped at Sprint 2 planning and are excluded from the in-scope count.*

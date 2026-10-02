@@ -1,0 +1,42 @@
+# Burndown Chart — Sprint 2
+
+X-axis: sprint day. Y-axis: in-scope work units remaining (from the Sprint 2 Sprint Backlog).
+
+```mermaid
+---
+config:
+  xyChart:
+    width: 800
+    height: 400
+---
+xychart-beta
+    title "Sprint 2 Burndown (Ideal vs Actual)"
+    x-axis ["D1 9/23", "D2 9/24", "D3 9/25", "D4 9/26", "D5 9/27", "D6 9/28", "D7 9/29", "D8 9/30", "D9 10/1", "D10 10/2"]
+    y-axis "Work units remaining" 0 --> 8
+    line [8.0, 7.1, 6.2, 5.3, 4.4, 3.6, 2.7, 1.8, 0.9, 0.0]
+    line [8, 7.5, 6, 5, 4, 2, 1, 0, 0, 0]
+```
+
+*The first line is **Ideal** and the second is **Actual**.*
+
+## How Remaining Work Is Calculated
+
+- A work unit counts as remaining until its status on the Sprint Backlog is set to Complete.
+- Only work units marked in scope count (8 of 10; auth and the backend API were descoped, see the Sprint Backlog).
+- Ideal is a straight line from the scope total (8) down to zero across the 10 sprint days.
+- Actual is recorded at the end of each work day.
+
+## Daily Data
+
+| Day | Date | Ideal Remaining | Actual Remaining | Completed That Day |
+|:---:|:---:|:---:|:---:|---|
+| 1 | 9/23/2026 | 8.0 | 8 | — (gradle work started) |
+| 2 | 9/24/2026 | 7.1 | 7.5 | — (data layer started) |
+| 3 | 9/25/2026 | 6.2 | 6 | #1 Gradle fix, #2 emulator verify |
+| 4 | 9/26/2026 | 5.3 | 5 | #3 Data layer |
+| 5 | 9/27/2026 | 4.4 | 4 | #4 Estimated 1RM + tests |
+| 6 | 9/28/2026 | 3.6 | 2 | #5 Athlete roster, #6 Log tab |
+| 7 | 9/29/2026 | 2.7 | 1 | #7 History tab |
+| 8 | 9/30/2026 | 1.8 | 0 | #8 Leaderboard tab |
+| 9 | 10/1/2026 | 0.9 | 0 | — (testing / review prep) |
+| 10 | 10/2/2026 | 0.0 | 0 | — |

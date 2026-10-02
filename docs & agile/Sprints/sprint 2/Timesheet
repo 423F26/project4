@@ -1,0 +1,23 @@
+# Timesheet — Sprint 2
+
+Each developer logs their own work sessions.
+
+| Date | Developer | Start | End | Hours | Work Performed / Related Work Unit | Notes |
+|------|-----------|:-----:|:---:|:-----:|------------------------------------|-------|
+| 9/23/2026 | Garrett Miller | 09:15 | 10:45 | 1.5 | Added docs & agile folder, updated Gradle config — Sprint Backlog #1 | |
+| 9/24/2026 | Gaige Bache | 18:30 | 20:00 | 1.5 | Started data layer: Athlete entity, LiftEntry reps + athleteId foreign key — #3 | Decision: cascade-delete an athlete's sets when the athlete is removed. |
+| 9/25/2026 | Garrett Miller | 09:45 | 11:45 | 2.0 | Fixed Gradle sync and directories, removed 423-4 dir, built and ran on emulator — #1, #2 | |
+| 9/26/2026 | Gaige Bache | 14:00 | 15:30 | 1.5 | Finished DAO queries, LiftDatabase, Repository, ViewModel wiring — #3 | |
+| 9/27/2026 | Gaige Bache | 10:30 | 12:30 | 2.0 | Epley e1RM + leaderboard ranking logic, StrengthTest and LeaderboardTest — #4, #8 | Decision: cap reps at 20 since e1RM gets unreliable at high reps. |
+| 9/28/2026 | Gaige Bache | 08:15 | 09:45 | 1.5 | Log tab (pickers, log-set dialog, progress chart) and add-athlete dialog; pushed to GitHub — #5, #6 | |
+| 9/29/2026 | Garrett Miller | 19:00 | 20:00 | 1.0 | History tab (list of all sets, newest first) — #7 | |
+| 9/30/2026 | Gaige Bache | 20:00 | 20:30 | 0.5 | Leaderboard tab UI: exercise picker, e1RM / pound-for-pound toggle — #8 | |
+| 10/1/2026 | Garrett Miller | 16:30 | 17:00 | 0.5 | Tested full flow on emulator, sprint review prep | |
+
+## Hours by Developer
+
+| Developer | Hours |
+|-----------|:-----:|
+| Gaige Bache | 7.0 |
+| Garrett Miller | 5.0 |
+| **Total** | **12.0** |
