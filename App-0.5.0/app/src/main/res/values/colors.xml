@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ============================================================
+         Three palettes, one per theme in themes.xml.
+         Layouts never use these directly: they use theme attributes
+         (?attr/colorPrimary, ?attr/colorOnSurface, ...) so every screen
+         re-colors when the theme changes.
+         ============================================================ -->
+
+    <!-- Blue & Gold (default) — navy wash, gold accent -->
+    <color name="bg_wash_top">#FF16305A</color>
+    <color name="bg_wash_mid">#FF0E2244</color>
+    <color name="bg_wash_bottom">#FF08162E</color>
+    <color name="bg_primary">#FFF2B535</color>
+    <color name="bg_on_primary">#FF231900</color>
+    <color name="bg_primary_container">#FF4A3A12</color>
+    <color name="bg_on_primary_container">#FFFFE3A6</color>
+    <color name="bg_secondary">#FF9DB8E0</color>
+    <color name="bg_on_secondary">#FF0B1E3A</color>
+    <color name="bg_secondary_container">#FF28467A</color>
+    <color name="bg_on_secondary_container">#FFE0EAFA</color>
+    <color name="bg_surface">#FF0E2244</color>
+    <color name="bg_on_surface">#FFF2F4F8</color>
+    <color name="bg_on_surface_variant">#FFA9B7CF</color>
+    <color name="bg_surface_variant">#FF1F3659</color>
+    <color name="bg_outline">#FF5F7396</color>
+    <color name="bg_outline_variant">#FF2C4368</color>
+    <color name="bg_container_lowest">#FF08162E</color>
+    <color name="bg_container_low">#FF0F2446</color>
+    <color name="bg_container">#FF13294D</color>
+    <color name="bg_container_high">#FF182F56</color>
+    <color name="bg_container_highest">#FF1F3761</color>
+    <color name="bg_card_fill">#14FFFFFF</color>
+    <color name="bg_card_stroke">#1FFFFFFF</color>
+    <color name="bg_tab_track">#40000000</color>
+
+    <!-- Graphite — the original grey wash + bone text, tightened up -->
+    <color name="gr_wash_top">#FF55595D</color>
+    <color name="gr_wash_mid">#FF46494D</color>
+    <color name="gr_wash_bottom">#FF36393C</color>
+    <color name="gr_primary">#FFE9E1D0</color>
+    <color name="gr_on_primary">#FF2B2D30</color>
+    <color name="gr_primary_container">#FF5C5850</color>
+    <color name="gr_on_primary_container">#FFF4EEE2</color>
+    <color name="gr_secondary">#FFB9B2A4</color>
+    <color name="gr_on_secondary">#FF2B2D30</color>
+    <color name="gr_secondary_container">#FF5B5E63</color>
+    <color name="gr_on_secondary_container">#FFF2ECE0</color>
+    <color name="gr_surface">#FF3F4246</color>
+    <color name="gr_on_surface">#FFE9E1D0</color>
+    <color name="gr_on_surface_variant">#FFB9B2A4</color>
+    <color name="gr_surface_variant">#FF4C4F53</color>
+    <color name="gr_outline">#FF8A857B</color>
+    <color name="gr_outline_variant">#FF5E6166</color>
+    <color name="gr_container_lowest">#FF33363A</color>
+    <color name="gr_container_low">#FF3A3D41</color>
+    <color name="gr_container">#FF3F4246</color>
+    <color name="gr_container_high">#FF46494D</color>
+    <color name="gr_container_highest">#FF4E5155</color>
+    <color name="gr_card_fill">#1AFFFFFF</color>
+    <color name="gr_card_stroke">#33E9E1D0</color>
+    <color name="gr_tab_track">#33000000</color>
+
+    <!-- Daylight — light theme for bright weight rooms, navy + gold -->
+    <color name="dl_wash_top">#FFF8F9FC</color>
+    <color name="dl_wash_mid">#FFEFF2F7</color>
+    <color name="dl_wash_bottom">#FFE4E9F1</color>
+    <color name="dl_primary">#FF1B3A6B</color>
+    <color name="dl_on_primary">#FFFFFFFF</color>
+    <color name="dl_primary_container">#FFD6E2F7</color>
+    <color name="dl_on_primary_container">#FF0B1F3F</color>
+    <color name="dl_secondary">#FFB07D00</color>
+    <color name="dl_on_secondary">#FFFFFFFF</color>
+    <color name="dl_secondary_container">#FFFBE6B0</color>
+    <color name="dl_on_secondary_container">#FF3A2A00</color>
+    <color name="dl_surface">#FFFFFFFF</color>
+    <color name="dl_on_surface">#FF13213A</color>
+    <color name="dl_on_surface_variant">#FF56627A</color>
+    <color name="dl_surface_variant">#FFE3E8F0</color>
+    <color name="dl_outline">#FF8792A6</color>
+    <color name="dl_outline_variant">#FFCDD4E0</color>
+    <color name="dl_container_lowest">#FFFFFFFF</color>
+    <color name="dl_container_low">#FFF7F8FB</color>
+    <color name="dl_container">#FFF1F3F8</color>
+    <color name="dl_container_high">#FFEBEEF4</color>
+    <color name="dl_container_highest">#FFE4E8F0</color>
+    <color name="dl_card_fill">#D9FFFFFF</color>
+    <color name="dl_card_stroke">#1A13213A</color>
+    <color name="dl_tab_track">#141B3A6B</color>
+
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+</resources>

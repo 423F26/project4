@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- App shell: logo header, pill-style tab bar, then the three tab layouts stacked
+     underneath (only one visible at a time).
+     fitsSystemWindows keeps content out from under the status bar (targetSdk 36 is edge-to-edge). -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+
+    <!-- Header: university logo + app name + theme picker -->
+    <LinearLayout
+        android:id="@+id/header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="16dp"
+        android:paddingTop="12dp"
+        android:paddingEnd="8dp"
+        android:paddingBottom="12dp">
+
+        <!-- Swap res/drawable/msu_logo.xml for the official logo (see the note in that file).
+             Height is fixed; width follows the image so wide wordmarks fit too. -->
+        <ImageView
+            android:id="@+id/homeLogo"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:adjustViewBounds="true"
+            android:contentDescription="@string/msu_logo_description"
+            android:maxWidth="180dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/msu_logo" />
+
+        <TextView
+            android:id="@+id/appTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="@string/app_name"
+            android:textAppearance="@style/TextAppearance.Lifting.AppTitle" />
+
+        <ImageButton
+            android:id="@+id/themeButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/change_theme"
+            android:src="@drawable/ic_palette"
+            app:tint="?attr/colorOnSurfaceVariant" />
+    </LinearLayout>
+
+    <!-- Segmented tab bar: rounded track, sliding pill for the selected tab -->
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabs"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="4dp"
+        android:background="@drawable/bg_tab_track"
+        android:padding="4dp"
+        app:tabGravity="fill"
+        app:tabIndicator="@drawable/tab_indicator_pill"
+        app:tabIndicatorAnimationDuration="260"
+        app:tabIndicatorAnimationMode="elastic"
+        app:tabIndicatorColor="?attr/colorPrimary"
+        app:tabIndicatorFullWidth="true"
+        app:tabIndicatorGravity="stretch"
+        app:tabMaxWidth="0dp"
+        app:tabMode="fixed"
+        app:tabPaddingEnd="6dp"
+        app:tabPaddingStart="6dp"
+        app:tabRippleColor="@android:color/transparent"
+        app:tabSelectedTextColor="?attr/colorOnPrimary"
+        app:tabTextAppearance="@style/TextAppearance.Lifting.Tab"
+        app:tabTextColor="?attr/colorOnSurfaceVariant" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <include
+            android:id="@+id/logTab"
+            layout="@layout/tab_log" />
+
+        <include
+            android:id="@+id/historyTab"
+            layout="@layout/tab_history"
+            android:visibility="gone" />
+
+        <include
+            android:id="@+id/leaderboardTab"
+            layout="@layout/tab_leaderboard"
+            android:visibility="gone" />
+    </FrameLayout>
+</LinearLayout>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tooltip shown when a point on the progress chart is tapped (ui/ProgressChart.kt). -->
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/markerText"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_chart_marker"
+    android:paddingStart="10dp"
+    android:paddingTop="6dp"
+    android:paddingEnd="10dp"
+    android:paddingBottom="6dp"
+    android:textAppearance="@style/TextAppearance.Lifting.Body"
+    android:textSize="12sp" />

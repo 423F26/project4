@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- App-specific theme colors that Material 3 doesn't have a role for.
+         Each theme in themes.xml sets these. -->
+    <attr name="cardFill" format="color" />      <!-- translucent card/row fill that lets the wash show through -->
+    <attr name="cardStroke" format="color" />    <!-- hairline around cards -->
+    <attr name="tabTrackFill" format="color" />  <!-- the rounded track behind the tab pills -->
+</resources>

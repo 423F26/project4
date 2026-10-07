@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- ============================================================
+         Themes. The user picks one from the palette button in the header;
+         AppTheme.kt stores the choice and MainActivity applies it before
+         setContentView. To add a theme: add a palette to colors.xml, a
+         style below, and an entry in ui/AppTheme.kt.
+         ============================================================ -->
+
+    <!-- Shared by every dark theme -->
+    <style name="Base.Theme.LIFTINGAPP.Dark" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+
+        <!-- Poppins across the Material 3 type scale (see type.xml) -->
+        <item name="textAppearanceHeadlineSmall">@style/TextAppearance.Lifting.HeadlineSmall</item>
+        <item name="textAppearanceTitleLarge">@style/TextAppearance.Lifting.TitleLarge</item>
+        <item name="textAppearanceTitleMedium">@style/TextAppearance.Lifting.TitleMedium</item>
+        <item name="textAppearanceTitleSmall">@style/TextAppearance.Lifting.TitleSmall</item>
+        <item name="textAppearanceBodyLarge">@style/TextAppearance.Lifting.BodyLarge</item>
+        <item name="textAppearanceBodyMedium">@style/TextAppearance.Lifting.BodyMedium</item>
+        <item name="textAppearanceBodySmall">@style/TextAppearance.Lifting.BodySmall</item>
+        <item name="textAppearanceLabelLarge">@style/TextAppearance.Lifting.LabelLarge</item>
+        <item name="textAppearanceLabelMedium">@style/TextAppearance.Lifting.LabelMedium</item>
+        <item name="textAppearanceLabelSmall">@style/TextAppearance.Lifting.LabelSmall</item>
+
+        <!-- Outlined text fields read better in dialogs than the filled default -->
+        <item name="textInputStyle">@style/Widget.Material3.TextInputLayout.OutlinedBox</item>
+    </style>
+
+    <!-- Shared by every light theme (same items as above, light M3 base) -->
+    <style name="Base.Theme.LIFTINGAPP.Light" parent="Theme.Material3.Light.NoActionBar">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+
+        <!-- Poppins across the Material 3 type scale (see type.xml) -->
+        <item name="textAppearanceHeadlineSmall">@style/TextAppearance.Lifting.HeadlineSmall</item>
+        <item name="textAppearanceTitleLarge">@style/TextAppearance.Lifting.TitleLarge</item>
+        <item name="textAppearanceTitleMedium">@style/TextAppearance.Lifting.TitleMedium</item>
+        <item name="textAppearanceTitleSmall">@style/TextAppearance.Lifting.TitleSmall</item>
+        <item name="textAppearanceBodyLarge">@style/TextAppearance.Lifting.BodyLarge</item>
+        <item name="textAppearanceBodyMedium">@style/TextAppearance.Lifting.BodyMedium</item>
+        <item name="textAppearanceBodySmall">@style/TextAppearance.Lifting.BodySmall</item>
+        <item name="textAppearanceLabelLarge">@style/TextAppearance.Lifting.LabelLarge</item>
+        <item name="textAppearanceLabelMedium">@style/TextAppearance.Lifting.LabelMedium</item>
+        <item name="textAppearanceLabelSmall">@style/TextAppearance.Lifting.LabelSmall</item>
+
+        <!-- Outlined text fields read better in dialogs than the filled default -->
+        <item name="textInputStyle">@style/Widget.Material3.TextInputLayout.OutlinedBox</item>
+    </style>
+
+    <!-- Blue & Gold (default): navy wash, gold accent -->
+    <style name="Theme.LIFTINGAPP.BlueGold" parent="Base.Theme.LIFTINGAPP.Dark">
+        <item name="android:windowBackground">@drawable/bg_blue_gold</item>
+        <item name="android:colorBackground">@color/bg_surface</item>
+        <item name="android:navigationBarColor">@color/bg_wash_bottom</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">false</item>
+
+        <item name="android:textColorPrimary">@color/bg_on_surface</item>
+        <item name="android:textColorSecondary">@color/bg_on_surface_variant</item>
+        <item name="android:textColorHint">@color/bg_on_surface_variant</item>
+
+        <item name="colorPrimary">@color/bg_primary</item>
+        <item name="colorOnPrimary">@color/bg_on_primary</item>
+        <item name="colorPrimaryContainer">@color/bg_primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/bg_on_primary_container</item>
+        <item name="colorSecondary">@color/bg_secondary</item>
+        <item name="colorOnSecondary">@color/bg_on_secondary</item>
+        <item name="colorSecondaryContainer">@color/bg_secondary_container</item>
+        <item name="colorOnSecondaryContainer">@color/bg_on_secondary_container</item>
+        <item name="colorTertiary">@color/bg_secondary</item>
+        <item name="colorOnTertiary">@color/bg_on_secondary</item>
+        <item name="colorTertiaryContainer">@color/bg_secondary_container</item>
+        <item name="colorOnTertiaryContainer">@color/bg_on_secondary_container</item>
+
+        <item name="colorSurface">@color/bg_surface</item>
+        <item name="colorOnSurface">@color/bg_on_surface</item>
+        <item name="colorOnBackground">@color/bg_on_surface</item>
+        <item name="colorSurfaceVariant">@color/bg_surface_variant</item>
+        <item name="colorOnSurfaceVariant">@color/bg_on_surface_variant</item>
+        <item name="colorOutline">@color/bg_outline</item>
+        <item name="colorOutlineVariant">@color/bg_outline_variant</item>
+        <item name="colorSurfaceContainerLowest">@color/bg_container_lowest</item>
+        <item name="colorSurfaceContainerLow">@color/bg_container_low</item>
+        <item name="colorSurfaceContainer">@color/bg_container</item>
+        <item name="colorSurfaceContainerHigh">@color/bg_container_high</item>
+        <item name="colorSurfaceContainerHighest">@color/bg_container_highest</item>
+
+        <item name="colorControlNormal">@color/bg_on_surface_variant</item>
+        <item name="colorControlActivated">@color/bg_primary</item>
+
+        <item name="cardFill">@color/bg_card_fill</item>
+        <item name="cardStroke">@color/bg_card_stroke</item>
+        <item name="tabTrackFill">@color/bg_tab_track</item>
+    </style>
+
+    <!-- Graphite: the original grey wash and bone text -->
+    <style name="Theme.LIFTINGAPP.Graphite" parent="Base.Theme.LIFTINGAPP.Dark">
+        <item name="android:windowBackground">@drawable/bg_grey_wash</item>
+        <item name="android:colorBackground">@color/gr_surface</item>
+        <item name="android:navigationBarColor">@color/gr_wash_bottom</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">false</item>
+
+        <item name="android:textColorPrimary">@color/gr_on_surface</item>
+        <item name="android:textColorSecondary">@color/gr_on_surface_variant</item>
+        <item name="android:textColorHint">@color/gr_on_surface_variant</item>
+
+        <item name="colorPrimary">@color/gr_primary</item>
+        <item name="colorOnPrimary">@color/gr_on_primary</item>
+        <item name="colorPrimaryContainer">@color/gr_primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/gr_on_primary_container</item>
+        <item name="colorSecondary">@color/gr_secondary</item>
+        <item name="colorOnSecondary">@color/gr_on_secondary</item>
+        <item name="colorSecondaryContainer">@color/gr_secondary_container</item>
+        <item name="colorOnSecondaryContainer">@color/gr_on_secondary_container</item>
+        <item name="colorTertiary">@color/gr_secondary</item>
+        <item name="colorOnTertiary">@color/gr_on_secondary</item>
+        <item name="colorTertiaryContainer">@color/gr_secondary_container</item>
+        <item name="colorOnTertiaryContainer">@color/gr_on_secondary_container</item>
+
+        <item name="colorSurface">@color/gr_surface</item>
+        <item name="colorOnSurface">@color/gr_on_surface</item>
+        <item name="colorOnBackground">@color/gr_on_surface</item>
+        <item name="colorSurfaceVariant">@color/gr_surface_variant</item>
+        <item name="colorOnSurfaceVariant">@color/gr_on_surface_variant</item>
+        <item name="colorOutline">@color/gr_outline</item>
+        <item name="colorOutlineVariant">@color/gr_outline_variant</item>
+        <item name="colorSurfaceContainerLowest">@color/gr_container_lowest</item>
+        <item name="colorSurfaceContainerLow">@color/gr_container_low</item>
+        <item name="colorSurfaceContainer">@color/gr_container</item>
+        <item name="colorSurfaceContainerHigh">@color/gr_container_high</item>
+        <item name="colorSurfaceContainerHighest">@color/gr_container_highest</item>
+
+        <item name="colorControlNormal">@color/gr_on_surface_variant</item>
+        <item name="colorControlActivated">@color/gr_primary</item>
+
+        <item name="cardFill">@color/gr_card_fill</item>
+        <item name="cardStroke">@color/gr_card_stroke</item>
+        <item name="tabTrackFill">@color/gr_tab_track</item>
+    </style>
+
+    <!-- Daylight: light theme for bright rooms -->
+    <style name="Theme.LIFTINGAPP.Daylight" parent="Base.Theme.LIFTINGAPP.Light">
+        <item name="android:windowBackground">@drawable/bg_daylight</item>
+        <item name="android:colorBackground">@color/dl_surface</item>
+        <item name="android:navigationBarColor">@color/dl_wash_bottom</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">true</item>
+
+        <item name="android:textColorPrimary">@color/dl_on_surface</item>
+        <item name="android:textColorSecondary">@color/dl_on_surface_variant</item>
+        <item name="android:textColorHint">@color/dl_on_surface_variant</item>
+
+        <item name="colorPrimary">@color/dl_primary</item>
+        <item name="colorOnPrimary">@color/dl_on_primary</item>
+        <item name="colorPrimaryContainer">@color/dl_primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/dl_on_primary_container</item>
+        <item name="colorSecondary">@color/dl_secondary</item>
+        <item name="colorOnSecondary">@color/dl_on_secondary</item>
+        <item name="colorSecondaryContainer">@color/dl_secondary_container</item>
+        <item name="colorOnSecondaryContainer">@color/dl_on_secondary_container</item>
+        <item name="colorTertiary">@color/dl_secondary</item>
+        <item name="colorOnTertiary">@color/dl_on_secondary</item>
+        <item name="colorTertiaryContainer">@color/dl_secondary_container</item>
+        <item name="colorOnTertiaryContainer">@color/dl_on_secondary_container</item>
+
+        <item name="colorSurface">@color/dl_surface</item>
+        <item name="colorOnSurface">@color/dl_on_surface</item>
+        <item name="colorOnBackground">@color/dl_on_surface</item>
+        <item name="colorSurfaceVariant">@color/dl_surface_variant</item>
+        <item name="colorOnSurfaceVariant">@color/dl_on_surface_variant</item>
+        <item name="colorOutline">@color/dl_outline</item>
+        <item name="colorOutlineVariant">@color/dl_outline_variant</item>
+        <item name="colorSurfaceContainerLowest">@color/dl_container_lowest</item>
+        <item name="colorSurfaceContainerLow">@color/dl_container_low</item>
+        <item name="colorSurfaceContainer">@color/dl_container</item>
+        <item name="colorSurfaceContainerHigh">@color/dl_container_high</item>
+        <item name="colorSurfaceContainerHighest">@color/dl_container_highest</item>
+
+        <item name="colorControlNormal">@color/dl_on_surface_variant</item>
+        <item name="colorControlActivated">@color/dl_primary</item>
+
+        <item name="cardFill">@color/dl_card_fill</item>
+        <item name="cardStroke">@color/dl_card_stroke</item>
+        <item name="tabTrackFill">@color/dl_tab_track</item>
+    </style>
+
+    <!-- Manifest / launch theme. MainActivity swaps in the saved choice. -->
+    <style name="Theme.LIFTINGAPP" parent="Theme.LIFTINGAPP.BlueGold" />
+
+
+    <!-- ============================================================
+         Component styles
+         ============================================================ -->
+
+    <!-- Translucent rounded card that lets the background wash show through -->
+    <style name="Widget.Lifting.Card" parent="Widget.Material3.CardView.Outlined">
+        <item name="cardBackgroundColor">?attr/cardFill</item>
+        <item name="strokeColor">?attr/cardStroke</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="cardCornerRadius">18dp</item>
+        <item name="cardElevation">0dp</item>
+    </style>
+
+    <!-- Rounded dropdown field used for athlete / exercise pickers -->
+    <style name="Widget.Lifting.Spinner" parent="Widget.AppCompat.Spinner">
+        <item name="android:background">@drawable/bg_spinner</item>
+        <item name="android:popupBackground">@drawable/bg_popup</item>
+        <item name="android:popupElevation">6dp</item>
+        <item name="android:dropDownVerticalOffset">4dp</item>
+        <item name="android:minHeight">52dp</item>
+        <item name="android:paddingStart">14dp</item>
+        <item name="android:paddingEnd">44dp</item>
+    </style>
+
+    <!-- Segmented buttons (chart range, leaderboard ranking) -->
+    <style name="Widget.Lifting.SegmentButton" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="backgroundTint">@color/segment_background</item>
+        <item name="android:textColor">@color/segment_text</item>
+        <item name="strokeColor">?attr/colorOutline</item>
+        <item name="rippleColor">?attr/colorOnSurfaceVariant</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:minHeight">44dp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:paddingStart">8dp</item>
+        <item name="android:paddingEnd">8dp</item>
+    </style>
+</resources>
