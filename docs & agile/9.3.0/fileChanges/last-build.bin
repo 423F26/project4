@@ -1,4 +1,6 @@
+------- 10/07/2026 -------
 Where to look
 1. Gradle files are all running on 1.15+ 
 2. Back end: Data folder contains Athlete information, Database of lifters, Lift entries, Athlete Strength, etc.
 3. Front end: UI contains View Model for App, MainActivity of the App where user inputs are processed
+-------  -------
