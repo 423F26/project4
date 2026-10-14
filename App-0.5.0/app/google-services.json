@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "699950750126",
+    "project_id": "liftingapp-9c495",
+    "storage_bucket": "liftingapp-9c495.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:699950750126:android:8b8fe43ca8791f26b2d03f",
+        "android_client_info": {
+          "package_name": "com.example.liftingapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCK11BYTJHtqMtBp245c2CFcWOhs45HvlE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
