@@ -54,6 +54,15 @@
             android:contentDescription="@string/change_theme"
             android:src="@drawable/ic_palette"
             app:tint="?attr/colorOnSurfaceVariant" />
+
+        <ImageButton
+            android:id="@+id/signOutButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/sign_out"
+            android:src="@drawable/ic_logout"
+            app:tint="?attr/colorOnSurfaceVariant" />
     </LinearLayout>
 
     <!-- Segmented tab bar: rounded track, sliding pill for the selected tab -->
