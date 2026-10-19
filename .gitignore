@@ -1,0 +1,17 @@
+# Gradle caches and build output
+.gradle/
+build/
+.kotlin/
+
+# Machine-specific paths (SDK location)
+local.properties
+
+# Android Studio per-user files
+.idea/workspace.xml
+.idea/deploymentTargetSelector.xml
+.idea/caches/
+.idea/misc.xml
+*.iml
+
+# macOS
+.DS_Store

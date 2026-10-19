@@ -1,9 +1,14 @@
 package com.example.liftingapp
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.credentials.ClearCredentialStateRequest
+import androidx.credentials.CredentialManager
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import com.example.liftingapp.data.AuthRepository
 import com.example.liftingapp.databinding.ActivityMainBinding
 import com.example.liftingapp.ui.AppTheme
 import com.example.liftingapp.ui.HistoryTab
@@ -11,6 +16,7 @@ import com.example.liftingapp.ui.LeaderboardTab
 import com.example.liftingapp.ui.LogTab
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.tabs.TabLayout
+import kotlinx.coroutines.launch
 
 /**
  * Views + ViewBinding, like project4. The Log tab is Garrett's spinner/chart/FAB screen;
@@ -20,10 +26,18 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var viewModel: LiftViewModel
+    private val auth = AuthRepository()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(AppTheme.current(this).styleRes)   // must happen before any views are inflated
         super.onCreate(savedInstanceState)
+
+        // Not signed in (e.g. session expired) -> back to the login screen.
+        if (auth.currentUser == null) {
+            openLogin()
+            return
+        }
+
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -35,6 +49,7 @@ class MainActivity : AppCompatActivity() {
 
         setupTabs(savedInstanceState?.getInt(KEY_TAB) ?: 0)
         binding.themeButton.setOnClickListener { showThemePicker() }
+        binding.signOutButton.setOnClickListener { confirmSignOut() }
     }
 
     private fun setupTabs(initialTab: Int) {
@@ -50,6 +65,28 @@ class MainActivity : AppCompatActivity() {
         })
         binding.tabs.getTabAt(initialTab)?.select()
         show(initialTab)
+    }
+
+    /** Sign-out button (header, top right): confirm, sign out of Firebase, return to login. */
+    private fun confirmSignOut() {
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Sign out?")
+            .setMessage(auth.currentUser?.email?.let { "You're signed in as $it." })
+            .setPositiveButton("Sign out") { _, _ ->
+                auth.signOut()
+                lifecycleScope.launch {
+                    // Forget the Google account choice so the picker shows again next time.
+                    runCatching { CredentialManager.create(this@MainActivity).clearCredentialState(ClearCredentialStateRequest()) }
+                    openLogin()
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun openLogin() {
+        startActivity(Intent(this, LoginActivity::class.java))
+        finish()
     }
 
     /** Palette button: pick a theme, save it, and rebuild the screen in the new colors. */
@@ -71,7 +108,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putInt(KEY_TAB, binding.tabs.selectedTabPosition)
+        if (::binding.isInitialized) outState.putInt(KEY_TAB, binding.tabs.selectedTabPosition)
     }
 
     private companion object {
