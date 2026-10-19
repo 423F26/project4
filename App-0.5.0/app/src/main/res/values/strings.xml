@@ -3,4 +3,7 @@
     <string name="msu_logo_description">Montana State University logo</string>
     <string name="change_theme">Change theme</string>
     <string name="sign_out">Sign out</string>
+    <!-- Firebase console → Authentication → Sign-in method → Google → Web SDK configuration → Web client ID.
+         Not a secret: it only identifies your app to Google. -->
+    <string name="google_web_client_id" translatable="false">699950750126-ajr7nknq7n3f7pj7m2kpcus396hgtv8m.apps.googleusercontent.com</string>
 </resources>

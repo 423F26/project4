@@ -4,7 +4,10 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.credentials.ClearCredentialStateRequest
+import androidx.credentials.CredentialManager
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.example.liftingapp.data.AuthRepository
 import com.example.liftingapp.databinding.ActivityMainBinding
 import com.example.liftingapp.ui.AppTheme
@@ -13,6 +16,7 @@ import com.example.liftingapp.ui.LeaderboardTab
 import com.example.liftingapp.ui.LogTab
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.tabs.TabLayout
+import kotlinx.coroutines.launch
 
 /**
  * Views + ViewBinding, like project4. The Log tab is Garrett's spinner/chart/FAB screen;
@@ -70,7 +74,11 @@ class MainActivity : AppCompatActivity() {
             .setMessage(auth.currentUser?.email?.let { "You're signed in as $it." })
             .setPositiveButton("Sign out") { _, _ ->
                 auth.signOut()
-                openLogin()
+                lifecycleScope.launch {
+                    // Forget the Google account choice so the picker shows again next time.
+                    runCatching { CredentialManager.create(this@MainActivity).clearCredentialState(ClearCredentialStateRequest()) }
+                    openLogin()
+                }
             }
             .setNegativeButton("Cancel", null)
             .show()

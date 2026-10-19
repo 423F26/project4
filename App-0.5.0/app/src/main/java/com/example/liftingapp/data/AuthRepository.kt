@@ -6,6 +6,7 @@ import com.google.firebase.auth.FirebaseAuthInvalidUserException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -45,6 +46,33 @@ class AuthRepository(
             .addOnFailureListener { onError(friendlyMessage(it)) }
     }
 
+    /**
+     * Signs in to Firebase with the ID token from Google's account picker. First-time Google users
+     * get the same users/{uid} profile that email sign-up creates; returning users keep theirs.
+     */
+    fun signInWithGoogle(idToken: String, onSuccess: (FirebaseUser) -> Unit, onError: (String) -> Unit) {
+        auth.signInWithCredential(GoogleAuthProvider.getCredential(idToken, null))
+            .addOnSuccessListener { result ->
+                val user = result.user ?: return@addOnSuccessListener onError("Google sign-in failed. Try again.")
+                val doc = db.collection("users").document(user.uid)
+                doc.get()
+                    .addOnSuccessListener { snapshot ->
+                        if (snapshot.exists()) return@addOnSuccessListener onSuccess(user)
+                        val profile = hashMapOf(
+                            "name" to user.displayName.orEmpty(),
+                            "email" to user.email.orEmpty(),
+                            "role" to "athlete",
+                            "createdAt" to FieldValue.serverTimestamp()
+                        )
+                        doc.set(profile)
+                            .addOnSuccessListener { onSuccess(user) }
+                            .addOnFailureListener { onSuccess(user) }   // signed in either way, same as email sign-up
+                    }
+                    .addOnFailureListener { onSuccess(user) }
+            }
+            .addOnFailureListener { onError(friendlyMessage(it)) }
+    }
+
     fun sendPasswordReset(email: String, onDone: (String) -> Unit) {
         auth.sendPasswordResetEmail(email)
             .addOnSuccessListener { onDone("Reset link sent to $email") }
@@ -55,7 +83,7 @@ class AuthRepository(
 
     private fun friendlyMessage(e: Exception): String = when (e) {
         is FirebaseAuthWeakPasswordException -> "Password must be at least 6 characters."
-        is FirebaseAuthUserCollisionException -> "An account with that email already exists."
+        is FirebaseAuthUserCollisionException -> "An account with that email already exists. Try signing in another way."
         is FirebaseAuthInvalidUserException -> "No account found with that email."
         is FirebaseAuthInvalidCredentialsException -> "Email or password is incorrect."
         else -> e.localizedMessage ?: "Something went wrong. Check your connection."
