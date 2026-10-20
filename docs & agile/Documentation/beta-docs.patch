@@ -1,0 +1,1195 @@
+diff --git a/.gitignore b/.gitignore
+index 978552a..ffd3e46 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -13,5 +13,23 @@ local.properties
+ .idea/misc.xml
+ *.iml
+ 
++# Gradle user-home folders created inside the project when Android Studio's
++# "Gradle user home" pointed here. Keep App-0.5.0/gradle/wrapper/ (the real wrapper).
++/App-0.5.0/caches/
++/App-0.5.0/daemon/
++/App-0.5.0/native/
++/App-0.5.0/wrapper/
++/App-0.5.0/.tmp/
++
++# Old project location that Android Studio keeps re-creating
++/423-4/
++
++# Android Studio settings for the repo root. Open App-0.5.0 in Android Studio instead.
++/.idea/
++
++# Signing keys and secrets
++*.jks
++*.keystore
++
+ # macOS
+ .DS_Store
+diff --git a/.nojekyll b/.nojekyll
+new file mode 100644
+index 0000000..e69de29
+diff --git a/README.md b/README.md
+index 75c647d..c85bf22 100644
+--- a/README.md
++++ b/README.md
+@@ -1,12 +1,124 @@
+-# project4
+-Produced by:
+-Gaige Bache and Garrett Miller
+-
+ # MSU Lift Tracker
+ 
+-Description: Our app is designed to help MSU sports teams track who has the strongest athlete, who needs more work, and keep track of school records.   We hope our app is helpful to the teams and can help make decisions on how to continue gaining strength.
+-Features:
+-1. Track lifts between teammates
+-2. Show progress as inputs are placed in the app
+-3. Store data and plot different graph types based on what the user wants to see (bench comparisons, pound-for-pound strength, overall heaviest weights, etc.)
+-4. Add more features as requested or needed
++MSU Lift Tracker is an Android app that helps MSU sports teams track strength training.
++
++- **Roster:** a coach or athlete signs in and builds a roster of athletes.
++- **Logging:** they log each lift as exercise, weight and reps.
++- **Progress:** a chart shows each athlete's estimated one-rep max over time.
++- **Leaderboard:** teammates are ranked by raw strength or pound-for-pound.
++
++The goal is to show who is strongest, who needs more work, and how each athlete is progressing.
++
++**Status:** Beta (Beta Demo build, October 2026). The Android project lives in [`App-0.5.0/`](App-0.5.0/).
++
++## Who it's for
++
++- **Coaches and strength staff,** who log and compare their athletes' lifts
++- **Athletes,** who track their own progress
++
++## Team
++
++| Name | Role |
++|---|---|
++| Garrett Miller | Developer, Scrum Master |
++| Gaige Bache | Developer |
++
++**Client:** MSU Football Strength & Conditioning staff
++**Product Advisor:** Daniel DeFrance
++
++This is a 16-week, two-person capstone project. Sprint records are in [`docs & agile/Sprints/`](docs%20%26%20agile/Sprints/).
++
++## Documentation
++
++| Guide | For | Link |
++|---|---|---|
++| **User Guide** | People using the app: getting started, logging lifts, fixing problems | [Published site](https://423f26.github.io/project4/) · [source](docs/user.html) |
++| **Developer Guide** | Developers: setup, build and run, code tour, testing, troubleshooting | [docs/developer.md](docs/developer.md) |
++| Sprint records | Backlogs, burndown charts, timesheets | [docs & agile/Sprints/](docs%20%26%20agile/Sprints/) |
++| Code reviews | Bug Check and Security Review reports for v0.5.0 | [docs & agile/Sprints/sprint 3/](docs%20%26%20agile/Sprints/sprint%203/) |
++
++## Working build
++
++There's **no packaged build** yet: no Play Store listing and no release APK. You build the app from source and install it on an emulator or an Android phone (Android 7.0 or newer).
++
++1. **Install the tools:** Android Studio (a release that supports Android Gradle Plugin 9.4.1), Android SDK Platform 37, and Git. Gradle downloads JDK 25 and every library on the first sync.
++2. **Clone and open:** clone this repo, then in Android Studio choose **File → Open** and select the **`App-0.5.0`** folder. Don't select the repo root.
++3. **Run:** pick the **app** run configuration and a device, then click **Run**.
++
++From the command line, run this inside `App-0.5.0`:
++
++```powershell
++.\gradlew.bat installDebug
++```
++
++Use `./gradlew installDebug` on macOS or Linux.
++
++**What success looks like:** the app opens on a **LIFTING APP** sign-in screen with Email and Password fields and a **Continue with Google** button. After you create an account, you land on the **Log** tab, which says "No athletes yet. Add one to start logging."
++
++**Access requirements:**
++
++- **Internet:** needed for the first Gradle sync and for signing in. Sign-in uses the team's Firebase project, which is already configured in the repo.
++- **Email/password sign-in:** works for anyone.
++- **Google sign-in on your own build:** a teammate must first register your debug key's SHA-1 in Firebase. See [Private access](docs/developer.md#private-access).
++
++Full instructions are in the [Developer Guide](docs/developer.md#set-up), and so are fixes for common problems such as the "run 'gradle init'" sync error ([Troubleshoot](docs/developer.md#troubleshoot)).
++
++## Contributing
++
++### Report a bug or propose work
++
++[Open an issue](https://github.com/423F26/project4/issues/new) and include:
++
++- **Bugs:** what you did, what you expected, what happened, and your device or emulator with its Android version. Add a screenshot if you can.
++- **New work:** what it's for, and how we'll know it's done.
++
++Label the issue `bug` or `enhancement`. Items we plan to do also go into the sprint's Product Backlog in `docs & agile/Sprints/`.
++
++### Make a change
++
++1. **Branch from an up-to-date `main`.** Use the pattern `<your-name>/<issue-number>-<short-description>`:
++
++   ```powershell
++   git checkout main
++   git pull
++   git checkout -b garrett/12-fix-chart-color
++   ```
++
++2. **Commit in small steps** with messages that say what changed, for example `Fix chart line color in Daylight theme`. Never commit `local.properties`, keystores, passwords, or Gradle output folders (`build/`, `.gradle/`, `caches/`, `daemon/`).
++3. **Run the required checks** from `App-0.5.0`:
++
++   ```powershell
++   .\gradlew.bat assembleDebug
++   .\gradlew.bat :app:testDebugUnitTest
++   ```
++
++   Both must end with `BUILD SUCCESSFUL`. Also smoke-test the screens you changed ([checklist](docs/developer.md#manual-smoke-test)).
++4. **Push and open a pull request into `main`:**
++
++   ```powershell
++   git push -u origin garrett/12-fix-chart-color
++   ```
++
++   In the PR description:
++   - link the issue (`Closes #12`)
++   - say what changed and how you tested it
++   - confirm the checks passed
++   - add before-and-after screenshots for UI changes
++
++### Review and merge
++
++- **The other teammate reviews every PR.** Nobody merges their own PR without an approving review.
++- **What the reviewer does:** reads the diff, pulls the branch and runs the checks above, then tries the change on an emulator. They then **Approve** or **Request changes**.
++- **Who merges:** after approval, the author clicks **Squash and merge** and deletes the branch.
++- **Docs travel with the change.** Docs affected by a change (README, [Developer Guide](docs/developer.md), [User Guide](docs/user.html)) are updated in the same PR.
++- **No automated checks yet.** There's no CI, so the checks above are run by hand. The author and the reviewer both confirm them in the PR.
++
++## Repository layout
++
++```text
++App-0.5.0/       Android project (open this in Android Studio)
++docs/            developer.md and user.html
++docs & agile/    sprint records and earlier documentation
++Agents/          prompts for the team's AI review agents
++index.html       GitHub Pages homepage
++```
+diff --git a/docs/developer.md b/docs/developer.md
+new file mode 100644
+index 0000000..04f2be6
+--- /dev/null
++++ b/docs/developer.md
+@@ -0,0 +1,505 @@
++# Developer Guide: MSU Lift Tracker
++
++This guide is for a developer joining the project. By the end you should have a working build, know where the code for each feature lives, and know how to test a change and submit it.
++
++> **Documented version:** the Beta Demo build on the `main` branch (October 2026). The Android project is in `App-0.5.0/`. The build file still reports `versionName "1.0"` / `versionCode 1`.
++
++**Contents:** [At a glance](#at-a-glance) · [Set up](#set-up) · [Build and run](#build-and-run) · [Understand the code](#understand-the-code) · [Test a change](#test-a-change) · [Troubleshoot](#troubleshoot)
++
++How to propose and submit work (issues, branches, pull requests) is in the [README](../README.md#contributing). The guide for app users is [user.html](user.html).
++
++---
++
++## At a glance
++
++| | |
++|---|---|
++| Platform | Android app, one Gradle module (`:app`), package `com.example.liftingapp` |
++| Language and UI | Kotlin, Android Views with ViewBinding, Material 3 (no Jetpack Compose) |
++| Sign-in | Firebase Authentication: email and password, or Google through Android Credential Manager |
++| Lift data | Room (SQLite) database on the phone. It isn't synced, and it isn't separated by account. |
++| Cloud data | Cloud Firestore holds one profile document per user (`users/{uid}`), and nothing else yet |
++| Charts | MPAndroidChart v3.1.0 (from JitPack) |
++| Build | Android Gradle Plugin 9.4.1, Gradle wrapper 9.6.0, KSP 2.3.6, Google Services plugin 4.4.4 |
++| Android versions | `minSdk` 24 (Android 7.0), `targetSdk` 36, `compileSdk` 37 |
++| Tests | 12 JVM unit tests. The one instrumented test doesn't compile yet. |
++| CI | None: every check runs on your machine |
++
++---
++
++## Set up
++
++### Required tools
++
++| Tool | Version | Notes |
++|---|---|---|
++| Git | Any recent version | Used to clone the repo. |
++| Android Studio | A release that supports **AGP 9.4.1** and **compileSdk 37** | If sync says the Android Gradle Plugin is newer than Studio supports, update Android Studio. |
++| JDK | **25**, for running Gradle | Set in `App-0.5.0/gradle/gradle-daemon-jvm.properties`. If JDK 25 isn't installed, Gradle downloads it on the first sync. The app code itself compiles to Java 17. |
++| Android SDK | **Platform 37** plus Platform-Tools | Install them from Android Studio: **Tools → SDK Manager**. |
++| Device | Android 7.0 (API 24) or newer, emulator or phone | For Google sign-in, use a **Google Play** emulator image and sign in to a Google account on the device. |
++| Internet | Needed for the first sync and for signing in | Gradle downloads from Google Maven, Maven Central and JitPack. The app's sign-in talks to Firebase. |
++
++You don't install any libraries by hand. Gradle downloads everything declared in `App-0.5.0/app/build.gradle.kts`:
++
++- Firebase BoM 34.4.0 (Auth, Firestore)
++- Credential Manager 1.5.0 and Google ID 1.1.1
++- Room 2.8.4
++- Lifecycle 2.11.0
++- Material 1.13.0
++- MPAndroidChart v3.1.0
++
++**External service:** the Firebase project `liftingapp-9c495` provides Authentication and Cloud Firestore. It's already wired in through `App-0.5.0/app/google-services.json`. The team doesn't run any server of its own.
++
++### Get the code
++
++```powershell
++git clone https://github.com/423F26/project4.git
++cd project4\App-0.5.0
++dir
++```
++
++Expected: the folder lists `settings.gradle.kts`, `build.gradle.kts`, `gradlew.bat` and `app`.
++
++The parts of the repo you'll use:
++
++```text
++project4/
++├── README.md             start here
++├── index.html            GitHub Pages homepage (links to the user guide)
++├── docs/                 developer.md (this file) and user.html (user guide)
++├── docs & agile/         sprint records (Sprints/) and the earlier code reviews
++├── Agents/               prompts for the team's AI review agents
++└── App-0.5.0/            the Android project; open THIS folder in Android Studio
++    ├── settings.gradle.kts, build.gradle.kts, gradle.properties, gradlew, gradlew.bat
++    ├── gradle/wrapper/   Gradle wrapper (9.6.0)
++    └── app/              the app module: build.gradle.kts, google-services.json, src/
++```
++
++### Open the project in Android Studio
++
++1. **File → Open**, then select the **`project4\App-0.5.0`** folder (the one that contains `settings.gradle.kts`).
++
++   Don't open the `project4` root. Its committed `.idea/gradle.xml` still points at the deleted `423-4/LIFTINGAPP` folder, so the sync fails with "run 'gradle init'" (see [Troubleshoot](#sync-says-to-create-a-new-gradle-build-in-this-directory-run-gradle-init)).
++2. Click **Trust Project** if asked, then wait for the Gradle sync. The first sync downloads Gradle 9.6.0, JDK 25 if needed, and all dependencies, so it can take several minutes.
++3. **Success:** the Build window shows the sync finished with no errors, and the run-configuration dropdown in the toolbar shows **app**.
++
++### Configuration
++
++There are no environment variables. Configuration lives in these files:
++
++| File | What it holds | In git? | What you do |
++|---|---|---|---|
++| `App-0.5.0/local.properties` | `sdk.dir`, the path to your Android SDK | No (`.gitignore`) | Android Studio creates it on the first sync. Create it yourself only if you build from the command line without ever opening Studio. |
++| `App-0.5.0/app/google-services.json` | Firebase project ID, app ID and API key | Yes | Nothing. Replace it only if the team moves to a different Firebase project. |
++| `google_web_client_id` in `App-0.5.0/app/src/main/res/values/strings.xml` | The OAuth "Web client ID" used for Google sign-in | Yes | Nothing. It must match **Firebase console → Authentication → Sign-in method → Google → Web SDK configuration**. |
++| `App-0.5.0/gradle.properties` | Gradle memory and configuration-cache settings | Yes | Nothing. |
++
++Example `local.properties` (use your own user name, and don't commit it):
++
++```properties
++# Windows
++sdk.dir=C\:\\Users\\YOUR_WINDOWS_USER\\AppData\\Local\\Android\\Sdk
++# macOS
++# sdk.dir=/Users/YOUR_MAC_USER/Library/Android/sdk
++```
++
++The Firebase API key and the web client ID are **not secrets**. They identify the app to Google. Access is controlled by Firebase Authentication, the registered signing-key fingerprints, and Firestore security rules.
++
++Never commit real secrets: signing keystores (`*.jks`, `*.keystore`), passwords, Firebase Admin or service-account JSON files.
++
++### Private access
++
++**What works with no special access:** cloning (the repo is public), building, running, and **email/password** sign-in. Signing up creates a real account in the team's Firebase project, so use an email address you control.
++
++**What needs a teammate:**
++
++- **Google sign-in on your build.** Google only accepts sign-ins from builds whose signing-key fingerprint is registered in Firebase. Your debug key is unique to your computer. From `App-0.5.0`, run:
++
++  ```powershell
++  .\gradlew.bat signingReport
++  ```
++
++  Find the block that starts with `Variant: debug` and copy its `SHA1:` value (it looks like `AB:CD:12:...`). Send the value to a teammate who has Firebase access. They add it under **Firebase console → Project settings → Your apps → Android app `com.example.liftingapp` → Add fingerprint**. The fingerprint isn't secret, so you can paste it in an issue or chat.
++- **Firebase console access** (to see test accounts, sign-in providers, or Firestore data). Ask Garrett Miller or Gaige Bache to add your Google account to project `liftingapp-9c495` under **Project settings → Users and permissions**. Never put passwords or keys in issues, docs or commits.
++
++### Database and sample data
++
++The app uses two stores. Neither needs setup.
++
++**1. Room, on the phone.** This holds the athletes and their lifts.
++
++- Room creates `lift_database` (schema version 2) the first time the app opens. Its tables are `athletes` and `lift_entries`; see [Data model](#data-model).
++- There's no seed data. To build a small sample set, sign in and enter:
++
++  | Step | Enter | What you should see |
++  |---|---|---|
++  | 1 | **Add athlete:** `Jordan Smith`, `OL`, `285` | Jordan is selected in the Athlete picker |
++  | 2 | **Log set:** Bench `225` × `5`, then Bench `205` × `8` | The dialog previews "Estimated 1RM: 263 lb" for 225 × 5 |
++  | 3 | **Add athlete:** `Sam Lee`, `DB`, `180`. **Log set:** Bench `185` × `5` | |
++  | 4 | Open the **Leaderboard** tab | Estimated max ranks Jordan first (263 lb). Pound-for-pound ranks Sam first (1.20× BW vs 0.92× BW). |
++
++- Every set is stamped with the current date and time, so everything you log in one day becomes one chart point. To see a multi-day chart, log sets on different days, or change the emulator's date under **Settings → System → Date & time**.
++- To look at the tables while the app runs, use **View → Tool Windows → App Inspection → Database Inspector**.
++- To reset everything, uninstall the app, or use **Settings → Apps → LIFTING APP → Storage → Clear storage**. Either one also signs you out.
++
++**2. Cloud Firestore, in Firebase.** This holds only a profile document per user, at `users/{uid}`, with these fields:
++
++- `name`
++- `email`
++- `role` (always `"athlete"`)
++- `createdAt` (a server timestamp)
++
++It's written the first time someone signs up, or the first time they sign in with Google. Nothing in the app reads it yet.
++
++---
++
++## Build and run
++
++There is **no deployed or packaged version**: no Play Store listing and no release APK. Every developer builds and installs a debug build from source, and the Beta Demo runs a debug build of `main`.
++
++The only part of the app that runs online is Firebase, which Google hosts. Every debug build talks to the **same** Firebase project, so test accounts are real accounts. That's the only difference between "local" and "deployed" today.
++
++### Run from Android Studio
++
++1. **Start a device.** In **Device Manager**, create or start an emulator. A Pixel with an API 36 **Google Play** image is a good choice. Or plug in a phone with USB debugging turned on.
++2. **Run the app.** Choose the **app** run configuration and your device, then click **Run ▶**.
++3. **Check the sign-in screen.** It shows:
++   - the logo and **LIFTING APP**
++   - **Email** and **Password** fields
++   - a **Sign in** button
++   - **Continue with Google**
++   - **New here? Create an account**
++
++   That screen means the build, install and Firebase setup all worked.
++4. **Create an account.** Tap **New here? Create an account**, then enter a name, an email address and a password of at least 6 characters. Tap **Create account**.
++5. **Check the main screen.** It opens with the tabs **Log**, **History** and **Leaderboard**. The Log tab shows "No athletes yet. Add one to start logging."
++6. From now on the app skips the sign-in screen until you sign out, using the icon at the top right.
++
++### Build from the command line (Windows PowerShell)
++
++Run every Gradle command from inside **`App-0.5.0`**:
++
++```powershell
++cd C:\path\to\project4\App-0.5.0
++.\gradlew.bat assembleDebug
++```
++
++Expected: the output ends with `BUILD SUCCESSFUL in …`, and the APK is at `app\build\outputs\apk\debug\app-debug.apk`.
++
++To install on a running emulator, or on a connected phone:
++
++```powershell
++.\gradlew.bat installDebug
++```
++
++Expected: `Installed on 1 device.` followed by `BUILD SUCCESSFUL`. Open **LIFTING APP** from the device's app drawer.
++
++On macOS or Linux, use `./gradlew` instead of `.\gradlew.bat`. If you get "permission denied", run `chmod +x gradlew` once.
++
++---
++
++## Understand the code
++
++Kotlin paths below are relative to `App-0.5.0/app/src/main/java/com/example/liftingapp/`.
++
++### Where things are
++
++| Path | Responsibility |
++|---|---|
++| `LoginActivity.kt` | **Launcher activity.** Handles email sign-in and sign-up, password reset, and Google sign-in. If a user is already signed in, it goes straight to `MainActivity`. |
++| `MainActivity.kt` | **Main screen.** Sends signed-out users back to `LoginActivity`. Hosts the three tabs, the theme picker and sign-out. |
++| `LiftViewModel.kt` | State for the three tabs (selected athlete, exercise, chart range, rank mode). Turns Room `Flow`s into `LiveData` and launches database writes. |
++| `data/AuthRepository.kt` | Every Firebase Auth and Firestore call. Turns Firebase errors into messages the user can read. |
++| `data/LiftRepository.kt` | The single entry point for lift data. A thin wrapper over the DAO. |
++| `data/LiftDao.kt`, `data/LiftDatabase.kt` | Room queries and the database singleton. |
++| `data/Athlete.kt`, `data/LiftEntry.kt`, `data/LiftWithAthlete.kt` | The Room tables and the "set plus athlete" relation. |
++| `data/Strength.kt` | The exercise list, the 20-rep cap, and the Epley estimated one-rep max (e1RM). |
++| `data/Leaderboard.kt` | Leaderboard ranking. |
++| `data/Progress.kt` | Builds the progress-chart series. |
++| `ui/LogTab.kt`, `ui/ProgressChart.kt`, `ui/Dialogs.kt` | The Log tab: athlete and exercise pickers, progress chart, and the log, edit, delete and undo flows. `Dialogs.kt` also holds the add-athlete dialog. |
++| `ui/HistoryTab.kt`, `ui/LeaderboardTab.kt` | The History and Leaderboard tabs and their list adapters. |
++| `ui/AppTheme.kt`, `ui/Format.kt`, `ui/Widgets.kt` | Themes, number and date formatting, small view helpers. |
++
++Other important files:
++
++- **Manifest** (`App-0.5.0/app/src/main/AndroidManifest.xml`): `LoginActivity` is the launcher, and `MainActivity` isn't exported.
++- **Layouts** (`res/layout/`): `activity_login.xml`, `activity_main.xml`, `tab_log.xml`, `tab_history.xml`, `tab_leaderboard.xml`, plus the `dialog_*.xml` and `item_*.xml` files.
++- **Values** (`res/values/`): strings, colors, themes and type styles.
++- **Tests:** `App-0.5.0/app/src/test/java/com/example/liftingapp/`.
++
++### How the pieces fit
++
++```mermaid
++flowchart LR
++    subgraph Screens
++        LA["LoginActivity"]
++        MA["MainActivity<br/>Log, History, Leaderboard tabs"]
++    end
++    AR["AuthRepository"]
++    VM["LiftViewModel"]
++    LOGIC["Strength, Leaderboard, Progress<br/>(plain Kotlin)"]
++    LR["LiftRepository"]
++    DAO["LiftDao"]
++    ROOM[("Room: lift_database<br/>on the phone")]
++    FB[("Firebase Auth +<br/>Firestore users/{uid}")]
++
++    LA --> AR
++    MA -->|sign out| AR
++    AR --> FB
++    LA -->|signed in| MA
++    MA --> VM
++    VM --> LR
++    LR --> DAO
++    DAO --> ROOM
++    ROOM -.->|Flow re-emits on change| VM
++    VM -.->|LiveData| MA
++    VM --> LOGIC
++    MA --> LOGIC
++```
++
++### Walk-through: signing in
++
++1. **Already signed in?** `LoginActivity.onCreate()` checks `AuthRepository.currentUser`. If someone is signed in, `openMain()` starts `MainActivity` and finishes the login screen.
++2. **Email.** `submit()` checks the form first: a name is required when signing up, the email must be valid, and the password needs at least 6 characters. It then calls `AuthRepository.signIn()` or `signUp()`. On success it opens `MainActivity`; on failure it shows the error message in a snackbar.
++3. **Google.** `signInWithGoogle()` builds a `GetSignInWithGoogleOption` from `google_web_client_id` and asks `CredentialManager` for a credential. It reads the Google ID token and passes it to `AuthRepository.signInWithGoogle()`.
++4. **Profile.** On the first sign-up or first Google sign-in, `AuthRepository` writes `users/{uid}` in Firestore. If that write fails, the user is let in anyway.
++5. **Signing out.** `MainActivity.confirmSignOut()` calls `AuthRepository.signOut()`, clears the Credential Manager state so the Google account picker shows again, and returns to `LoginActivity`.
++
++### Walk-through: logging a set (the main feature)
++
++1. **Tap Log set.** `LogTab.onAddSetClicked()` looks up the selected athlete. If there's none, it opens the add-athlete dialog instead.
++2. **Check the input.** `showLogSetDialog()` in `ui/Dialogs.kt` keeps **Save** disabled until the weight is above 0 and the reps are between 1 and `MAX_REPS` (20). While you type, it previews the estimate from `Strength.estimatedOneRepMax()`.
++3. **Save.** **Save** calls `LiftViewModel.addEntry()`, which runs `viewModelScope.launch { repository.insert(...) }`. That ends in `LiftDao.insertLift()`, and Room does the write off the main thread.
++4. **Room tells the screens.** Room re-emits every query that reads `lift_entries`:
++   - `getProgress` updates the Log chart
++   - `getHistory` updates the History tab
++   - `getLiftsForExercise` updates the Leaderboard
++
++   The ViewModel exposes these as `entries`, `history` and `leaderboard` LiveData.
++5. **The tabs redraw.** `LogTab.drawChart()` calls `LineChart.showProgress()` in `ui/ProgressChart.kt`, which uses `dailyBests()` and `progressWindow()` from `data/Progress.kt`. The Leaderboard uses `buildLeaderboard()` from `data/Leaderboard.kt`. Nothing calls "refresh": Room's `Flow`s drive every update.
++
++### Design decisions to know
++
++- **The lift data is local and shared by every account on the phone.** Signing in controls who can open the app, but the athletes and lifts live in one Room database on the device. They aren't tied to the account and don't sync. Moving them to the cloud is backlog work (Sprint 2 Product Backlog items 3–4). Don't mistake this for a sign-in bug.
++- **One main activity, with the tabs as included layouts.** `activity_main.xml` `<include>`s `tab_log`, `tab_history` and `tab_leaderboard`, and `MainActivity` shows or hides them. They aren't Fragments. Because all three share one view hierarchy, **view IDs must be unique across the tab layouts**. Both `tab_log.xml` and `tab_leaderboard.xml` use `exerciseSpinner`, which is a known bug.
++- **Views and ViewBinding, not Compose.** The Sprint 1 records mention Compose, but the code doesn't use it.
++- **The e1RM is never stored.** Every screen calculates it from weight and reps with Epley: `weight × (1 + reps / 30)`, or just the weight for a single rep. The log dialog limits reps to 1–20, because the estimate is unreliable above that.
++- **Exercise names are stored as plain text.** Add new lifts to `EXERCISES` in `data/Strength.kt`. Don't rename an existing one: old rows keep the old name.
++- **Schema changes wipe the phone's data.** `LiftDatabase` uses `fallbackToDestructiveMigration(dropAllTables = true)`, so any database version bump deletes all local data. Write a real `Migration` before real athletes' data matters.
++- **Testable logic stays plain Kotlin.** `Strength.kt`, `Leaderboard.kt` and `Progress.kt` have no Android imports, so they run in fast JVM tests. Put new calculation logic there.
++- **Themes.** Both activities call `setTheme()` before inflating views. The choice is saved in the SharedPreferences file `appearance`, under the key `theme`.
++
++### Interfaces
++
++**`AuthRepository`** (`data/AuthRepository.kt`). Callbacks run on the main thread. Errors arrive as messages that are ready to show to the user.
++
++| Member | Inputs | On success | On failure |
++|---|---|---|---|
++| `currentUser` | none | The `FirebaseUser`, or `null` when signed out | none |
++| `signIn(email, password, onSuccess, onError)` | email, password | `onSuccess(user)` | `onError(message)` |
++| `signUp(name, email, password, onSuccess, onError)` | name, email, password | Creates the account, writes `users/{uid}`, then calls `onSuccess(user)` (even if the profile write failed) | `onError(message)` |
++| `signInWithGoogle(idToken, onSuccess, onError)` | A Google ID token from Credential Manager | Signs in, creates `users/{uid}` on first sign-in, then calls `onSuccess(user)` | `onError(message)` |
++| `sendPasswordReset(email, onDone)` | email | `onDone("Reset link sent to {email}")` | `onDone(message)` |
++| `signOut()` | none | Signs out of Firebase | none |
++
++The error messages come from `friendlyMessage()`:
++
++| Firebase exception | Message shown |
++|---|---|
++| `FirebaseAuthWeakPasswordException` | "Password must be at least 6 characters." |
++| `FirebaseAuthUserCollisionException` | "An account with that email already exists. Try signing in another way." |
++| `FirebaseAuthInvalidUserException` | "No account found with that email." |
++| `FirebaseAuthInvalidCredentialsException` | "Email or password is incorrect." |
++| Anything else | Firebase's own message, or "Something went wrong. Check your connection." |
++
++**`LiftRepository` and `LiftDao`** (`data/`). Reads return a `Flow` that re-emits whenever its tables change. Writes are `suspend` functions.
++
++| Repository member | DAO method and SQL | Returns |
++|---|---|---|
++| `athletes` | `getAthletes()`: `SELECT * FROM athletes ORDER BY name COLLATE NOCASE` | `Flow<List<Athlete>>` |
++| `history` | `getHistory()`: `SELECT * FROM lift_entries ORDER BY date DESC` | `Flow<List<LiftWithAthlete>>` |
++| `progressFor(athleteId, exercise)` | `getProgress()`: one athlete's sets for one exercise, `ORDER BY date ASC` | `Flow<List<LiftEntry>>` |
++| `liftsFor(exercise)` | `getLiftsForExercise()`: every set for one exercise | `Flow<List<LiftWithAthlete>>` |
++| `addAthlete(name, positionGroup, bodyWeightLb)` | `insertAthlete()` | The new athlete's id (`Long`) |
++| `insert(entry)`, `update(entry)`, `delete(entry)` | `insertLift()`, `updateLift()`, `deleteLift()`; update and delete match on the `id` | `Unit` |
++
++There's no method to edit or delete an athlete yet.
++
++**Calculation functions** (`data/`). These are covered by unit tests.
++
++| Function | What it does | Errors |
++|---|---|---|
++| `Strength.estimatedOneRepMax(weight, reps)` | Epley e1RM. A single rep returns the weight itself. | Throws `IllegalArgumentException` when `reps < 1`. It doesn't enforce the 20-rep cap; the dialog does. |
++| `buildLeaderboard(lifts, rankBy)` | One row per athlete, using their best set by e1RM. Sorted highest first, by e1RM or by e1RM ÷ body weight. | none |
++| `dailyBests(entries, zone)` | One chart point per calendar day: the best e1RM and the heaviest weight that day. | none |
++| `progressWindow(days, range, today)` | The days shown for 1M, 3M, 6M, 1Y or All. "All" always covers at least 14 days. | none |
++
++### Data model
++
++| Table | Columns |
++|---|---|
++| `athletes` | `id` (primary key, auto-generated), `name`, `positionGroup` (stored upper-case), `bodyWeightLb` |
++| `lift_entries` | `id` (primary key, auto-generated), `athleteId` (foreign key to `athletes.id`, indexed, `ON DELETE CASCADE`), `exercise`, `weight` (lb), `reps`, `date` (epoch milliseconds) |
++| Firestore `users/{uid}` | `name`, `email`, `role`, `createdAt` |
++
++---
++
++## Test a change
++
++### Unit tests (required)
++
++There are 12 JVM tests in `App-0.5.0/app/src/test/java/com/example/liftingapp/`. They need no emulator and no test data. Run them from `App-0.5.0`:
++
++```powershell
++.\gradlew.bat :app:testDebugUnitTest
++```
++
++Passing looks like `BUILD SUCCESSFUL`. The HTML report is at `app\build\reports\tests\testDebugUnitTest\index.html` and shows **12 tests, 0 failures**. When a test fails, Gradle prints `FAILED`, the test name, and a link to the report.
++
++To run one class:
++
++```powershell
++.\gradlew.bat :app:testDebugUnitTest --tests "com.example.liftingapp.data.LeaderboardTest"
++```
++
++To run them in Android Studio, right-click the `test` source folder (`app/src/test/java`) and choose **Run 'Tests in …'**.
++
++| Test file | What it covers |
++|---|---|
++| `data/StrengthTest.kt` | The Epley e1RM, the single-rep case, and that 0 reps is rejected |
++| `data/LeaderboardTest.kt` | One row per athlete, ranking by e1RM, and that pound-for-pound flips the order |
++| `data/ProgressTest.kt` | One point per day, the All, 1M and 14-day windows, and the time-zone handling of calendar days |
++| `ExampleUnitTest.kt` | Android Studio's template test (2 + 2 = 4) |
++
++When you add or change logic in `data/Strength.kt`, `Leaderboard.kt` or `Progress.kt`, add or update a test in the matching file.
++
++### Lint (recommended)
++
++```powershell
++.\gradlew.bat lintDebug
++```
++
++The report goes to `app\build\reports\lint-results-debug.html`. Run lint when you change layouts, resources or the manifest, and fix any new warnings your change adds. Lint isn't one of the required checks yet.
++
++### Instrumented tests (currently broken)
++
++`app/src/androidTest/.../ExampleInstrumentedTest.kt` doesn't compile. It imports AndroidX Test, but `app/build.gradle.kts` declares no `androidTestImplementation` dependencies and sets no `testInstrumentationRunner`. As a result, `connectedAndroidTest` fails.
++
++This doesn't affect `assembleDebug` or the unit tests. To enable instrumented tests, add these lines to `app/build.gradle.kts`:
++
++```kotlin
++// in defaultConfig { }
++testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
++// in dependencies { }
++androidTestImplementation("androidx.test.ext:junit:1.3.0")
++androidTestImplementation("androidx.test:runner:1.7.0")
++```
++
++### What CI runs
++
++There's **no CI**: the repo has no `.github/workflows/`, so nothing runs automatically on a push or a pull request. The PR author runs the checks below locally and says so in the PR description.
++
++### Checks required before merging
++
++1. `.\gradlew.bat assembleDebug` succeeds.
++2. `.\gradlew.bat :app:testDebugUnitTest` passes.
++3. You did a manual smoke test of every screen you changed (list below).
++4. Any docs your change affects are updated in the same PR.
++
++### Manual smoke test
++
++Run this on an emulator after a fresh install:
++
++1. **Create an account.** The sign-in screen appears. Tap **New here? Create an account**, enter a name, email and password, and tap **Create account**. The Log tab opens.
++2. **Sign out and back in.** Tap the sign-out icon (top right), then **Sign out**. Sign in again with a wrong password and check you see "Email or password is incorrect." Then sign in with the right password.
++3. **Add an athlete.** Tap **Add athlete**. **Add** should stay disabled until the name, position and a body weight above 0 are all filled in. After you add the athlete, they're selected.
++4. **Log a set.** Tap **Log set** and type 25 reps: you should see "Enter 1–20 reps" and a disabled **Save**. Then enter 225 × 5. Check the preview says "Estimated 1RM: 263 lb", and save.
++5. **Check every tab.** The chart shows a point, History lists the set, and the Leaderboard ranks the athlete in both modes.
++6. **Edit and undo.** Tap the chart point, then **Edit or delete set from …**. Edit the set and tap **Undo**. Then delete it and tap **Undo** again.
++7. **Ranges and themes.** Try each chart range button. Switch to each theme with the palette icon, and rotate the phone.
++
++### Known gaps in testing
++
++- There are no automated tests for sign-in (`AuthRepository`, `LoginActivity`), the Room queries and cascade delete, `LiftViewModel`, the dialogs, or chart drawing.
++- Testing so far has been on one emulator. Multi-device testing is still open (Product Backlog item 14).
++- There's no CI.
++
++---
++
++## Troubleshoot
++
++### Sync says "To create a new Gradle build in this directory run 'gradle init'"
++
++Android Studio is syncing a folder that has no `settings.gradle.kts`. This usually happens because someone opened the `project4` root, whose committed `.idea/gradle.xml` links three Gradle projects under `423-4/LIFTINGAPP`, a folder that no longer exists.
++
++1. **Close it.** Choose **File → Close Project**.
++2. **Open the right folder.** Choose **File → Open** and pick **`App-0.5.0`**.
++3. **Remove stale links.** If Studio still syncs the wrong place, open the **Gradle** tool window (the elephant icon on the right edge). Right-click any project pointing at `423-4` and choose **Unlink Gradle Project**. Then click **+** and pick `App-0.5.0/settings.gradle.kts`.
++4. **Check the Gradle user home.** Go to **Settings → Build, Execution, Deployment → Build Tools → Gradle**. **Gradle user home** should be empty, which means the default `C:\Users\<you>\.gradle`. If it points at a folder inside the repo, Gradle fills that folder with `caches`, `daemon`, `native`, `wrapper/dists` and `.tmp` folders.
++5. **Clean up.** If a `423-4` folder appeared in your clone, Studio created it; delete it.
++
++### Gradle-generated folders appear inside `App-0.5.0` (`caches`, `daemon`, `native`, `.tmp`, a top-level `wrapper`)
++
++This is the same wrong "Gradle user home" setting described in step 4 above. Fix the setting, then delete those folders. Don't commit them.
++
++Keep `App-0.5.0/gradle/wrapper/`. That's the real wrapper.
++
++### "SDK location not found"
++
++`local.properties` is missing or points at someone else's SDK. Open the project in Android Studio once (it writes the file for you), or create the file as shown in [Configuration](#configuration).
++
++### Errors about Java 25 or the "Daemon JVM criteria"
++
++Gradle is set to run on JDK 25 (`gradle/gradle-daemon-jvm.properties`). Either let it download JDK 25 (this needs internet), or install a JDK 25 and select it under **Settings → Build, Execution, Deployment → Build Tools → Gradle → Gradle JDK**. Errors that mention class-file versions mean the JDK running Gradle is too old.
++
++### "Could not resolve com.github.PhilJay:MPAndroidChart:v3.1.0"
++
++This library only exists on JitPack. Check that `maven { url = uri("https://jitpack.io") }` is still in `settings.gradle.kts`, and that your network allows `jitpack.io`.
++
++### "File google-services.json is missing"
++
++The Google Services Gradle plugin needs `App-0.5.0/app/google-services.json`. Restore it from git:
++
++```powershell
++git checkout -- app/google-services.json
++```
++
++### Sign-in problems
++
++| What you see | Cause | What to do |
++|---|---|---|
++| "Email or password is incorrect." or "No account found with that email." | A wrong password, or no account exists | This is expected. Create an account, or use **Forgot password?** |
++| "An account with that email already exists. Try signing in another way." | The email was registered another way, for example with Google | Sign in with that method instead. |
++| "Something went wrong. Check your connection." or a raw Firebase message | The device is offline, or a sign-in provider is turned off in Firebase | Check the emulator's internet connection. Ask a teammate with Firebase access to check **Authentication → Sign-in method**. |
++| "Google sign-in failed: No credentials available" (or similar) | The device has no Google account, or the image doesn't include Google Play | Use a Google Play emulator image, and add an account under **Settings → Passwords & accounts**. |
++| "Google sign-in failed: …" mentioning the developer console or "reauth" | Your build's SHA-1 isn't registered in Firebase | Follow [Private access](#private-access). |
++| No password-reset email arrives | Email delivery | Check spam. The reset only works for email/password accounts. |
++
++### My data disappeared
++
++Local data is wiped when you uninstall the app, clear its storage, or install a build with a new database version (destructive migration). This is expected during development.
++
++### Unfinished behavior (not setup errors)
++
++- **Shared lift data.** Different accounts on the same phone see the same athletes and lifts, and nothing syncs between phones.
++- **No roles.** Every account gets `role: "athlete"`, and there are no coach-only features yet.
++- **No athlete editing.** Athletes can't be edited or deleted. A wrong body weight stays wrong.
++- **Pounds only.** Weights are in pounds. Reps are limited to 1–20, and every exercise needs a weight above 0. That includes Pull-ups and Push-ups.
++
++### Known bugs in the Beta
++
++These are from the [Bug Check Report](../docs%20%26%20agile/Sprints/sprint%203/Bug%20Check%20Report%20-%20v0.5.0.md), which has the details and suggested fixes.
++
++| Bug | Where |
++|---|---|
++| The solid "Est. max" chart line is very faint, and invisible in the Daylight theme | `ui/ProgressChart.kt` uses `colorOnPrimary` |
++| The 1st-place badge number on the Leaderboard can't be seen | `ui/LeaderboardTab.kt`, the `first` badge colors |
++| After you rotate the phone or change the theme, the Log tab switches to the Leaderboard's exercise | `tab_log.xml` and `tab_leaderboard.xml` share the ID `exerciseSpinner` |
++| "Since …" never shows a drop in strength | `ui/ProgressChart.kt`, the gain calculation |
++| Typing a decimal comma ("102,5") leaves **Save** disabled with no message | `ui/Dialogs.kt` |
++| Rotating the phone closes any open dialog, and its typed text is lost | `ui/Dialogs.kt`, `ui/LogTab.kt` |
++
++---
++
++**Keeping this guide current:** update it in the same PR as any change to setup, commands, configuration, the code layout, or the known bugs.
+diff --git a/docs/user.html b/docs/user.html
+new file mode 100644
+index 0000000..2fc8e1b
+--- /dev/null
++++ b/docs/user.html
+@@ -0,0 +1,448 @@
++<!doctype html>
++<html lang="en">
++<head>
++  <meta charset="utf-8">
++  <meta name="viewport" content="width=device-width, initial-scale=1">
++  <title>MSU Lift Tracker User Guide</title>
++  <meta name="description" content="How to sign in, log lifts, track progress and use the leaderboard in the MSU Lift Tracker Android app (Beta).">
++  <link rel="preconnect" href="https://fonts.googleapis.com">
++  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
++  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
++  <style>
++    :root {
++      --paper: #ffffff;
++      --wash: #eef2f8;
++      --ink: #13213a;
++      --ink-soft: #4e5a70;
++      --navy: #1b3a6b;
++      --link: #1b3a6b;
++      --gold: #f2b535;
++      --on-gold: #231900;
++      --rule: #d5dce8;
++      --focus: #b07d00;
++      --display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
++      --body: "Poppins", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
++      color-scheme: light dark;
++    }
++    @media (prefers-color-scheme: dark) {
++      :root {
++        --paper: #0e2244;
++        --wash: #16305a;
++        --ink: #f2f4f8;
++        --ink-soft: #a9b7cf;
++        --navy: #f2f4f8;
++        --link: #f2b535;
++        --rule: #2b4673;
++        --focus: #f2b535;
++      }
++    }
++
++    * { box-sizing: border-box; }
++    html { scroll-padding-top: 1.5rem; }
++    @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
++    body {
++      margin: 0;
++      background: var(--paper);
++      color: var(--ink);
++      font: 400 1.0625rem/1.7 var(--body);
++      -webkit-text-size-adjust: 100%;
++    }
++    a { color: var(--link); text-underline-offset: 0.18em; text-decoration-thickness: 1px; }
++    a:hover { text-decoration-thickness: 2px; }
++    :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: 2px; }
++    .skip { position: absolute; left: -999px; top: 0.5rem; background: var(--gold); color: var(--on-gold); padding: 0.5rem 1rem; z-index: 10; }
++    .skip:focus { left: 1rem; }
++
++    /* Header */
++    .masthead { border-bottom: 1px solid var(--rule); }
++    .masthead .inner {
++      max-width: 72rem; margin: 0 auto; padding: 0.9rem 1rem;
++      display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
++    }
++    .mark { width: 2.25rem; height: 2.25rem; flex: none; color: var(--navy); }
++    .brand { font: 700 1.35rem/1 var(--display); letter-spacing: 0.01em; color: var(--ink); text-decoration: none; }
++    .brand span { color: var(--ink-soft); font-weight: 600; }
++    .beta { margin-left: auto; font-size: 0.8rem; font-weight: 500; padding: 0.15rem 0.6rem; border-radius: 999px; background: var(--gold); color: var(--on-gold); }
++    @media (max-width: 30rem) { .brand span { display: none; } }
++
++    /* Opening */
++    .opening { max-width: 72rem; margin: 0 auto; padding: 3rem 1rem 2.5rem; }
++    h1 {
++      font: 700 clamp(2.4rem, 6vw, 3.6rem)/1.02 var(--display);
++      margin: 0 0 0.75rem; color: var(--navy); letter-spacing: -0.005em;
++    }
++    .lede { max-width: 40rem; margin: 0; font-size: 1.125rem; color: var(--ink-soft); }
++    .set-figure { margin: 2.25rem 0 0; }
++    .set-line {
++      display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.15rem 0.6rem;
++      font-family: var(--display); font-weight: 700; color: var(--ink);
++      font-variant-numeric: tabular-nums lining-nums;
++    }
++    .set-line .n { font-size: clamp(3rem, 11vw, 5.5rem); line-height: 1; }
++    .set-line .u { font: 500 1rem/1 var(--body); color: var(--ink-soft); }
++    .set-line .op { font-size: clamp(2rem, 7vw, 3.5rem); line-height: 1; color: var(--ink-soft); font-weight: 600; }
++    .set-line .result {
++      display: inline-flex; align-items: baseline; gap: 0.5rem;
++      background: var(--gold); color: var(--on-gold);
++      padding: 0.35rem 0.9rem 0.45rem; border-radius: 0.6rem;
++    }
++    .set-line .result .u { color: var(--on-gold); }
++    .set-figure figcaption { margin-top: 1rem; max-width: 40rem; color: var(--ink-soft); font-size: 0.98rem; }
++
++    /* Layout */
++    .layout { max-width: 72rem; margin: 0 auto; padding: 0 1rem 4rem; display: grid; grid-template-columns: minmax(0, 1fr); gap: 2rem; }
++    @media (min-width: 60rem) {
++      .layout { grid-template-columns: 14rem minmax(0, 1fr); gap: 3.5rem; }
++      .toc { position: sticky; top: 1.5rem; align-self: start; max-height: calc(100vh - 3rem); overflow: auto; }
++      .toc details > summary { display: none; }
++    }
++    .toc { font-size: 0.95rem; border-top: 3px solid var(--navy); padding-top: 0.75rem; }
++    .toc summary { cursor: pointer; font-weight: 600; }
++    .toc ol { list-style: none; margin: 0.5rem 0 0; padding: 0; }
++    .toc li { margin: 0; }
++    .toc a { display: block; padding: 0.3rem 0; color: var(--ink-soft); text-decoration: none; }
++    .toc a:hover { color: var(--ink); text-decoration: underline; }
++    .toc-title { font-weight: 600; margin: 0; }
++
++    main { min-width: 0; max-width: 44rem; }
++    section { padding-top: 0.5rem; margin-bottom: 3rem; }
++    h2 {
++      font: 700 clamp(1.9rem, 4vw, 2.4rem)/1.1 var(--display);
++      color: var(--navy); margin: 0 0 0.9rem;
++      padding-bottom: 0.4rem; border-bottom: 1px solid var(--rule);
++    }
++    h3 { font: 600 1.15rem/1.35 var(--body); margin: 2rem 0 0.5rem; }
++    p { margin: 0 0 1rem; }
++    ul { padding-left: 1.25rem; margin: 0 0 1rem; }
++    li { margin-bottom: 0.35rem; }
++    strong { font-weight: 600; }
++    .ui { font-weight: 600; white-space: nowrap; }
++    q { quotes: "\201C" "\201D"; }
++    .msg { font-style: normal; }
++    .msg::before { content: "\201C"; } .msg::after { content: "\201D"; }
++
++    .icon { width: 1.15em; height: 1.15em; vertical-align: -0.2em; fill: currentColor; }
++
++    /* Steps: true sequences only */
++    ol.steps { list-style: none; counter-reset: step; padding: 0; margin: 0 0 1.25rem; }
++    ol.steps > li { counter-increment: step; position: relative; padding-left: 2.75rem; margin-bottom: 1rem; }
++    ol.steps > li::before {
++      content: counter(step);
++      position: absolute; left: 0; top: 0.1rem;
++      width: 1.9rem; height: 1.9rem; border-radius: 50%;
++      background: var(--gold); color: var(--on-gold);
++      font: 700 1.1rem/1.9rem var(--display); text-align: center;
++    }
++
++    .note {
++      background: var(--wash); border-left: 4px solid var(--gold);
++      padding: 0.9rem 1.1rem; margin: 0 0 1.25rem; border-radius: 0 0.4rem 0.4rem 0;
++    }
++    .note p:last-child, .note ul:last-child { margin-bottom: 0; }
++
++    /* Tables */
++    .table-wrap { overflow-x: auto; margin: 0 0 1.25rem; }
++    table { border-collapse: collapse; width: 100%; font-size: 0.97rem; }
++    th, td { text-align: left; vertical-align: top; padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--rule); }
++    thead th { font-weight: 600; border-bottom: 2px solid var(--navy); }
++    td.num, th.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
++
++    @media (max-width: 40rem) {
++      table.stack, table.stack tbody, table.stack tr, table.stack td { display: block; width: 100%; }
++      table.stack thead { position: absolute; left: -9999px; }
++      table.stack tr { border-bottom: 1px solid var(--rule); padding: 0.6rem 0; }
++      table.stack td { border: 0; padding: 0.15rem 0; }
++      table.stack td::before { content: attr(data-label); display: block; font-size: 0.85rem; font-weight: 600; color: var(--ink-soft); }
++    }
++
++    dl.terms dt { font-weight: 600; margin-top: 0.9rem; }
++    dl.terms dd { margin: 0.2rem 0 0; }
++
++    footer { border-top: 1px solid var(--rule); }
++    footer .inner { max-width: 72rem; margin: 0 auto; padding: 1.5rem 1rem 2.5rem; color: var(--ink-soft); font-size: 0.92rem; }
++  </style>
++</head>
++<body>
++  <a class="skip" href="#content">Skip to the guide</a>
++
++  <!-- Icons from the app (Material icons, Apache 2.0) -->
++  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
++    <symbol id="i-palette" viewBox="0 0 24 24"><path d="M12,3c-4.97,0 -9,4.03 -9,9s4.03,9 9,9c0.83,0 1.5,-0.67 1.5,-1.5 0,-0.39 -0.15,-0.74 -0.39,-1.01 -0.23,-0.26 -0.38,-0.61 -0.38,-0.99 0,-0.83 0.67,-1.5 1.5,-1.5L16,16c2.76,0 5,-2.24 5,-5 0,-4.42 -4.03,-8 -9,-8zM6.5,12c-0.83,0 -1.5,-0.67 -1.5,-1.5S5.67,9 6.5,9 8,9.67 8,10.5 7.33,12 6.5,12zM9.5,8C8.67,8 8,7.33 8,6.5S8.67,5 9.5,5s1.5,0.67 1.5,1.5S10.33,8 9.5,8zM14.5,8c-0.83,0 -1.5,-0.67 -1.5,-1.5S13.67,5 14.5,5s1.5,0.67 1.5,1.5S15.33,8 14.5,8zM17.5,12c-0.83,0 -1.5,-0.67 -1.5,-1.5S16.67,9 17.5,9s1.5,0.67 1.5,1.5 -0.67,1.5 -1.5,1.5z"/></symbol>
++    <symbol id="i-logout" viewBox="0 0 24 24"><path d="M17,7l-1.41,1.41L18.17,11H8v2h10.17l-2.58,2.58L17,17l5,-5zM4,5h8V3H4c-1.1,0 -2,0.9 -2,2v14c0,1.1 0.9,2 2,2h8v-2H4V5z"/></symbol>
++    <symbol id="i-person-add" viewBox="0 0 24 24"><path d="M15,12c2.21,0 4,-1.79 4,-4s-1.79,-4 -4,-4 -4,1.79 -4,4 1.79,4 4,4zM6,10V7H4v3H1v2h3v3h2v-3h3v-2H6zM15,14c-2.67,0 -8,1.34 -8,4v2h16v-2c0,-2.66 -5.33,-4 -8,-4z"/></symbol>
++    <symbol id="i-add" viewBox="0 0 24 24"><path d="M19,13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></symbol>
++    <symbol id="i-edit" viewBox="0 0 24 24"><path d="M3,17.25V21h3.75L17.81,9.94l-3.75,-3.75L3,17.25zM20.71,7.04c0.39,-0.39 0.39,-1.02 0,-1.41l-2.34,-2.34c-0.39,-0.39 -1.02,-0.39 -1.41,0l-1.83,1.83 3.75,3.75 1.83,-1.83z"/></symbol>
++    <symbol id="i-dumbbell" viewBox="0 0 24 24"><path d="M20.57,14.86L22,13.43 20.57,12 17,15.57 8.43,7 12,3.43 10.57,2 9.14,3.43 7.71,2 5.57,4.14 4.14,2.71 2.71,4.14l1.43,1.43L2,7.71l1.43,1.43L2,10.57 3.43,12 7,8.43 15.57,17 12,20.57 13.43,22l1.43,-1.43L16.29,22l2.14,-2.14 1.43,1.43 1.43,-1.43 -1.43,-1.43L22,16.29z"/></symbol>
++  </svg>
++
++  <header class="masthead">
++    <div class="inner">
++      <svg class="mark" viewBox="0 0 48 48" aria-hidden="true">
++        <circle cx="24" cy="24" r="22" fill="none" stroke="currentColor" stroke-width="2"/>
++        <use href="#i-dumbbell" x="12" y="12" width="24" height="24" fill="currentColor"/>
++      </svg>
++      <a class="brand" href="../index.html">MSU Lift Tracker <span>User Guide</span></a>
++      <span class="beta">Beta</span>
++    </div>
++  </header>
++
++  <div class="opening">
++    <h1>MSU Lift Tracker User Guide</h1>
++    <p class="lede">Log your team's lifts on an Android phone, follow each athlete's progress over time, and see who leads the roster in each lift.</p>
++    <figure class="set-figure">
++      <div class="set-line" role="img" aria-label="225 pounds for 5 reps is about a 263 pound estimated max">
++        <span class="n">225</span><span class="u">lb</span>
++        <span class="op">×</span>
++        <span class="n">5</span><span class="u">reps</span>
++        <span class="op">≈</span>
++        <span class="result"><span class="n">263</span><span class="u">lb estimated max</span></span>
++      </div>
++      <figcaption>Every set you log becomes an estimated one-rep max, so a heavy single and a set of five land on the same scale and can be compared.</figcaption>
++    </figure>
++  </div>
++
++  <div class="layout">
++    <nav class="toc" aria-label="On this page">
++      <details open>
++        <summary>On this page</summary>
++        <ol>
++          <li><a href="#before">Before you start</a></li>
++          <li><a href="#get-started">Get started</a></li>
++          <li><a href="#log">Log your first set</a></li>
++          <li><a href="#progress">Track progress</a></li>
++          <li><a href="#fix">Fix a mistake</a></li>
++          <li><a href="#history">History</a></li>
++          <li><a href="#leaderboard">Leaderboard</a></li>
++          <li><a href="#themes">Themes and signing out</a></li>
++          <li><a href="#trouble">If something goes wrong</a></li>
++          <li><a href="#limits">Limits of the Beta</a></li>
++          <li><a href="#terms">Terms</a></li>
++          <li><a href="#help">Get help</a></li>
++        </ol>
++      </details>
++    </nav>
++
++    <main id="content">
++
++      <section id="before" aria-labelledby="before-h">
++        <h2 id="before-h">Before you start</h2>
++        <ul>
++          <li><strong>A phone:</strong> any Android phone or tablet running Android 7.0 or newer. There's no iPhone version.</li>
++          <li><strong>An internet connection</strong> to sign in. Logging and viewing lifts work on what's already saved on the phone.</li>
++          <li><strong>The app itself.</strong> The Beta isn't on the Google Play Store. Ask the MSU Lift Tracker team to install it on your phone or to send you the install file. If you open an install file, Android may ask you to allow "Install unknown apps" for your browser or Files app. Developers can build it themselves with the <a href="https://github.com/423F26/project4/blob/main/docs/developer.md">Developer Guide</a>.</li>
++          <li><strong>Pounds:</strong> all weights in the app are in pounds (lb).</li>
++        </ul>
++      </section>
++
++      <section id="get-started" aria-labelledby="start-h">
++        <h2 id="start-h">Get started</h2>
++        <h3>Create an account</h3>
++        <ol class="steps">
++          <li>Open <strong>LIFTING APP</strong> from your home screen. The sign-in screen appears.</li>
++          <li>Tap <span class="ui">New here? Create an account</span>.</li>
++          <li>Enter your <strong>Name</strong>, <strong>Email</strong> and a <strong>Password</strong> of at least 6 characters.</li>
++          <li>Tap <span class="ui">Create account</span>. The app opens on the <strong>Log</strong> tab.</li>
++        </ol>
++        <p>Prefer your Google account? Tap <span class="ui">Continue with Google</span> on the sign-in screen and pick the account.</p>
++        <p>You stay signed in until you sign out, so next time the app opens straight to the Log tab.</p>
++
++        <h3>Forgot your password?</h3>
++        <ol class="steps">
++          <li>Type your email address on the sign-in screen.</li>
++          <li>Tap <span class="ui">Forgot password?</span> The app shows <q>Reset link sent to</q> followed by your address.</li>
++          <li>Open the email, set a new password, then sign in with it. If the email doesn't arrive, check your spam folder.</li>
++        </ol>
++
++        <h3>Find your way around</h3>
++        <p>The top of the screen has the app's logo and name, the theme button <svg class="icon" aria-hidden="true"><use href="#i-palette"/></svg> and the sign-out button <svg class="icon" aria-hidden="true"><use href="#i-logout"/></svg>. Below that are three tabs:</p>
++        <ul>
++          <li><strong>Log:</strong> pick an athlete and a lift, log sets, and see that athlete's progress chart.</li>
++          <li><strong>History:</strong> every set logged on this phone, newest first.</li>
++          <li><strong>Leaderboard:</strong> the athletes ranked for one lift.</li>
++        </ul>
++      </section>
++
++      <section id="log" aria-labelledby="log-h">
++        <h2 id="log-h">Log your first set</h2>
++        <p>Each set belongs to an athlete, so add your athletes first. You only do this once per athlete.</p>
++        <h3>Add an athlete</h3>
++        <ol class="steps">
++          <li>On the <strong>Log</strong> tab, tap <span class="ui"><svg class="icon" aria-hidden="true"><use href="#i-person-add"/></svg> Add athlete</span>.</li>
++          <li>Enter the athlete's <strong>Name</strong>, <strong>Position group</strong> (for example OL, WR or DB) and <strong>Body weight (lb)</strong>.</li>
++          <li>Tap <span class="ui">Add</span>. The button stays grey until all three are filled in and the body weight is above 0. The new athlete is now selected in the <strong>Athlete</strong> picker.</li>
++        </ol>
++        <div class="note">
++          <p>Double-check the body weight. It's used for pound-for-pound rankings, and in the Beta you can't change it later.</p>
++        </div>
++
++        <h3>Log a set</h3>
++        <ol class="steps">
++          <li>Choose the athlete in the <strong>Athlete</strong> picker. Then choose the lift in the exercise picker: Bench, Squat, Deadlift, Power Clean, Pull-ups or Push-ups.</li>
++          <li>Tap <span class="ui"><svg class="icon" aria-hidden="true"><use href="#i-add"/></svg> Log set</span> at the bottom right. The dialog title names the lift and athlete, for example <q>Log Bench for Jordan Smith</q>.</li>
++          <li>Enter the <strong>Weight (lb)</strong> and the <strong>Reps</strong> (1 to 20). Once both are valid, the dialog previews the estimate, for example <q>Estimated 1RM: 263 lb</q> for 225 × 5.</li>
++          <li>Tap <span class="ui">Save</span>. A line under the chart confirms it, for example <q>Saved Jordan Smith: Bench 225 × 5</q>.</li>
++        </ol>
++        <p>The chart, the History tab and the Leaderboard all update right away. The set is stamped with the current date and time.</p>
++        <p>If you tap <span class="ui">Log set</span> before adding any athletes, the app opens <strong>Add athlete</strong> first.</p>
++      </section>
++
++      <section id="progress" aria-labelledby="progress-h">
++        <h2 id="progress-h">Track progress</h2>
++        <p>The chart on the Log tab shows <strong>one athlete and one lift</strong>, with one point for each day they trained. The real dates are spaced out, so a gap between sessions looks like a gap.</p>
++        <div class="table-wrap">
++          <table class="stack">
++            <thead><tr><th scope="col">On the chart</th><th scope="col">What it means</th></tr></thead>
++            <tbody>
++              <tr><td data-label="On the chart">Solid line, <strong>Est. max</strong></td><td data-label="What it means">The best estimated max from that day's sets</td></tr>
++              <tr><td data-label="On the chart">Dashed line, <strong>Heaviest set</strong></td><td data-label="What it means">The heaviest weight lifted that day, at any number of reps</td></tr>
++              <tr><td data-label="On the chart"><strong>Best est. max</strong> (big number at the top)</td><td data-label="What it means">The highest estimated max in view, also marked by a dashed line labeled <q>Best</q></td></tr>
++              <tr><td data-label="On the chart"><strong>Since</strong> a date, with <strong>+ lb</strong></td><td data-label="What it means">How far the best day in view is above the first day in view</td></tr>
++              <tr><td data-label="On the chart"><strong>1 set</strong> or <strong>12 sets</strong></td><td data-label="What it means">Every set this athlete has logged for this lift, including sets outside the chosen range</td></tr>
++            </tbody>
++          </table>
++        </div>
++        <ul>
++          <li><strong>Change the time range</strong> with <span class="ui">1M</span>, <span class="ui">3M</span>, <span class="ui">6M</span>, <span class="ui">1Y</span> or <span class="ui">All</span> under the chart. If nothing falls in that range, the chart says so; tap <span class="ui">All</span> to see every set.</li>
++          <li><strong>Read a single day</strong> by tapping a point on the solid line. A label shows the date, the estimated max and the set it came from. If that day also had a heavier set, the label shows its weight too.</li>
++          <li><strong>Move along the timeline</strong> by dragging sideways. Pinch to zoom in on a stretch of time. Scrolling up and down still scrolls the page.</li>
++        </ul>
++      </section>
++
++      <section id="fix" aria-labelledby="fix-h">
++        <h2 id="fix-h">Fix a mistake</h2>
++        <p>Typed 525 instead of 225? You can change or remove a set from the chart.</p>
++        <ol class="steps">
++          <li>On the <strong>Log</strong> tab, tap the chart point for the day the set was logged.</li>
++          <li>Tap <span class="ui"><svg class="icon" aria-hidden="true"><use href="#i-edit"/></svg> Edit or delete set from …</span> under the range buttons.</li>
++          <li>If that day has more than one set, pick the one you want from the list.</li>
++          <li>Tap <span class="ui">Edit</span> to change the weight or reps and then <span class="ui">Save</span>. Or tap <span class="ui">Delete</span>, which removes the set right away.</li>
++          <li>A message at the bottom of the screen offers <span class="ui">Undo</span> for a few seconds. Tap it if you changed your mind.</li>
++        </ol>
++        <div class="note">
++          <p>Editing only changes the weight and reps. If a set went to the wrong athlete or lift, delete it and log it again under the right one.</p>
++        </div>
++      </section>
++
++      <section id="history" aria-labelledby="history-h">
++        <h2 id="history-h">History</h2>
++        <p>The <strong>History</strong> tab lists every set logged on this phone, newest first. Each row shows:</p>
++        <ul>
++          <li>the athlete</li>
++          <li>the lift, weight and reps</li>
++          <li>the date and time</li>
++          <li>the estimated max</li>
++        </ul>
++        <p>The list is read-only. To change a set, use the chart on the Log tab (see <a href="#fix">Fix a mistake</a>).</p>
++      </section>
++
++      <section id="leaderboard" aria-labelledby="lb-h">
++        <h2 id="lb-h">Leaderboard</h2>
++        <ol class="steps">
++          <li>Open the <strong>Leaderboard</strong> tab and choose a lift. This picker is separate from the one on the Log tab.</li>
++          <li>Choose how to rank:
++            <ul>
++              <li><span class="ui">Estimated max</span>: ranks athletes by their best estimated max for this lift.</li>
++              <li><span class="ui">Pound-for-pound</span>: divides that estimated max by the athlete's body weight, so lighter athletes can compete fairly.</li>
++            </ul>
++          </li>
++        </ol>
++        <p>Each athlete appears once, using their single best set. Athletes with no sets for that lift don't appear. Each row also shows the athlete's body weight (BW).</p>
++        <p><strong>Example: Bench.</strong> Two athletes trade places depending on the ranking.</p>
++        <div class="table-wrap">
++          <table class="stack">
++            <thead><tr><th scope="col">Athlete</th><th scope="col">Body weight</th><th scope="col">Best set</th><th scope="col" class="num">Estimated max</th><th scope="col" class="num">Pound-for-pound</th></tr></thead>
++            <tbody>
++              <tr><td data-label="Athlete">Alex Carter (OL)</td><td data-label="Body weight">285 lb</td><td data-label="Best set">315 × 3</td><td data-label="Estimated max" class="num"><strong>347 lb</strong> (1st)</td><td data-label="Pound-for-pound" class="num">1.22× BW (2nd)</td></tr>
++              <tr><td data-label="Athlete">Sam Lee (DB)</td><td data-label="Body weight">180 lb</td><td data-label="Best set">250 × 2</td><td data-label="Estimated max" class="num">267 lb (2nd)</td><td data-label="Pound-for-pound" class="num"><strong>1.48× BW</strong> (1st)</td></tr>
++            </tbody>
++          </table>
++        </div>
++      </section>
++
++      <section id="themes" aria-labelledby="themes-h">
++        <h2 id="themes-h">Themes and signing out</h2>
++        <p><strong>Change the colors:</strong> tap <svg class="icon" aria-hidden="true"><use href="#i-palette"/></svg> at the top of the screen. Choose <strong>Blue &amp; Gold</strong>, <strong>Graphite</strong> or <strong>Daylight</strong>. The app remembers your choice.</p>
++        <p><strong>Sign out:</strong> tap <svg class="icon" aria-hidden="true"><use href="#i-logout"/></svg> at the top right, then <span class="ui">Sign out</span>. You go back to the sign-in screen.</p>
++        <p>Signing out doesn't delete any athletes or lifts. They stay on the phone (see <a href="#limits">Limits of the Beta</a>).</p>
++      </section>
++
++      <section id="trouble" aria-labelledby="trouble-h">
++        <h2 id="trouble-h">If something goes wrong</h2>
++        <div class="table-wrap">
++          <table class="stack">
++            <thead><tr><th scope="col">What you see</th><th scope="col">What to do</th></tr></thead>
++            <tbody>
++              <tr><td data-label="What you see"><span class="msg">Email or password is incorrect.</span></td><td data-label="What to do">Check for typos, or use <span class="ui">Forgot password?</span></td></tr>
++              <tr><td data-label="What you see"><span class="msg">No account found with that email.</span></td><td data-label="What to do">Create an account, or sign in the way you signed up (for example with Google).</td></tr>
++              <tr><td data-label="What you see"><span class="msg">An account with that email already exists. Try signing in another way.</span></td><td data-label="What to do">You probably used <span class="ui">Continue with Google</span> before. Use it again.</td></tr>
++              <tr><td data-label="What you see"><span class="msg">Something went wrong. Check your connection.</span></td><td data-label="What to do">Connect to Wi-Fi or mobile data and try again.</td></tr>
++              <tr><td data-label="What you see"><span class="msg">Google sign-in failed</span> followed by a reason</td><td data-label="What to do">Make sure a Google account is added in the phone's Settings. If it still fails, sign in with email and password, and tell the team.</td></tr>
++              <tr><td data-label="What you see"><span class="ui">Save</span> or <span class="ui">Add</span> stays grey</td><td data-label="What to do">A field is empty or out of range. Weights and body weight must be above 0, and reps must be 1 to 20. Use a period for decimals (102.5), not a comma.</td></tr>
++              <tr><td data-label="What you see"><span class="msg">Enter 1–20 reps</span></td><td data-label="What to do">The app limits sets to 20 reps, because estimates above that aren't reliable.</td></tr>
++              <tr><td data-label="What you see">The chart says there are no sets in the last month (or other range)</td><td data-label="What to do">Tap <span class="ui">All</span> under the chart.</td></tr>
++              <tr><td data-label="What you see">A dialog closed when you turned the phone</td><td data-label="What to do">Turning the phone closes open dialogs and loses what you typed. Open it again, and keep the phone upright while you log.</td></tr>
++              <tr><td data-label="What you see">The lift on the Log tab changed by itself after you turned the phone or changed the theme</td><td data-label="What to do">This is a known Beta issue. Check the exercise picker before you tap <span class="ui">Log set</span>.</td></tr>
++              <tr><td data-label="What you see">A different account sees the same athletes</td><td data-label="What to do">This is expected in the Beta: the data belongs to the phone, not the account.</td></tr>
++              <tr><td data-label="What you see">Your athletes and lifts are gone</td><td data-label="What to do">Uninstalling the app, clearing its storage, or installing some Beta updates erases the data on the phone. There's no backup in the Beta.</td></tr>
++            </tbody>
++          </table>
++        </div>
++      </section>
++
++      <section id="limits" aria-labelledby="limits-h">
++        <h2 id="limits-h">Limits of the Beta</h2>
++        <p>These are known limits of the current version, not problems with your phone:</p>
++        <ul>
++          <li><strong>Data stays on one phone.</strong> Athletes and lifts are saved only on the phone where they were entered. They don't sync to other phones, and anyone who signs in on that phone sees the same roster. Uninstalling the app deletes them.</li>
++          <li><strong>Athletes can't be edited or removed.</strong> A name, position or body weight stays as it was first entered.</li>
++          <li><strong>Body weights are visible.</strong> Anyone using the phone can see every athlete's body weight on the Leaderboard.</li>
++          <li><strong>Body-weight exercises need added weight.</strong> Pull-ups and Push-ups need a weight above 0, and every set is limited to 20 reps.</li>
++          <li><strong>Pounds only.</strong> There's no kilogram setting.</li>
++          <li><strong>No coach features yet.</strong> Every account is treated the same.</li>
++          <li><strong>Display issues:</strong>
++            <ul>
++              <li>The solid <strong>Est. max</strong> line can be hard to see. Tap points to read their values.</li>
++              <li>The <q>1</q> on the first-place Leaderboard badge may not show, but the top row is always first.</li>
++              <li>The <strong>Since</strong> figure never shows a drop in strength.</li>
++            </ul>
++          </li>
++        </ul>
++      </section>
++
++      <section id="terms" aria-labelledby="terms-h">
++        <h2 id="terms-h">Terms</h2>
++        <dl class="terms">
++          <dt>Set</dt>
++          <dd>One effort at one weight for a number of reps, written weight × reps (for example 225 × 5).</dd>
++          <dt>Estimated max (e1RM)</dt>
++          <dd>An estimate of the most an athlete could lift once, from the Epley formula: weight × (1 + reps ÷ 30). A single rep counts as the weight itself.</dd>
++          <dt>Pound-for-pound</dt>
++          <dd>The estimated max divided by body weight. For example, 1.48× BW means 1.48 times the athlete's body weight.</dd>
++          <dt>Heaviest set</dt>
++          <dd>The most weight lifted on a day, whatever the number of reps.</dd>
++          <dt>Position group</dt>
++          <dd>The athlete's position on the team (for example OL or DB). It's shown next to their name.</dd>
++        </dl>
++      </section>
++
++      <section id="help" aria-labelledby="help-h">
++        <h2 id="help-h">Get help</h2>
++        <p>Tell the MSU Lift Tracker team, or <a href="https://github.com/423F26/project4/issues/new">report a problem on GitHub</a>. Include:</p>
++        <ul>
++          <li>what you were doing</li>
++          <li>what you expected</li>
++          <li>what happened instead</li>
++          <li>your phone model, and a screenshot if you can</li>
++        </ul>
++      </section>
++    </main>
++  </div>
++
++  <footer>
++    <div class="inner">
++      <p>MSU Lift Tracker, a capstone project by Gaige Bache and Garrett Miller. This guide covers the Beta (October 2026).</p>
++      <p><a href="../index.html">Project home</a> | <a href="https://github.com/423F26/project4">Source on GitHub</a></p>
++    </div>
++  </footer>
++</body>
++</html>
+diff --git a/index.html b/index.html
+new file mode 100644
+index 0000000..3a21f02
+--- /dev/null
++++ b/index.html
+@@ -0,0 +1,54 @@
++<!doctype html>
++<html lang="en">
++<head>
++  <meta charset="utf-8">
++  <meta name="viewport" content="width=device-width, initial-scale=1">
++  <title>MSU Lift Tracker</title>
++  <meta name="description" content="MSU Lift Tracker: an Android app for logging lifts and comparing strength across a team.">
++  <link rel="preconnect" href="https://fonts.googleapis.com">
++  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
++  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
++  <style>
++    :root {
++      --paper: #ffffff; --ink: #13213a; --ink-soft: #4e5a70; --navy: #1b3a6b;
++      --link: #1b3a6b; --gold: #f2b535; --on-gold: #231900; --rule: #d5dce8; --focus: #b07d00;
++      color-scheme: light dark;
++    }
++    @media (prefers-color-scheme: dark) {
++      :root { --paper: #0e2244; --ink: #f2f4f8; --ink-soft: #a9b7cf; --navy: #f2f4f8; --link: #f2b535; --rule: #2b4673; --focus: #f2b535; }
++    }
++    * { box-sizing: border-box; }
++    body { margin: 0; background: var(--paper); color: var(--ink); font: 400 1.0625rem/1.7 "Poppins", "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
++    main { max-width: 44rem; margin: 0 auto; padding: 4rem 1rem 3rem; }
++    .mark { width: 3.5rem; height: 3.5rem; color: var(--navy); }
++    h1 { font: 700 clamp(2.6rem, 8vw, 4rem)/1 "Barlow Condensed", "Arial Narrow", sans-serif; color: var(--navy); margin: 1rem 0 0.75rem; }
++    p { margin: 0 0 1rem; color: var(--ink-soft); max-width: 36rem; }
++    .primary {
++      display: inline-block; margin: 1rem 0 2rem; padding: 0.75rem 1.4rem; border-radius: 0.6rem;
++      background: var(--gold); color: var(--on-gold); font-weight: 600; font-size: 1.15rem; text-decoration: none;
++    }
++    .primary:hover { text-decoration: underline; }
++    ul { list-style: none; padding: 1rem 0 0; margin: 0; border-top: 1px solid var(--rule); }
++    li { margin: 0.4rem 0; }
++    a { color: var(--link); text-underline-offset: 0.18em; }
++    :focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
++    footer { max-width: 44rem; margin: 0 auto; padding: 0 1rem 2.5rem; font-size: 0.9rem; color: var(--ink-soft); }
++  </style>
++</head>
++<body>
++  <main>
++    <svg class="mark" viewBox="0 0 48 48" aria-hidden="true">
++      <circle cx="24" cy="24" r="22" fill="none" stroke="currentColor" stroke-width="2"/>
++      <path transform="translate(12 12)" fill="currentColor" d="M20.57,14.86L22,13.43 20.57,12 17,15.57 8.43,7 12,3.43 10.57,2 9.14,3.43 7.71,2 5.57,4.14 4.14,2.71 2.71,4.14l1.43,1.43L2,7.71l1.43,1.43L2,10.57 3.43,12 7,8.43 15.57,17 12,20.57 13.43,22l1.43,-1.43L16.29,22l2.14,-2.14 1.43,1.43 1.43,-1.43 -1.43,-1.43L22,16.29z"/>
++    </svg>
++    <h1>MSU Lift Tracker</h1>
++    <p>An Android app for MSU teams to log lifts, follow each athlete's estimated max over time, and rank teammates by raw strength or pound-for-pound.</p>
++    <a class="primary" href="docs/user.html">User Documentation</a>
++    <ul>
++      <li><a href="https://github.com/423F26/project4/blob/main/docs/developer.md">Developer Guide</a>: set up, build, test and contribute</li>
++      <li><a href="https://github.com/423F26/project4">Source code on GitHub</a></li>
++    </ul>
++  </main>
++  <footer>A capstone project by Gaige Bache and Garrett Miller. Beta, October 2026.</footer>
++</body>
++</html>
