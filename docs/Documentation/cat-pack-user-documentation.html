@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MSU Lift Tracker User Guide</title>
+  <meta name="description" content="How to sign in, log lifts, track progress and use the leaderboard in the MSU Lift Tracker Android app (Beta).">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --paper: #ffffff;
+      --wash: #eef2f8;
+      --ink: #13213a;
+      --ink-soft: #4e5a70;
+      --navy: #1b3a6b;
+      --link: #1b3a6b;
+      --gold: #f2b535;
+      --on-gold: #231900;
+      --rule: #d5dce8;
+      --focus: #b07d00;
+      --display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+      --body: "Poppins", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color-scheme: light dark;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --paper: #0e2244;
+        --wash: #16305a;
+        --ink: #f2f4f8;
+        --ink-soft: #a9b7cf;
+        --navy: #f2f4f8;
+        --link: #f2b535;
+        --rule: #2b4673;
+        --focus: #f2b535;
+      }
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-padding-top: 1.5rem; }
+    @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font: 400 1.0625rem/1.7 var(--body);
+      -webkit-text-size-adjust: 100%;
+    }
+    a { color: var(--link); text-underline-offset: 0.18em; text-decoration-thickness: 1px; }
+    a:hover { text-decoration-thickness: 2px; }
+    :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: 2px; }
+    .skip { position: absolute; left: -999px; top: 0.5rem; background: var(--gold); color: var(--on-gold); padding: 0.5rem 1rem; z-index: 10; }
+    .skip:focus { left: 1rem; }
+
+    /* Header */
+    .masthead { border-bottom: 1px solid var(--rule); }
+    .masthead .inner {
+      max-width: 72rem; margin: 0 auto; padding: 0.9rem 1rem;
+      display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
+    }
+    .mark { width: 2.25rem; height: 2.25rem; flex: none; color: var(--navy); }
+    .brand { font: 700 1.35rem/1 var(--display); letter-spacing: 0.01em; color: var(--ink); text-decoration: none; }
+    .brand span { color: var(--ink-soft); font-weight: 600; }
+    .beta { margin-left: auto; font-size: 0.8rem; font-weight: 500; padding: 0.15rem 0.6rem; border-radius: 999px; background: var(--gold); color: var(--on-gold); }
+    @media (max-width: 30rem) { .brand span { display: none; } }
+
+    /* Opening */
+    .opening { max-width: 72rem; margin: 0 auto; padding: 3rem 1rem 2.5rem; }
+    h1 {
+      font: 700 clamp(2.4rem, 6vw, 3.6rem)/1.02 var(--display);
+      margin: 0 0 0.75rem; color: var(--navy); letter-spacing: -0.005em;
+    }
+    .lede { max-width: 40rem; margin: 0; font-size: 1.125rem; color: var(--ink-soft); }
+    .set-figure { margin: 2.25rem 0 0; }
+    .set-line {
+      display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.15rem 0.6rem;
+      font-family: var(--display); font-weight: 700; color: var(--ink);
+      font-variant-numeric: tabular-nums lining-nums;
+    }
+    .set-line .n { font-size: clamp(3rem, 11vw, 5.5rem); line-height: 1; }
+    .set-line .u { font: 500 1rem/1 var(--body); color: var(--ink-soft); }
+    .set-line .op { font-size: clamp(2rem, 7vw, 3.5rem); line-height: 1; color: var(--ink-soft); font-weight: 600; }
+    .set-line .result {
+      display: inline-flex; align-items: baseline; gap: 0.5rem;
+      background: var(--gold); color: var(--on-gold);
+      padding: 0.35rem 0.9rem 0.45rem; border-radius: 0.6rem;
+    }
+    .set-line .result .u { color: var(--on-gold); }
+    .set-figure figcaption { margin-top: 1rem; max-width: 40rem; color: var(--ink-soft); font-size: 0.98rem; }
+
+    /* Layout */
+    .layout { max-width: 72rem; margin: 0 auto; padding: 0 1rem 4rem; display: grid; grid-template-columns: minmax(0, 1fr); gap: 2rem; }
+    @media (min-width: 60rem) {
+      .layout { grid-template-columns: 14rem minmax(0, 1fr); gap: 3.5rem; }
+      .toc { position: sticky; top: 1.5rem; align-self: start; max-height: calc(100vh - 3rem); overflow: auto; }
+      .toc details > summary { display: none; }
+    }
+    .toc { font-size: 0.95rem; border-top: 3px solid var(--navy); padding-top: 0.75rem; }
+    .toc summary { cursor: pointer; font-weight: 600; }
+    .toc ol { list-style: none; margin: 0.5rem 0 0; padding: 0; }
+    .toc li { margin: 0; }
+    .toc a { display: block; padding: 0.3rem 0; color: var(--ink-soft); text-decoration: none; }
+    .toc a:hover { color: var(--ink); text-decoration: underline; }
+    .toc-title { font-weight: 600; margin: 0; }
+
+    main { min-width: 0; max-width: 44rem; }
+    section { padding-top: 0.5rem; margin-bottom: 3rem; }
+    h2 {
+      font: 700 clamp(1.9rem, 4vw, 2.4rem)/1.1 var(--display);
+      color: var(--navy); margin: 0 0 0.9rem;
+      padding-bottom: 0.4rem; border-bottom: 1px solid var(--rule);
+    }
+    h3 { font: 600 1.15rem/1.35 var(--body); margin: 2rem 0 0.5rem; }
+    p { margin: 0 0 1rem; }
+    ul { padding-left: 1.25rem; margin: 0 0 1rem; }
+    li { margin-bottom: 0.35rem; }
+    strong { font-weight: 600; }
+    .ui { font-weight: 600; white-space: nowrap; }
+    q { quotes: "\201C" "\201D"; }
+    .msg { font-style: normal; }
+    .msg::before { content: "\201C"; } .msg::after { content: "\201D"; }
+
+    .icon { width: 1.15em; height: 1.15em; vertical-align: -0.2em; fill: currentColor; }
+
+    /* Steps: true sequences only */
+    ol.steps { list-style: none; counter-reset: step; padding: 0; margin: 0 0 1.25rem; }
+    ol.steps > li { counter-increment: step; position: relative; padding-left: 2.75rem; margin-bottom: 1rem; }
+    ol.steps > li::before {
+      content: counter(step);
+      position: absolute; left: 0; top: 0.1rem;
+      width: 1.9rem; height: 1.9rem; border-radius: 50%;
+      background: var(--gold); color: var(--on-gold);
+      font: 700 1.1rem/1.9rem var(--display); text-align: center;
+    }
+
+    .note {
+      background: var(--wash); border-left: 4px solid var(--gold);
+      padding: 0.9rem 1.1rem; margin: 0 0 1.25rem; border-radius: 0 0.4rem 0.4rem 0;
+    }
+    .note p:last-child, .note ul:last-child { margin-bottom: 0; }
+
+    /* Tables */
+    .table-wrap { overflow-x: auto; margin: 0 0 1.25rem; }
+    table { border-collapse: collapse; width: 100%; font-size: 0.97rem; }
+    th, td { text-align: left; vertical-align: top; padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--rule); }
+    thead th { font-weight: 600; border-bottom: 2px solid var(--navy); }
+    td.num, th.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+    @media (max-width: 40rem) {
+      table.stack, table.stack tbody, table.stack tr, table.stack td { display: block; width: 100%; }
+      table.stack thead { position: absolute; left: -9999px; }
+      table.stack tr { border-bottom: 1px solid var(--rule); padding: 0.6rem 0; }
+      table.stack td { border: 0; padding: 0.15rem 0; }
+      table.stack td::before { content: attr(data-label); display: block; font-size: 0.85rem; font-weight: 600; color: var(--ink-soft); }
+    }
+
+    dl.terms dt { font-weight: 600; margin-top: 0.9rem; }
+    dl.terms dd { margin: 0.2rem 0 0; }
+
+    footer { border-top: 1px solid var(--rule); }
+    footer .inner { max-width: 72rem; margin: 0 auto; padding: 1.5rem 1rem 2.5rem; color: var(--ink-soft); font-size: 0.92rem; }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#content">Skip to the guide</a>
+
+  <!-- Icons from the app (Material icons, Apache 2.0) -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-palette" viewBox="0 0 24 24"><path d="M12,3c-4.97,0 -9,4.03 -9,9s4.03,9 9,9c0.83,0 1.5,-0.67 1.5,-1.5 0,-0.39 -0.15,-0.74 -0.39,-1.01 -0.23,-0.26 -0.38,-0.61 -0.38,-0.99 0,-0.83 0.67,-1.5 1.5,-1.5L16,16c2.76,0 5,-2.24 5,-5 0,-4.42 -4.03,-8 -9,-8zM6.5,12c-0.83,0 -1.5,-0.67 -1.5,-1.5S5.67,9 6.5,9 8,9.67 8,10.5 7.33,12 6.5,12zM9.5,8C8.67,8 8,7.33 8,6.5S8.67,5 9.5,5s1.5,0.67 1.5,1.5S10.33,8 9.5,8zM14.5,8c-0.83,0 -1.5,-0.67 -1.5,-1.5S13.67,5 14.5,5s1.5,0.67 1.5,1.5S15.33,8 14.5,8zM17.5,12c-0.83,0 -1.5,-0.67 -1.5,-1.5S16.67,9 17.5,9s1.5,0.67 1.5,1.5 -0.67,1.5 -1.5,1.5z"/></symbol>
+    <symbol id="i-logout" viewBox="0 0 24 24"><path d="M17,7l-1.41,1.41L18.17,11H8v2h10.17l-2.58,2.58L17,17l5,-5zM4,5h8V3H4c-1.1,0 -2,0.9 -2,2v14c0,1.1 0.9,2 2,2h8v-2H4V5z"/></symbol>
+    <symbol id="i-person-add" viewBox="0 0 24 24"><path d="M15,12c2.21,0 4,-1.79 4,-4s-1.79,-4 -4,-4 -4,1.79 -4,4 1.79,4 4,4zM6,10V7H4v3H1v2h3v3h2v-3h3v-2H6zM15,14c-2.67,0 -8,1.34 -8,4v2h16v-2c0,-2.66 -5.33,-4 -8,-4z"/></symbol>
+    <symbol id="i-add" viewBox="0 0 24 24"><path d="M19,13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></symbol>
+    <symbol id="i-edit" viewBox="0 0 24 24"><path d="M3,17.25V21h3.75L17.81,9.94l-3.75,-3.75L3,17.25zM20.71,7.04c0.39,-0.39 0.39,-1.02 0,-1.41l-2.34,-2.34c-0.39,-0.39 -1.02,-0.39 -1.41,0l-1.83,1.83 3.75,3.75 1.83,-1.83z"/></symbol>
+    <symbol id="i-dumbbell" viewBox="0 0 24 24"><path d="M20.57,14.86L22,13.43 20.57,12 17,15.57 8.43,7 12,3.43 10.57,2 9.14,3.43 7.71,2 5.57,4.14 4.14,2.71 2.71,4.14l1.43,1.43L2,7.71l1.43,1.43L2,10.57 3.43,12 7,8.43 15.57,17 12,20.57 13.43,22l1.43,-1.43L16.29,22l2.14,-2.14 1.43,1.43 1.43,-1.43 -1.43,-1.43L22,16.29z"/></symbol>
+  </svg>
+
+  <header class="masthead">
+    <div class="inner">
+      <svg class="mark" viewBox="0 0 48 48" aria-hidden="true">
+        <circle cx="24" cy="24" r="22" fill="none" stroke="currentColor" stroke-width="2"/>
+        <use href="#i-dumbbell" x="12" y="12" width="24" height="24" fill="currentColor"/>
+      </svg>
+      <a class="brand" href="../index.html">MSU Lift Tracker <span>User Guide</span></a>
+      <span class="beta">Beta</span>
+    </div>
+  </header>
+
+  <div class="opening">
+    <h1>MSU Lift Tracker User Guide</h1>
+    <p class="lede">Log your team's lifts on an Android phone, follow each athlete's progress over time, and see who leads the roster in each lift.</p>
+    <figure class="set-figure">
+      <div class="set-line" role="img" aria-label="225 pounds for 5 reps is about a 263 pound estimated max">
+        <span class="n">225</span><span class="u">lb</span>
+        <span class="op">×</span>
+        <span class="n">5</span><span class="u">reps</span>
+        <span class="op">≈</span>
+        <span class="result"><span class="n">263</span><span class="u">lb estimated max</span></span>
+      </div>
+      <figcaption>Every set you log becomes an estimated one-rep max, so a heavy single and a set of five land on the same scale and can be compared.</figcaption>
+    </figure>
+  </div>
+
+  <div class="layout">
+    <nav class="toc" aria-label="On this page">
+      <details open>
+        <summary>On this page</summary>
+        <ol>
+          <li><a href="#before">Before you start</a></li>
+          <li><a href="#get-started">Get started</a></li>
+          <li><a href="#log">Log your first set</a></li>
+          <li><a href="#progress">Track progress</a></li>
+          <li><a href="#fix">Fix a mistake</a></li>
+          <li><a href="#history">History</a></li>
+          <li><a href="#leaderboard">Leaderboard</a></li>
+          <li><a href="#themes">Themes and signing out</a></li>
+          <li><a href="#trouble">If something goes wrong</a></li>
+          <li><a href="#limits">Limits of the Beta</a></li>
+          <li><a href="#terms">Terms</a></li>
+          <li><a href="#help">Get help</a></li>
+        </ol>
+      </details>
+    </nav>
+
+    <main id="content">
+
+      <section id="before" aria-labelledby="before-h">
+        <h2 id="before-h">Before you start</h2>
+        <ul>
+          <li><strong>A phone:</strong> any Android phone or tablet running Android 7.0 or newer. There's no iPhone version.</li>
+          <li><strong>An internet connection</strong> to sign in. Logging and viewing lifts work on what's already saved on the phone.</li>
+          <li><strong>The app itself.</strong> The Beta isn't on the Google Play Store. Ask the MSU Lift Tracker team to install it on your phone or to send you the install file. If you open an install file, Android may ask you to allow "Install unknown apps" for your browser or Files app. Developers can build it themselves with the <a href="https://github.com/423F26/project4/blob/main/docs/developer.md">Developer Guide</a>.</li>
+          <li><strong>Pounds:</strong> all weights in the app are in pounds (lb).</li>
+        </ul>
+      </section>
+
+      <section id="get-started" aria-labelledby="start-h">
+        <h2 id="start-h">Get started</h2>
+        <h3>Create an account</h3>
+        <ol class="steps">
+          <li>Open <strong>LIFTING APP</strong> from your home screen. The sign-in screen appears.</li>
+          <li>Tap <span class="ui">New here? Create an account</span>.</li>
+          <li>Enter your <strong>Name</strong>, <strong>Email</strong> and a <strong>Password</strong> of at least 6 characters.</li>
+          <li>Tap <span class="ui">Create account</span>. The app opens on the <strong>Log</strong> tab.</li>
+        </ol>
+        <p>Prefer your Google account? Tap <span class="ui">Continue with Google</span> on the sign-in screen and pick the account.</p>
+        <p>You stay signed in until you sign out, so next time the app opens straight to the Log tab.</p>
+
+        <h3>Forgot your password?</h3>
+        <ol class="steps">
+          <li>Type your email address on the sign-in screen.</li>
+          <li>Tap <span class="ui">Forgot password?</span> The app shows <q>Reset link sent to</q> followed by your address.</li>
+          <li>Open the email, set a new password, then sign in with it. If the email doesn't arrive, check your spam folder.</li>
+        </ol>
+
+        <h3>Find your way around</h3>
+        <p>The top of the screen has the app's logo and name, the theme button <svg class="icon" aria-hidden="true"><use href="#i-palette"/></svg> and the sign-out button <svg class="icon" aria-hidden="true"><use href="#i-logout"/></svg>. Below that are three tabs:</p>
+        <ul>
+          <li><strong>Log:</strong> pick an athlete and a lift, log sets, and see that athlete's progress chart.</li>
+          <li><strong>History:</strong> every set logged on this phone, newest first.</li>
+          <li><strong>Leaderboard:</strong> the athletes ranked for one lift.</li>
+        </ul>
+      </section>
+
+      <section id="log" aria-labelledby="log-h">
+        <h2 id="log-h">Log your first set</h2>
+        <p>Each set belongs to an athlete, so add your athletes first. You only do this once per athlete.</p>
+        <h3>Add an athlete</h3>
+        <ol class="steps">
+          <li>On the <strong>Log</strong> tab, tap <span class="ui"><svg class="icon" aria-hidden="true"><use href="#i-person-add"/></svg> Add athlete</span>.</li>
+          <li>Enter the athlete's <strong>Name</strong>, <strong>Position group</strong> (for example OL, WR or DB) and <strong>Body weight (lb)</strong>.</li>
+          <li>Tap <span class="ui">Add</span>. The button stays grey until all three are filled in and the body weight is above 0. The new athlete is now selected in the <strong>Athlete</strong> picker.</li>
+        </ol>
+        <div class="note">
+          <p>Double-check the body weight. It's used for pound-for-pound rankings, and in the Beta you can't change it later.</p>
+        </div>
+
+        <h3>Log a set</h3>
+        <ol class="steps">
+          <li>Choose the athlete in the <strong>Athlete</strong> picker. Then choose the lift in the exercise picker: Bench, Squat, Deadlift, Power Clean, Pull-ups or Push-ups.</li>
+          <li>Tap <span class="ui"><svg class="icon" aria-hidden="true"><use href="#i-add"/></svg> Log set</span> at the bottom right. The dialog title names the lift and athlete, for example <q>Log Bench for Jordan Smith</q>.</li>
+          <li>Enter the <strong>Weight (lb)</strong> and the <strong>Reps</strong> (1 to 20). Once both are valid, the dialog previews the estimate, for example <q>Estimated 1RM: 263 lb</q> for 225 × 5.</li>
+          <li>Tap <span class="ui">Save</span>. A line under the chart confirms it, for example <q>Saved Jordan Smith: Bench 225 × 5</q>.</li>
+        </ol>
+        <p>The chart, the History tab and the Leaderboard all update right away. The set is stamped with the current date and time.</p>
+        <p>If you tap <span class="ui">Log set</span> before adding any athletes, the app opens <strong>Add athlete</strong> first.</p>
+      </section>
+
+      <section id="progress" aria-labelledby="progress-h">
+        <h2 id="progress-h">Track progress</h2>
+        <p>The chart on the Log tab shows <strong>one athlete and one lift</strong>, with one point for each day they trained. The real dates are spaced out, so a gap between sessions looks like a gap.</p>
+        <div class="table-wrap">
+          <table class="stack">
+            <thead><tr><th scope="col">On the chart</th><th scope="col">What it means</th></tr></thead>
+            <tbody>
+              <tr><td data-label="On the chart">Solid line, <strong>Est. max</strong></td><td data-label="What it means">The best estimated max from that day's sets</td></tr>
+              <tr><td data-label="On the chart">Dashed line, <strong>Heaviest set</strong></td><td data-label="What it means">The heaviest weight lifted that day, at any number of reps</td></tr>
+              <tr><td data-label="On the chart"><strong>Best est. max</strong> (big number at the top)</td><td data-label="What it means">The highest estimated max in view, also marked by a dashed line labeled <q>Best</q></td></tr>
+              <tr><td data-label="On the chart"><strong>Since</strong> a date, with <strong>+ lb</strong></td><td data-label="What it means">How far the best day in view is above the first day in view</td></tr>
+              <tr><td data-label="On the chart"><strong>1 set</strong> or <strong>12 sets</strong></td><td data-label="What it means">Every set this athlete has logged for this lift, including sets outside the chosen range</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <ul>
+          <li><strong>Change the time range</strong> with <span class="ui">1M</span>, <span class="ui">3M</span>, <span class="ui">6M</span>, <span class="ui">1Y</span> or <span class="ui">All</span> under the chart. If nothing falls in that range, the chart says so; tap <span class="ui">All</span> to see every set.</li>
+          <li><strong>Read a single day</strong> by tapping a point on the solid line. A label shows the date, the estimated max and the set it came from. If that day also had a heavier set, the label shows its weight too.</li>
+          <li><strong>Move along the timeline</strong> by dragging sideways. Pinch to zoom in on a stretch of time. Scrolling up and down still scrolls the page.</li>
+        </ul>
+      </section>
+
+      <section id="fix" aria-labelledby="fix-h">
+        <h2 id="fix-h">Fix a mistake</h2>
+        <p>Typed 525 instead of 225? You can change or remove a set from the chart.</p>
+        <ol class="steps">
+          <li>On the <strong>Log</strong> tab, tap the chart point for the day the set was logged.</li>
+          <li>Tap <span class="ui"><svg class="icon" aria-hidden="true"><use href="#i-edit"/></svg> Edit or delete set from …</span> under the range buttons.</li>
+          <li>If that day has more than one set, pick the one you want from the list.</li>
+          <li>Tap <span class="ui">Edit</span> to change the weight or reps and then <span class="ui">Save</span>. Or tap <span class="ui">Delete</span>, which removes the set right away.</li>
+          <li>A message at the bottom of the screen offers <span class="ui">Undo</span> for a few seconds. Tap it if you changed your mind.</li>
+        </ol>
+        <div class="note">
+          <p>Editing only changes the weight and reps. If a set went to the wrong athlete or lift, delete it and log it again under the right one.</p>
+        </div>
+      </section>
+
+      <section id="history" aria-labelledby="history-h">
+        <h2 id="history-h">History</h2>
+        <p>The <strong>History</strong> tab lists every set logged on this phone, newest first. Each row shows:</p>
+        <ul>
+          <li>the athlete</li>
+          <li>the lift, weight and reps</li>
+          <li>the date and time</li>
+          <li>the estimated max</li>
+        </ul>
+        <p>The list is read-only. To change a set, use the chart on the Log tab (see <a href="#fix">Fix a mistake</a>).</p>
+      </section>
+
+      <section id="leaderboard" aria-labelledby="lb-h">
+        <h2 id="lb-h">Leaderboard</h2>
+        <ol class="steps">
+          <li>Open the <strong>Leaderboard</strong> tab and choose a lift. This picker is separate from the one on the Log tab.</li>
+          <li>Choose how to rank:
+            <ul>
+              <li><span class="ui">Estimated max</span>: ranks athletes by their best estimated max for this lift.</li>
+              <li><span class="ui">Pound-for-pound</span>: divides that estimated max by the athlete's body weight, so lighter athletes can compete fairly.</li>
+            </ul>
+          </li>
+        </ol>
+        <p>Each athlete appears once, using their single best set. Athletes with no sets for that lift don't appear. Each row also shows the athlete's body weight (BW).</p>
+        <p><strong>Example: Bench.</strong> Two athletes trade places depending on the ranking.</p>
+        <div class="table-wrap">
+          <table class="stack">
+            <thead><tr><th scope="col">Athlete</th><th scope="col">Body weight</th><th scope="col">Best set</th><th scope="col" class="num">Estimated max</th><th scope="col" class="num">Pound-for-pound</th></tr></thead>
+            <tbody>
+              <tr><td data-label="Athlete">Alex Carter (OL)</td><td data-label="Body weight">285 lb</td><td data-label="Best set">315 × 3</td><td data-label="Estimated max" class="num"><strong>347 lb</strong> (1st)</td><td data-label="Pound-for-pound" class="num">1.22× BW (2nd)</td></tr>
+              <tr><td data-label="Athlete">Sam Lee (DB)</td><td data-label="Body weight">180 lb</td><td data-label="Best set">250 × 2</td><td data-label="Estimated max" class="num">267 lb (2nd)</td><td data-label="Pound-for-pound" class="num"><strong>1.48× BW</strong> (1st)</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="themes" aria-labelledby="themes-h">
+        <h2 id="themes-h">Themes and signing out</h2>
+        <p><strong>Change the colors:</strong> tap <svg class="icon" aria-hidden="true"><use href="#i-palette"/></svg> at the top of the screen. Choose <strong>Blue &amp; Gold</strong>, <strong>Graphite</strong> or <strong>Daylight</strong>. The app remembers your choice.</p>
+        <p><strong>Sign out:</strong> tap <svg class="icon" aria-hidden="true"><use href="#i-logout"/></svg> at the top right, then <span class="ui">Sign out</span>. You go back to the sign-in screen.</p>
+        <p>Signing out doesn't delete any athletes or lifts. They stay on the phone (see <a href="#limits">Limits of the Beta</a>).</p>
+      </section>
+
+      <section id="trouble" aria-labelledby="trouble-h">
+        <h2 id="trouble-h">If something goes wrong</h2>
+        <div class="table-wrap">
+          <table class="stack">
+            <thead><tr><th scope="col">What you see</th><th scope="col">What to do</th></tr></thead>
+            <tbody>
+              <tr><td data-label="What you see"><span class="msg">Email or password is incorrect.</span></td><td data-label="What to do">Check for typos, or use <span class="ui">Forgot password?</span></td></tr>
+              <tr><td data-label="What you see"><span class="msg">No account found with that email.</span></td><td data-label="What to do">Create an account, or sign in the way you signed up (for example with Google).</td></tr>
+              <tr><td data-label="What you see"><span class="msg">An account with that email already exists. Try signing in another way.</span></td><td data-label="What to do">You probably used <span class="ui">Continue with Google</span> before. Use it again.</td></tr>
+              <tr><td data-label="What you see"><span class="msg">Something went wrong. Check your connection.</span></td><td data-label="What to do">Connect to Wi-Fi or mobile data and try again.</td></tr>
+              <tr><td data-label="What you see"><span class="msg">Google sign-in failed</span> followed by a reason</td><td data-label="What to do">Make sure a Google account is added in the phone's Settings. If it still fails, sign in with email and password, and tell the team.</td></tr>
+              <tr><td data-label="What you see"><span class="ui">Save</span> or <span class="ui">Add</span> stays grey</td><td data-label="What to do">A field is empty or out of range. Weights and body weight must be above 0, and reps must be 1 to 20. Use a period for decimals (102.5), not a comma.</td></tr>
+              <tr><td data-label="What you see"><span class="msg">Enter 1–20 reps</span></td><td data-label="What to do">The app limits sets to 20 reps, because estimates above that aren't reliable.</td></tr>
+              <tr><td data-label="What you see">The chart says there are no sets in the last month (or other range)</td><td data-label="What to do">Tap <span class="ui">All</span> under the chart.</td></tr>
+              <tr><td data-label="What you see">A dialog closed when you turned the phone</td><td data-label="What to do">Turning the phone closes open dialogs and loses what you typed. Open it again, and keep the phone upright while you log.</td></tr>
+              <tr><td data-label="What you see">The lift on the Log tab changed by itself after you turned the phone or changed the theme</td><td data-label="What to do">This is a known Beta issue. Check the exercise picker before you tap <span class="ui">Log set</span>.</td></tr>
+              <tr><td data-label="What you see">A different account sees the same athletes</td><td data-label="What to do">This is expected in the Beta: the data belongs to the phone, not the account.</td></tr>
+              <tr><td data-label="What you see">Your athletes and lifts are gone</td><td data-label="What to do">Uninstalling the app, clearing its storage, or installing some Beta updates erases the data on the phone. There's no backup in the Beta.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="limits" aria-labelledby="limits-h">
+        <h2 id="limits-h">Limits of the Beta</h2>
+        <p>These are known limits of the current version, not problems with your phone:</p>
+        <ul>
+          <li><strong>Data stays on one phone.</strong> Athletes and lifts are saved only on the phone where they were entered. They don't sync to other phones, and anyone who signs in on that phone sees the same roster. Uninstalling the app deletes them.</li>
+          <li><strong>Athletes can't be edited or removed.</strong> A name, position or body weight stays as it was first entered.</li>
+          <li><strong>Body weights are visible.</strong> Anyone using the phone can see every athlete's body weight on the Leaderboard.</li>
+          <li><strong>Body-weight exercises need added weight.</strong> Pull-ups and Push-ups need a weight above 0, and every set is limited to 20 reps.</li>
+          <li><strong>Pounds only.</strong> There's no kilogram setting.</li>
+          <li><strong>No coach features yet.</strong> Every account is treated the same.</li>
+          <li><strong>Display issues:</strong>
+            <ul>
+              <li>The solid <strong>Est. max</strong> line can be hard to see. Tap points to read their values.</li>
+              <li>The <q>1</q> on the first-place Leaderboard badge may not show, but the top row is always first.</li>
+              <li>The <strong>Since</strong> figure never shows a drop in strength.</li>
+            </ul>
+          </li>
+        </ul>
+      </section>
+
+      <section id="terms" aria-labelledby="terms-h">
+        <h2 id="terms-h">Terms</h2>
+        <dl class="terms">
+          <dt>Set</dt>
+          <dd>One effort at one weight for a number of reps, written weight × reps (for example 225 × 5).</dd>
+          <dt>Estimated max (e1RM)</dt>
+          <dd>An estimate of the most an athlete could lift once, from the Epley formula: weight × (1 + reps ÷ 30). A single rep counts as the weight itself.</dd>
+          <dt>Pound-for-pound</dt>
+          <dd>The estimated max divided by body weight. For example, 1.48× BW means 1.48 times the athlete's body weight.</dd>
+          <dt>Heaviest set</dt>
+          <dd>The most weight lifted on a day, whatever the number of reps.</dd>
+          <dt>Position group</dt>
+          <dd>The athlete's position on the team (for example OL or DB). It's shown next to their name.</dd>
+        </dl>
+      </section>
+
+      <section id="help" aria-labelledby="help-h">
+        <h2 id="help-h">Get help</h2>
+        <p>Tell the MSU Lift Tracker team, or <a href="https://github.com/423F26/project4/issues/new">report a problem on GitHub</a>. Include:</p>
+        <ul>
+          <li>what you were doing</li>
+          <li>what you expected</li>
+          <li>what happened instead</li>
+          <li>your phone model, and a screenshot if you can</li>
+        </ul>
+      </section>
+    </main>
+  </div>
+
+  <footer>
+    <div class="inner">
+      <p>MSU Lift Tracker, a capstone project by Gaige Bache and Garrett Miller. This guide covers the Beta (October 2026).</p>
+      <p><a href="../index.html">Project home</a> | <a href="https://github.com/423F26/project4">Source on GitHub</a></p>
+    </div>
+  </footer>
+</body>
+</html>
