@@ -23,6 +23,10 @@ interface LiftDao {
     @Query("SELECT * FROM athletes ORDER BY name COLLATE NOCASE")
     fun getAthletes(): Flow<List<Athlete>>
 
+    /** Matches on the primary key (id). Used to save an athlete's phone and email from the Send dialog. */
+    @Update
+    suspend fun updateAthlete(athlete: Athlete)
+
     // --- Sets ---
     @Insert
     suspend fun insertLift(entry: LiftEntry)
@@ -37,10 +41,6 @@ interface LiftDao {
     /** One athlete's sets for one exercise, oldest first. Feeds the line chart (same order as project4). */
     @Query("SELECT * FROM lift_entries WHERE athleteId = :athleteId AND exercise = :exercise ORDER BY date ASC")
     fun getProgress(athleteId: Long, exercise: String): Flow<List<LiftEntry>>
-
-    @Transaction
-    @Query("SELECT * FROM lift_entries ORDER BY date DESC")
-    fun getHistory(): Flow<List<LiftWithAthlete>>
 
     @Transaction
     @Query("SELECT * FROM lift_entries WHERE exercise = :exercise")

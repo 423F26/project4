@@ -13,5 +13,7 @@ data class Athlete(
     val id: Long = 0,
     val name: String,
     val positionGroup: String,   // e.g. "OL", "WR", "DB" — used later for position-group benchmarking
-    val bodyWeightLb: Float      // needed for pound-for-pound rankings
+    val bodyWeightLb: Float,     // needed for pound-for-pound rankings
+    val phone: String? = null,   // optional; fills in the "To" field when a workout is texted
+    val email: String? = null    // optional; fills in the "To" field when a workout is emailed
 )

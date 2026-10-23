@@ -6,15 +6,24 @@ import kotlinx.coroutines.flow.Flow
 class LiftRepository(private val dao: LiftDao) {
 
     val athletes: Flow<List<Athlete>> = dao.getAthletes()
-    val history: Flow<List<LiftWithAthlete>> = dao.getHistory()
 
     fun progressFor(athleteId: Long, exercise: String): Flow<List<LiftEntry>> =
         dao.getProgress(athleteId, exercise)
 
     fun liftsFor(exercise: String): Flow<List<LiftWithAthlete>> = dao.getLiftsForExercise(exercise)
 
-    suspend fun addAthlete(name: String, positionGroup: String, bodyWeightLb: Float): Long =
-        dao.insertAthlete(Athlete(name = name, positionGroup = positionGroup, bodyWeightLb = bodyWeightLb))
+    suspend fun addAthlete(
+        name: String,
+        positionGroup: String,
+        bodyWeightLb: Float,
+        phone: String? = null,
+        email: String? = null
+    ): Long =
+        dao.insertAthlete(
+            Athlete(name = name, positionGroup = positionGroup, bodyWeightLb = bodyWeightLb, phone = phone, email = email)
+        )
+
+    suspend fun updateAthlete(athlete: Athlete) = dao.updateAthlete(athlete)
 
     suspend fun insert(entry: LiftEntry) = dao.insertLift(entry)
 

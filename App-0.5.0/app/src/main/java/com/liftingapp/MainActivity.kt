@@ -11,16 +11,16 @@ import androidx.lifecycle.lifecycleScope
 import com.example.liftingapp.data.AuthRepository
 import com.example.liftingapp.databinding.ActivityMainBinding
 import com.example.liftingapp.ui.AppTheme
-import com.example.liftingapp.ui.HistoryTab
 import com.example.liftingapp.ui.LeaderboardTab
 import com.example.liftingapp.ui.LogTab
+import com.example.liftingapp.ui.WorkoutsTab
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.tabs.TabLayout
 import kotlinx.coroutines.launch
 
 /**
  * Views + ViewBinding, like project4. The Log tab is Garrett's spinner/chart/FAB screen;
- * History and Leaderboard are separate tabs. Each tab's wiring lives in ui/ to keep this file short.
+ * Workouts and Leaderboard are separate tabs. Each tab's wiring lives in ui/ to keep this file short.
  */
 class MainActivity : AppCompatActivity() {
 
@@ -44,7 +44,7 @@ class MainActivity : AppCompatActivity() {
         viewModel = ViewModelProvider(this)[LiftViewModel::class.java]
 
         LogTab(this, binding.logTab, viewModel)
-        HistoryTab(this, binding.historyTab, viewModel)
+        WorkoutsTab(this, binding.workoutsTab, viewModel)
         LeaderboardTab(this, binding.leaderboardTab, viewModel)
 
         setupTabs(savedInstanceState?.getInt(KEY_TAB) ?: 0)
@@ -53,8 +53,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupTabs(initialTab: Int) {
-        val pages: List<View> = listOf(binding.logTab.root, binding.historyTab.root, binding.leaderboardTab.root)
-        listOf("Log", "History", "Leaderboard").forEach { binding.tabs.addTab(binding.tabs.newTab().setText(it)) }
+        val pages: List<View> = listOf(binding.logTab.root, binding.workoutsTab.root, binding.leaderboardTab.root)
+        listOf("Log", "Workouts", "Leaderboard").forEach { binding.tabs.addTab(binding.tabs.newTab().setText(it)) }
 
         fun show(index: Int) = pages.forEachIndexed { i, page -> page.visibility = if (i == index) View.VISIBLE else View.GONE }
 

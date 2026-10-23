@@ -127,10 +127,11 @@ Never commit real secrets: signing keystores (`*.jks`, `*.keystore`), passwords,
 
 The app uses two stores. Neither needs setup.
 
-**1. Room, on the phone.** This holds the athletes and their lifts.
+**1. Room, on the phone.** This holds the athletes, their lifts and the workout library.
 
-- Room creates `lift_database` (schema version 2) the first time the app opens. Its tables are `athletes` and `lift_entries`; see [Data model](#data-model).
-- There's no seed data. To build a small sample set, sign in and enter:
+- Room creates `lift_database` (schema version 3) the first time the app opens. Its tables are `athletes`, `lift_entries`, `workouts` and `workout_exercises`; see [Data model](#data-model).
+- Phones on version 2 (the first Beta builds) are upgraded by `MIGRATION_2_3` in `data/LiftDatabase.kt`, which keeps every athlete and set. Only pre-Beta version 1 databases are still wiped.
+- The only seed data is the six premade workouts in `data/PremadeWorkouts.kt`. They're copied into the database once, on a fresh install or by the 2 → 3 migration. After that they're ordinary rows (marked `isPremade`) that coaches can edit or delete. There are no seed athletes or lifts. To build a small sample set, sign in and enter:
 
   | Step | Enter | What you should see |
   |---|---|---|
@@ -138,6 +139,7 @@ The app uses two stores. Neither needs setup.
   | 2 | **Log set:** Bench `225` × `5`, then Bench `205` × `8` | The dialog previews "Estimated 1RM: 263 lb" for 225 × 5 |
   | 3 | **Add athlete:** `Sam Lee`, `DB`, `180`. **Log set:** Bench `185` × `5` | |
   | 4 | Open the **Leaderboard** tab | Estimated max ranks Jordan first (263 lb). Pound-for-pound ranks Sam first (1.20× BW vs 0.92× BW). |
+  | 5 | Open the **Workouts** tab | Six premade workouts, each with a **Premade** badge. **Mine** says you haven't made one yet. |
 
 - Every set is stamped with the current date and time, so everything you log in one day becomes one chart point. To see a multi-day chart, log sets on different days, or change the emulator's date under **Settings → System → Date & time**.
 - To look at the tables while the app runs, use **View → Tool Windows → App Inspection → Database Inspector**.
@@ -173,7 +175,7 @@ The only part of the app that runs online is Firebase, which Google hosts. Every
 
    That screen means the build, install and Firebase setup all worked.
 4. **Create an account.** Tap **New here? Create an account**, then enter a name, an email address and a password of at least 6 characters. Tap **Create account**.
-5. **Check the main screen.** It opens with the tabs **Log**, **History** and **Leaderboard**. The Log tab shows "No athletes yet. Add one to start logging."
+5. **Check the main screen.** It opens with the tabs **Log**, **Workouts** and **Leaderboard**. The Log tab shows "No athletes yet. Add one to start logging."
 6. From now on the app skips the sign-in screen until you sign out, using the icon at the top right.
 
 ### Build from the command line (Windows PowerShell)
@@ -209,22 +211,28 @@ Kotlin paths below are relative to `App-0.5.0/app/src/main/java/com/example/lift
 |---|---|
 | `LoginActivity.kt` | **Launcher activity.** Handles email sign-in and sign-up, password reset, and Google sign-in. If a user is already signed in, it goes straight to `MainActivity`. |
 | `MainActivity.kt` | **Main screen.** Sends signed-out users back to `LoginActivity`. Hosts the three tabs, the theme picker and sign-out. |
-| `LiftViewModel.kt` | State for the three tabs (selected athlete, exercise, chart range, rank mode). Turns Room `Flow`s into `LiveData` and launches database writes. |
+| `LiftViewModel.kt` | State for the three tabs (selected athlete, exercise, chart range, workout filter, rank mode). Turns Room `Flow`s into `LiveData` and launches database writes. |
+| `WorkoutEditorActivity.kt`, `WorkoutEditorViewModel.kt` | **Workout editor** (not exported). Creates or edits one workout: name, notes and an ordered exercise list. The ViewModel holds the draft so rotation doesn't lose it, and returns the saved workout's id and name to the Workouts tab. |
 | `data/AuthRepository.kt` | Every Firebase Auth and Firestore call. Turns Firebase errors into messages the user can read. |
 | `data/LiftRepository.kt` | The single entry point for lift data. A thin wrapper over the DAO. |
-| `data/LiftDao.kt`, `data/LiftDatabase.kt` | Room queries and the database singleton. |
+| `data/LiftDao.kt`, `data/LiftDatabase.kt` | Room queries, the database singleton, `MIGRATION_2_3` and the premade-workout seeding. |
 | `data/Athlete.kt`, `data/LiftEntry.kt`, `data/LiftWithAthlete.kt` | The Room tables and the "set plus athlete" relation. |
+| `data/Workout.kt`, `data/WorkoutDao.kt`, `data/WorkoutRepository.kt` | The `workouts` and `workout_exercises` tables, the "workout plus exercises" relation, and their queries. Saves, deletes and Undo restores are single transactions. |
+| `data/WorkoutLibrary.kt` | Sorting and filtering for the Workouts tab (All / Premade / Mine), exercise-name suggestions, and the 20-set cap. |
+| `data/WorkoutShare.kt` | The text that's sent (greeting, notes, numbered exercise lines), plus phone and email checks. |
+| `data/PremadeWorkouts.kt` | The six workouts the app ships with. |
 | `data/Strength.kt` | The exercise list, the 20-rep cap, and the Epley estimated one-rep max (e1RM). |
 | `data/Leaderboard.kt` | Leaderboard ranking. |
 | `data/Progress.kt` | Builds the progress-chart series. |
-| `ui/LogTab.kt`, `ui/ProgressChart.kt`, `ui/Dialogs.kt` | The Log tab: athlete and exercise pickers, progress chart, and the log, edit, delete and undo flows. `Dialogs.kt` also holds the add-athlete dialog. |
-| `ui/HistoryTab.kt`, `ui/LeaderboardTab.kt` | The History and Leaderboard tabs and their list adapters. |
+| `ui/LogTab.kt`, `ui/ProgressChart.kt`, `ui/Dialogs.kt` | The Log tab: athlete and exercise pickers, progress chart, and the log, edit, delete and undo flows. `Dialogs.kt` also holds the add-athlete dialog and the workout editor's add/edit-exercise dialog. |
+| `ui/WorkoutsTab.kt`, `ui/SendWorkout.kt` | The Workouts tab (filter, workout cards, delete with Undo) and the Send dialog (pick an athlete, then Text, Email or another app). |
+| `ui/LeaderboardTab.kt` | The Leaderboard tab and its list adapter. |
 | `ui/AppTheme.kt`, `ui/Format.kt`, `ui/Widgets.kt` | Themes, number and date formatting, small view helpers. |
 
 Other important files:
 
-- **Manifest** (`App-0.5.0/app/src/main/AndroidManifest.xml`): `LoginActivity` is the launcher, and `MainActivity` isn't exported.
-- **Layouts** (`res/layout/`): `activity_login.xml`, `activity_main.xml`, `tab_log.xml`, `tab_history.xml`, `tab_leaderboard.xml`, plus the `dialog_*.xml` and `item_*.xml` files.
+- **Manifest** (`App-0.5.0/app/src/main/AndroidManifest.xml`): `LoginActivity` is the launcher. `MainActivity` and `WorkoutEditorActivity` aren't exported. The app asks for no SMS or contacts permission: sending hands the message to another app.
+- **Layouts** (`res/layout/`): `activity_login.xml`, `activity_main.xml`, `activity_workout_editor.xml`, `tab_log.xml`, `tab_workouts.xml`, `tab_leaderboard.xml`, plus the `dialog_*.xml` and `item_*.xml` files.
 - **Values** (`res/values/`): strings, colors, themes and type styles.
 - **Tests:** `App-0.5.0/app/src/test/java/com/example/liftingapp/`.
 
@@ -234,13 +242,17 @@ Other important files:
 flowchart LR
     subgraph Screens
         LA["LoginActivity"]
-        MA["MainActivity<br/>Log, History, Leaderboard tabs"]
+        MA["MainActivity<br/>Log, Workouts, Leaderboard tabs"]
+        WE["WorkoutEditorActivity"]
     end
     AR["AuthRepository"]
     VM["LiftViewModel"]
     LOGIC["Strength, Leaderboard, Progress<br/>(plain Kotlin)"]
     LR["LiftRepository"]
     DAO["LiftDao"]
+    WR["WorkoutRepository"]
+    WDAO["WorkoutDao"]
+    APPS["Texting / email / other app<br/>(Android intents)"]
     ROOM[("Room: lift_database<br/>on the phone")]
     FB[("Firebase Auth +<br/>Firestore users/{uid}")]
 
@@ -252,6 +264,12 @@ flowchart LR
     VM --> LR
     LR --> DAO
     DAO --> ROOM
+    VM --> WR
+    MA -->|New workout, Edit| WE
+    WE --> WR
+    WR --> WDAO
+    WDAO --> ROOM
+    MA -->|Send| APPS
     ROOM -.->|Flow re-emits on change| VM
     VM -.->|LiveData| MA
     VM --> LOGIC
@@ -273,21 +291,30 @@ flowchart LR
 3. **Save.** **Save** calls `LiftViewModel.addEntry()`, which runs `viewModelScope.launch { repository.insert(...) }`. That ends in `LiftDao.insertLift()`, and Room does the write off the main thread.
 4. **Room tells the screens.** Room re-emits every query that reads `lift_entries`:
    - `getProgress` updates the Log chart
-   - `getHistory` updates the History tab
    - `getLiftsForExercise` updates the Leaderboard
 
-   The ViewModel exposes these as `entries`, `history` and `leaderboard` LiveData.
+   The ViewModel exposes these as `entries` and `leaderboard` LiveData.
 5. **The tabs redraw.** `LogTab.drawChart()` calls `LineChart.showProgress()` in `ui/ProgressChart.kt`, which uses `dailyBests()` and `progressWindow()` from `data/Progress.kt`. The Leaderboard uses `buildLeaderboard()` from `data/Leaderboard.kt`. Nothing calls "refresh": Room's `Flow`s drive every update.
+
+### Walk-through: making and sending a workout
+
+1. **New workout or Edit.** `WorkoutsTab.openEditor()` starts `WorkoutEditorActivity` for a result. `WorkoutEditorViewModel.start()` loads the workout once (or starts a blank one), so rotating doesn't reload it.
+2. **Exercises.** **Add exercise** and tapping a row open `showExerciseDialog()` in `ui/Dialogs.kt`. Its **Add**/**Save** button stays disabled until there's a name, 1–20 sets and reps. Each row's ⋮ menu moves it up or down or removes it (with Undo).
+3. **Save.** The activity checks for a name and at least one exercise, then `WorkoutEditorViewModel.save()` calls `WorkoutDao.save()`. That inserts or updates the workout and replaces its exercise list in one transaction. The activity returns the id and name; the tab shows "Saved" with a **Send** action.
+4. **Send.** `showSendWorkoutDialog()` in `ui/SendWorkout.kt` fills in the picked athlete's phone and email and previews `WorkoutShare.message()`. **Text** opens an `ACTION_SENDTO smsto:` intent, **Email** an `ACTION_SENDTO mailto:` intent, and **Send with another app** the system share sheet. The coach still taps send in that app. Any phone or email typed for the athlete is saved back with `LiftViewModel.updateAthlete()`.
+5. **Delete.** `WorkoutsTab.delete()` deletes the workout (its exercises cascade) and keeps a copy for the snackbar's **Undo**, which re-inserts it with the same ids.
 
 ### Design decisions to know
 
 - **The lift data is local and shared by every account on the phone.** Signing in controls who can open the app, but the athletes and lifts live in one Room database on the device. They aren't tied to the account and don't sync. Moving them to the cloud is backlog work (Sprint 2 Product Backlog items 3–4). Don't mistake this for a sign-in bug.
-- **One main activity, with the tabs as included layouts.** `activity_main.xml` `<include>`s `tab_log`, `tab_history` and `tab_leaderboard`, and `MainActivity` shows or hides them. They aren't Fragments. Because all three share one view hierarchy, **view IDs must be unique across the tab layouts**. Both `tab_log.xml` and `tab_leaderboard.xml` use `exerciseSpinner`, which is a known bug.
+- **One main activity, with the tabs as included layouts.** `activity_main.xml` `<include>`s `tab_log`, `tab_workouts` and `tab_leaderboard`, and `MainActivity` shows or hides them. The workout editor is its own activity because it's a full form. They aren't Fragments. Because all three share one view hierarchy, **view IDs must be unique across the tab layouts**. Both `tab_log.xml` and `tab_leaderboard.xml` use `exerciseSpinner`, which is a known bug.
 - **Views and ViewBinding, not Compose.** The Sprint 1 records mention Compose, but the code doesn't use it.
 - **The e1RM is never stored.** Every screen calculates it from weight and reps with Epley: `weight × (1 + reps / 30)`, or just the weight for a single rep. The log dialog limits reps to 1–20, because the estimate is unreliable above that.
 - **Exercise names are stored as plain text.** Add new lifts to `EXERCISES` in `data/Strength.kt`. Don't rename an existing one: old rows keep the old name.
-- **Schema changes wipe the phone's data.** `LiftDatabase` uses `fallbackToDestructiveMigration(dropAllTables = true)`, so any database version bump deletes all local data. Write a real `Migration` before real athletes' data matters.
-- **Testable logic stays plain Kotlin.** `Strength.kt`, `Leaderboard.kt` and `Progress.kt` have no Android imports, so they run in fast JVM tests. Put new calculation logic there.
+- **Schema changes need a `Migration`.** Version 3 added the workout tables with `MIGRATION_2_3`, which keeps existing data. `fallbackToDestructiveMigration(dropAllTables = true)` is still set, so a version bump *without* a matching migration deletes all local data. Add a `MIGRATION_3_4` (and match Room's generated SQL exactly) for the next schema change.
+- **Premade workouts are data, not code paths.** They're seeded once and then behave like any workout. Editing `PREMADE_WORKOUTS` only changes what new installs get.
+- **Sending never happens inside the app.** Text and Email open the phone's own apps with the message filled in, so the app needs no SMS permission and the coach always sees the message before it goes. The shared text uses a plain "x" (not "×") to keep carrier texts in the cheaper encoding.
+- **Testable logic stays plain Kotlin.** `Strength.kt`, `Leaderboard.kt`, `Progress.kt`, `WorkoutLibrary.kt`, `WorkoutShare.kt` and `PremadeWorkouts.kt` have no Android imports, so they run in fast JVM tests. Put new calculation logic there.
 - **Themes.** Both activities call `setTheme()` before inflating views. The choice is saved in the SharedPreferences file `appearance`, under the key `theme`.
 
 ### Interfaces
@@ -318,13 +345,23 @@ The error messages come from `friendlyMessage()`:
 | Repository member | DAO method and SQL | Returns |
 |---|---|---|
 | `athletes` | `getAthletes()`: `SELECT * FROM athletes ORDER BY name COLLATE NOCASE` | `Flow<List<Athlete>>` |
-| `history` | `getHistory()`: `SELECT * FROM lift_entries ORDER BY date DESC` | `Flow<List<LiftWithAthlete>>` |
 | `progressFor(athleteId, exercise)` | `getProgress()`: one athlete's sets for one exercise, `ORDER BY date ASC` | `Flow<List<LiftEntry>>` |
 | `liftsFor(exercise)` | `getLiftsForExercise()`: every set for one exercise | `Flow<List<LiftWithAthlete>>` |
-| `addAthlete(name, positionGroup, bodyWeightLb)` | `insertAthlete()` | The new athlete's id (`Long`) |
+| `addAthlete(name, positionGroup, bodyWeightLb, phone, email)` | `insertAthlete()`; phone and email are optional | The new athlete's id (`Long`) |
+| `updateAthlete(athlete)` | `updateAthlete()`, matching on the `id`. Only the Send dialog uses it, to save phone and email. | `Unit` |
 | `insert(entry)`, `update(entry)`, `delete(entry)` | `insertLift()`, `updateLift()`, `deleteLift()`; update and delete match on the `id` | `Unit` |
 
-There's no method to edit or delete an athlete yet.
+There's no screen to edit an athlete's name, position or body weight, or to delete an athlete, yet.
+
+**`WorkoutRepository` and `WorkoutDao`** (`data/`). `WorkoutDao` is an abstract class so its multi-step writes can be `@Transaction` methods.
+
+| Repository member | DAO method | Returns |
+|---|---|---|
+| `workouts` | `getWorkouts()`: every workout with its exercises, sorted by `position` | `Flow<List<WorkoutWithExercises>>` |
+| `workout(id)` | `getWorkout(id)` | `WorkoutWithExercises?` (`null` if it was deleted) |
+| `save(workout, exercises)` | `save()`: inserts the workout when its id is 0, otherwise updates it; then replaces its exercises in list order | The workout's id (`Long`) |
+| `delete(workout)` | `deleteWorkout()`; its exercises go with it (`ON DELETE CASCADE`) | `Unit` |
+| `restore(item)` | `restore()`: re-inserts a deleted workout and its exercises with their old ids (Undo) | `Unit` |
 
 **Calculation functions** (`data/`). These are covered by unit tests.
 
@@ -334,13 +371,18 @@ There's no method to edit or delete an athlete yet.
 | `buildLeaderboard(lifts, rankBy)` | One row per athlete, using their best set by e1RM. Sorted highest first, by e1RM or by e1RM ÷ body weight. | none |
 | `dailyBests(entries, zone)` | One chart point per calendar day: the best e1RM and the heaviest weight that day. | none |
 | `progressWindow(days, range, today)` | The days shown for 1M, 3M, 6M, 1Y or All. "All" always covers at least 14 days. | none |
+| `workoutLibrary(workouts, filter)` | The Workouts tab list: the coach's own workouts newest first, then premade ones in shipped order. `PREMADE` and `MINE` keep just one group. | none |
+| `WorkoutShare.message(workout, exercises, athleteName)` | The text that's sent: "Hi {first name}, here's your workout: …" (or "Workout: …"), the notes, then numbered lines like "1. Bench: 5 x 5 @ 75%" with any cue underneath. | none |
+| `isValidPhone(raw)`, `isValidEmail(raw)`, `dialablePhone(raw)` | Blank is valid (both are optional). A phone needs 7–15 digits. `dialablePhone` keeps just the digits and a leading +. | none |
 
 ### Data model
 
 | Table | Columns |
 |---|---|
-| `athletes` | `id` (primary key, auto-generated), `name`, `positionGroup` (stored upper-case), `bodyWeightLb` |
+| `athletes` | `id` (primary key, auto-generated), `name`, `positionGroup` (stored upper-case), `bodyWeightLb`, `phone` (optional), `email` (optional) |
 | `lift_entries` | `id` (primary key, auto-generated), `athleteId` (foreign key to `athletes.id`, indexed, `ON DELETE CASCADE`), `exercise`, `weight` (lb), `reps`, `date` (epoch milliseconds) |
+| `workouts` | `id` (primary key, auto-generated), `name`, `notes`, `isPremade`, `createdAt`, `updatedAt` (epoch milliseconds) |
+| `workout_exercises` | `id` (primary key, auto-generated), `workoutId` (foreign key to `workouts.id`, indexed, `ON DELETE CASCADE`), `position` (0 first), `name`, `sets`, `reps` (text, e.g. "8-10"), `load` (text, e.g. "75%"), `notes` |
 | Firestore `users/{uid}` | `name`, `email`, `role`, `createdAt` |
 
 ---
@@ -415,13 +457,16 @@ Run this on an emulator after a fresh install:
 2. **Sign out and back in.** Tap the sign-out icon (top right), then **Sign out**. Sign in again with a wrong password and check you see "Email or password is incorrect." Then sign in with the right password.
 3. **Add an athlete.** Tap **Add athlete**. **Add** should stay disabled until the name, position and a body weight above 0 are all filled in. After you add the athlete, they're selected.
 4. **Log a set.** Tap **Log set** and type 25 reps: you should see "Enter 1–20 reps" and a disabled **Save**. Then enter 225 × 5. Check the preview says "Estimated 1RM: 263 lb", and save.
-5. **Check every tab.** The chart shows a point, History lists the set, and the Leaderboard ranks the athlete in both modes.
-6. **Edit and undo.** Tap the chart point, then **Edit or delete set from …**. Edit the set and tap **Undo**. Then delete it and tap **Undo** again.
-7. **Ranges and themes.** Try each chart range button. Switch to each theme with the palette icon, and rotate the phone.
+5. **Check every tab.** The chart shows a point, the Workouts tab lists six premade workouts, and the Leaderboard ranks the athlete in both modes.
+6. **Make a workout.** On **Workouts**, tap **New workout**. **Save** with no name should flag the name field, and with no exercises should say "Add at least one exercise". Add two exercises, move one with its ⋮ menu, rotate the phone (nothing is lost), and save. It appears first under **All** and **Mine**.
+7. **Send it.** Tap **Send** on the "Saved" snackbar (or on the card). Pick the athlete, type a phone and email, and check the preview starts "Hi Jordan". **Text** should open the texting app with the message and number filled in; go back and check **Email** and **Send with another app** too. Reopen **Send**: the phone and email are filled in.
+8. **Edit and delete a workout.** Edit a premade workout and save: it keeps its **Premade** badge. Back out of an edit with changes and check you're asked to discard. Delete a workout, tap **Undo**, and check it comes back in the same place.
+9. **Edit and undo a set.** Tap the chart point, then **Edit or delete set from …**. Edit the set and tap **Undo**. Then delete it and tap **Undo** again.
+10. **Ranges and themes.** Try each chart range button. Switch to each theme with the palette icon, and rotate the phone.
 
 ### Known gaps in testing
 
-- There are no automated tests for sign-in (`AuthRepository`, `LoginActivity`), the Room queries and cascade delete, `LiftViewModel`, the dialogs, or chart drawing.
+- There are no automated tests for sign-in (`AuthRepository`, `LoginActivity`), the Room queries and cascade delete, `MIGRATION_2_3`, `LiftViewModel`, the workout editor, the dialogs, the send intents, or chart drawing. Test the migration by installing the previous Beta build, logging some sets, then installing this one over it: the sets must still be there and the six premade workouts must appear.
 - Testing so far has been on one emulator. Multi-device testing is still open (Product Backlog item 14).
 - There's no CI.
 
@@ -478,13 +523,14 @@ git checkout -- app/google-services.json
 
 ### My data disappeared
 
-Local data is wiped when you uninstall the app, clear its storage, or install a build with a new database version (destructive migration). This is expected during development.
+Local data is wiped when you uninstall the app, clear its storage, or install a build whose database version has no migration from yours (only pre-Beta version 1 databases now). Upgrading from version 2 to 3 keeps everything. This is expected during development.
 
 ### Unfinished behavior (not setup errors)
 
 - **Shared lift data.** Different accounts on the same phone see the same athletes and lifts, and nothing syncs between phones.
-- **No roles.** Every account gets `role: "athlete"`, and there are no coach-only features yet.
-- **No athlete editing.** Athletes can't be edited or deleted. A wrong body weight stays wrong.
+- **No roles.** Every account gets `role: "athlete"`. The Workouts tab is meant for coaches, but every account can use it.
+- **Workouts are on this phone only.** Workouts, like lifts, live in the local database and don't sync. Sending one hands the text to the phone's own texting or email app; the app doesn't record what was sent or to whom.
+- **Little athlete editing.** The Send dialog can update an athlete's phone and email, but athletes otherwise can't be edited or deleted. A wrong body weight stays wrong.
 - **Pounds only.** Weights are in pounds. Reps are limited to 1–20, and every exercise needs a weight above 0. That includes Pull-ups and Push-ups.
 
 ### Known bugs in the Beta
@@ -498,7 +544,7 @@ These are from the [Bug Check Report](../docs%20%26%20agile/Sprints/sprint%203/B
 | After you rotate the phone or change the theme, the Log tab switches to the Leaderboard's exercise | `tab_log.xml` and `tab_leaderboard.xml` share the ID `exerciseSpinner` |
 | "Since …" never shows a drop in strength | `ui/ProgressChart.kt`, the gain calculation |
 | Typing a decimal comma ("102,5") leaves **Save** disabled with no message | `ui/Dialogs.kt` |
-| Rotating the phone closes any open dialog, and its typed text is lost | `ui/Dialogs.kt`, `ui/LogTab.kt` |
+| Rotating the phone closes any open dialog, and its typed text is lost. This includes the Send and add/edit-exercise dialogs (the workout editor screen itself keeps its draft). | `ui/Dialogs.kt`, `ui/LogTab.kt`, `ui/SendWorkout.kt` |
 
 ---
 

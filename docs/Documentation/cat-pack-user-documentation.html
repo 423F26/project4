@@ -170,6 +170,8 @@
     <symbol id="i-palette" viewBox="0 0 24 24"><path d="M12,3c-4.97,0 -9,4.03 -9,9s4.03,9 9,9c0.83,0 1.5,-0.67 1.5,-1.5 0,-0.39 -0.15,-0.74 -0.39,-1.01 -0.23,-0.26 -0.38,-0.61 -0.38,-0.99 0,-0.83 0.67,-1.5 1.5,-1.5L16,16c2.76,0 5,-2.24 5,-5 0,-4.42 -4.03,-8 -9,-8zM6.5,12c-0.83,0 -1.5,-0.67 -1.5,-1.5S5.67,9 6.5,9 8,9.67 8,10.5 7.33,12 6.5,12zM9.5,8C8.67,8 8,7.33 8,6.5S8.67,5 9.5,5s1.5,0.67 1.5,1.5S10.33,8 9.5,8zM14.5,8c-0.83,0 -1.5,-0.67 -1.5,-1.5S13.67,5 14.5,5s1.5,0.67 1.5,1.5S15.33,8 14.5,8zM17.5,12c-0.83,0 -1.5,-0.67 -1.5,-1.5S16.67,9 17.5,9s1.5,0.67 1.5,1.5 -0.67,1.5 -1.5,1.5z"/></symbol>
     <symbol id="i-logout" viewBox="0 0 24 24"><path d="M17,7l-1.41,1.41L18.17,11H8v2h10.17l-2.58,2.58L17,17l5,-5zM4,5h8V3H4c-1.1,0 -2,0.9 -2,2v14c0,1.1 0.9,2 2,2h8v-2H4V5z"/></symbol>
     <symbol id="i-person-add" viewBox="0 0 24 24"><path d="M15,12c2.21,0 4,-1.79 4,-4s-1.79,-4 -4,-4 -4,1.79 -4,4 1.79,4 4,4zM6,10V7H4v3H1v2h3v3h2v-3h3v-2H6zM15,14c-2.67,0 -8,1.34 -8,4v2h16v-2c0,-2.66 -5.33,-4 -8,-4z"/></symbol>
+    <symbol id="i-send" viewBox="0 0 24 24"><path d="M2.01,21L23,12 2.01,3 2,10l15,2 -15,2z"/></symbol>
+    <symbol id="i-delete" viewBox="0 0 24 24"><path d="M6,19c0,1.1 0.9,2 2,2h8c1.1,0 2,-0.9 2,-2V7H6v12zM19,4h-3.5l-1,-1h-5l-1,1H5v2h14V4z"/></symbol>
     <symbol id="i-add" viewBox="0 0 24 24"><path d="M19,13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></symbol>
     <symbol id="i-edit" viewBox="0 0 24 24"><path d="M3,17.25V21h3.75L17.81,9.94l-3.75,-3.75L3,17.25zM20.71,7.04c0.39,-0.39 0.39,-1.02 0,-1.41l-2.34,-2.34c-0.39,-0.39 -1.02,-0.39 -1.41,0l-1.83,1.83 3.75,3.75 1.83,-1.83z"/></symbol>
     <symbol id="i-dumbbell" viewBox="0 0 24 24"><path d="M20.57,14.86L22,13.43 20.57,12 17,15.57 8.43,7 12,3.43 10.57,2 9.14,3.43 7.71,2 5.57,4.14 4.14,2.71 2.71,4.14l1.43,1.43L2,7.71l1.43,1.43L2,10.57 3.43,12 7,8.43 15.57,17 12,20.57 13.43,22l1.43,-1.43L16.29,22l2.14,-2.14 1.43,1.43 1.43,-1.43 -1.43,-1.43L22,16.29z"/></symbol>
@@ -211,7 +213,7 @@
           <li><a href="#log">Log your first set</a></li>
           <li><a href="#progress">Track progress</a></li>
           <li><a href="#fix">Fix a mistake</a></li>
-          <li><a href="#history">History</a></li>
+          <li><a href="#workouts">Workouts</a></li>
           <li><a href="#leaderboard">Leaderboard</a></li>
           <li><a href="#themes">Themes and signing out</a></li>
           <li><a href="#trouble">If something goes wrong</a></li>
@@ -257,7 +259,7 @@
         <p>The top of the screen has the app's logo and name, the theme button <svg class="icon" aria-hidden="true"><use href="#i-palette"/></svg> and the sign-out button <svg class="icon" aria-hidden="true"><use href="#i-logout"/></svg>. Below that are three tabs:</p>
         <ul>
           <li><strong>Log:</strong> pick an athlete and a lift, log sets, and see that athlete's progress chart.</li>
-          <li><strong>History:</strong> every set logged on this phone, newest first.</li>
+          <li><strong>Workouts:</strong> premade workouts and the ones you make, ready to send to an athlete by text or email.</li>
           <li><strong>Leaderboard:</strong> the athletes ranked for one lift.</li>
         </ul>
       </section>
@@ -268,8 +270,8 @@
         <h3>Add an athlete</h3>
         <ol class="steps">
           <li>On the <strong>Log</strong> tab, tap <span class="ui"><svg class="icon" aria-hidden="true"><use href="#i-person-add"/></svg> Add athlete</span>.</li>
-          <li>Enter the athlete's <strong>Name</strong>, <strong>Position group</strong> (for example OL, WR or DB) and <strong>Body weight (lb)</strong>.</li>
-          <li>Tap <span class="ui">Add</span>. The button stays grey until all three are filled in and the body weight is above 0. The new athlete is now selected in the <strong>Athlete</strong> picker.</li>
+          <li>Enter the athlete's <strong>Name</strong>, <strong>Position group</strong> (for example OL, WR or DB) and <strong>Body weight (lb)</strong>. <strong>Phone</strong> and <strong>Email</strong> are optional; they fill in the <q>To</q> field when you send the athlete a workout.</li>
+          <li>Tap <span class="ui">Add</span>. The button stays grey until all three are filled in and the body weight is above 0. If you type a phone or email, it has to look like a real one. The new athlete is now selected in the <strong>Athlete</strong> picker.</li>
         </ol>
         <div class="note">
           <p>Double-check the body weight. It's used for pound-for-pound rankings, and in the Beta you can't change it later.</p>
@@ -282,7 +284,7 @@
           <li>Enter the <strong>Weight (lb)</strong> and the <strong>Reps</strong> (1 to 20). Once both are valid, the dialog previews the estimate, for example <q>Estimated 1RM: 263 lb</q> for 225 × 5.</li>
           <li>Tap <span class="ui">Save</span>. A line under the chart confirms it, for example <q>Saved Jordan Smith: Bench 225 × 5</q>.</li>
         </ol>
-        <p>The chart, the History tab and the Leaderboard all update right away. The set is stamped with the current date and time.</p>
+        <p>The chart and the Leaderboard update right away. The set is stamped with the current date and time.</p>
         <p>If you tap <span class="ui">Log set</span> before adding any athletes, the app opens <strong>Add athlete</strong> first.</p>
       </section>
 
@@ -323,16 +325,36 @@
         </div>
       </section>
 
-      <section id="history" aria-labelledby="history-h">
-        <h2 id="history-h">History</h2>
-        <p>The <strong>History</strong> tab lists every set logged on this phone, newest first. Each row shows:</p>
+      <section id="workouts" aria-labelledby="workouts-h">
+        <h2 id="workouts-h">Workouts</h2>
+        <p>The <strong>Workouts</strong> tab is your workout library: six <strong>premade</strong> workouts that come with the app, plus every workout you make. The buttons at the top show <span class="ui">All</span>, only <span class="ui">Premade</span>, or only <span class="ui">Mine</span>. Each card lists its exercises, for example <q>Bench: 5 × 5 @ 75%</q>, and premade ones have a <strong>Premade</strong> label.</p>
+
+        <h3>Make a workout</h3>
+        <ol class="steps">
+          <li>On the <strong>Workouts</strong> tab, tap <span class="ui"><svg class="icon" aria-hidden="true"><use href="#i-add"/></svg> New workout</span> at the bottom right.</li>
+          <li>Enter a <strong>Workout name</strong>. If you like, add <strong>Notes for the athlete</strong>, such as the warm-up or rest times.</li>
+          <li>Tap <span class="ui">Add exercise</span>. Pick or type the exercise, then enter the <strong>Sets</strong> (1 to 20) and <strong>Reps</strong>. Reps can be a number, a range or a time: 5, 8-10, AMRAP or 30 sec. <strong>Load</strong> (like 75% or 185 lb) and a <strong>Coaching cue</strong> are optional. Tap <span class="ui">Add</span>.</li>
+          <li>Repeat for each exercise. Tap an exercise to change it, or use its <span class="ui">⋮</span> menu to move it up or down or remove it.</li>
+          <li>Tap <span class="ui">Save</span>. The workout appears at the top of <span class="ui">All</span> and <span class="ui">Mine</span>.</li>
+        </ol>
+        <p>A workout needs a name and at least one exercise before it can be saved. If you leave with changes you haven't saved, the app asks before throwing them away.</p>
+
+        <h3>Send a workout to an athlete</h3>
+        <ol class="steps">
+          <li>Tap <span class="ui"><svg class="icon" aria-hidden="true"><use href="#i-send"/></svg> Send</span> on the workout's card. Right after saving a workout, you can also tap <span class="ui">Send</span> on the <q>Saved</q> message.</li>
+          <li>Under <strong>Send to</strong>, pick the athlete. Their phone and email fill in if you've saved them. If not, type them in, and the app saves them to the athlete for next time. To send without naming anyone, leave it on <strong>No one in particular</strong>.</li>
+          <li>Check the <strong>Message</strong> preview. With an athlete picked, it starts <q>Hi Jordan, here's your workout</q>.</li>
+          <li>Tap <span class="ui">Text</span> or <span class="ui">Email</span>. Your phone's texting or email app opens with the message ready; tap send there. To use another app, such as GroupMe, tap <span class="ui">Send with another app</span>.</li>
+        </ol>
+        <div class="note">
+          <p>Nothing is sent until you tap send in the texting or email app, so you can still change the message or add more people there.</p>
+        </div>
+
+        <h3>Edit or delete a workout</h3>
         <ul>
-          <li>the athlete</li>
-          <li>the lift, weight and reps</li>
-          <li>the date and time</li>
-          <li>the estimated max</li>
+          <li><strong>Edit:</strong> tap the card or <svg class="icon" aria-hidden="true"><use href="#i-edit"/></svg>, make your changes, and tap <span class="ui">Save</span>. Premade workouts can be edited too; your changes replace the original on this phone.</li>
+          <li><strong>Delete:</strong> tap <svg class="icon" aria-hidden="true"><use href="#i-delete"/></svg>. A message at the bottom of the screen offers <span class="ui">Undo</span> for a few seconds.</li>
         </ul>
-        <p>The list is read-only. To change a set, use the chart on the Log tab (see <a href="#fix">Fix a mistake</a>).</p>
       </section>
 
       <section id="leaderboard" aria-labelledby="lb-h">
@@ -378,12 +400,14 @@
               <tr><td data-label="What you see"><span class="msg">Something went wrong. Check your connection.</span></td><td data-label="What to do">Connect to Wi-Fi or mobile data and try again.</td></tr>
               <tr><td data-label="What you see"><span class="msg">Google sign-in failed</span> followed by a reason</td><td data-label="What to do">Make sure a Google account is added in the phone's Settings. If it still fails, sign in with email and password, and tell the team.</td></tr>
               <tr><td data-label="What you see"><span class="ui">Save</span> or <span class="ui">Add</span> stays grey</td><td data-label="What to do">A field is empty or out of range. Weights and body weight must be above 0, and reps must be 1 to 20. Use a period for decimals (102.5), not a comma.</td></tr>
+              <tr><td data-label="What you see"><span class="msg">Add at least one exercise before saving.</span></td><td data-label="What to do">Tap <span class="ui">Add exercise</span> first. A workout also needs a name.</td></tr>
+              <tr><td data-label="What you see"><span class="msg">No texting app found on this phone.</span> or <span class="msg">No email app found on this phone.</span></td><td data-label="What to do">Set up a texting or email app on the phone, or tap <span class="ui">Send with another app</span> instead.</td></tr>
               <tr><td data-label="What you see"><span class="msg">Enter 1–20 reps</span></td><td data-label="What to do">The app limits sets to 20 reps, because estimates above that aren't reliable.</td></tr>
               <tr><td data-label="What you see">The chart says there are no sets in the last month (or other range)</td><td data-label="What to do">Tap <span class="ui">All</span> under the chart.</td></tr>
               <tr><td data-label="What you see">A dialog closed when you turned the phone</td><td data-label="What to do">Turning the phone closes open dialogs and loses what you typed. Open it again, and keep the phone upright while you log.</td></tr>
               <tr><td data-label="What you see">The lift on the Log tab changed by itself after you turned the phone or changed the theme</td><td data-label="What to do">This is a known Beta issue. Check the exercise picker before you tap <span class="ui">Log set</span>.</td></tr>
               <tr><td data-label="What you see">A different account sees the same athletes</td><td data-label="What to do">This is expected in the Beta: the data belongs to the phone, not the account.</td></tr>
-              <tr><td data-label="What you see">Your athletes and lifts are gone</td><td data-label="What to do">Uninstalling the app, clearing its storage, or installing some Beta updates erases the data on the phone. There's no backup in the Beta.</td></tr>
+              <tr><td data-label="What you see">Your athletes and lifts are gone</td><td data-label="What to do">Uninstalling the app or clearing its storage erases the data on the phone, including your workouts. There's no backup in the Beta.</td></tr>
             </tbody>
           </table>
         </div>
@@ -393,12 +417,12 @@
         <h2 id="limits-h">Limits of the Beta</h2>
         <p>These are known limits of the current version, not problems with your phone:</p>
         <ul>
-          <li><strong>Data stays on one phone.</strong> Athletes and lifts are saved only on the phone where they were entered. They don't sync to other phones, and anyone who signs in on that phone sees the same roster. Uninstalling the app deletes them.</li>
-          <li><strong>Athletes can't be edited or removed.</strong> A name, position or body weight stays as it was first entered.</li>
+          <li><strong>Data stays on one phone.</strong> Athletes, lifts and workouts are saved only on the phone where they were entered. They don't sync to other phones, and anyone who signs in on that phone sees the same roster. Uninstalling the app deletes them.</li>
+          <li><strong>Athletes can't be edited or removed.</strong> A name, position or body weight stays as it was first entered. (You can update an athlete's phone and email when you send them a workout.)</li>
           <li><strong>Body weights are visible.</strong> Anyone using the phone can see every athlete's body weight on the Leaderboard.</li>
           <li><strong>Body-weight exercises need added weight.</strong> Pull-ups and Push-ups need a weight above 0, and every set is limited to 20 reps.</li>
           <li><strong>Pounds only.</strong> There's no kilogram setting.</li>
-          <li><strong>No coach features yet.</strong> Every account is treated the same.</li>
+          <li><strong>No coach accounts yet.</strong> Every account is treated the same, so anyone signed in on the phone can make, edit and send workouts.</li>
           <li><strong>Display issues:</strong>
             <ul>
               <li>The solid <strong>Est. max</strong> line can be hard to see. Tap points to read their values.</li>
@@ -420,6 +444,10 @@
           <dd>The estimated max divided by body weight. For example, 1.48× BW means 1.48 times the athlete's body weight.</dd>
           <dt>Heaviest set</dt>
           <dd>The most weight lifted on a day, whatever the number of reps.</dd>
+          <dt>Premade workout</dt>
+          <dd>One of the six workouts that come with the app. You can send, edit or delete them like your own.</dd>
+          <dt>AMRAP</dt>
+          <dd>As many reps as possible, written in place of a rep count.</dd>
           <dt>Position group</dt>
           <dd>The athlete's position on the team (for example OL or DB). It's shown next to their name.</dd>
         </dl>

@@ -6,6 +6,7 @@ MSU Lift Tracker is an Android app that helps MSU sports teams track strength tr
 - **Logging:** they log each lift as exercise, weight and reps.
 - **Progress:** a chart shows each athlete's estimated one-rep max over time.
 - **Leaderboard:** teammates are ranked by raw strength or pound-for-pound.
+- **Workouts:** coaches build workouts, or start from six premade ones, and send them to athletes by text or email.
 
 The goal is to show who is strongest, who needs more work, and how each athlete is progressing.
 
