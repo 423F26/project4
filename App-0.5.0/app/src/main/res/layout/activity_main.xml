@@ -101,8 +101,8 @@
             layout="@layout/tab_log" />
 
         <include
-            android:id="@+id/historyTab"
-            layout="@layout/tab_history"
+            android:id="@+id/workoutsTab"
+            layout="@layout/tab_workouts"
             android:visibility="gone" />
 
         <include

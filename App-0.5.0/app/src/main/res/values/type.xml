@@ -105,7 +105,7 @@
         <item name="android:textSize">20sp</item>
         <item name="android:textColor">?attr/colorOnSurface</item>
     </style>
-    <!-- Right-aligned numbers in History / Leaderboard rows -->
+    <!-- Right-aligned numbers in Leaderboard rows and the log-set dialog -->
     <style name="TextAppearance.Lifting.RowValue" parent="TextAppearance.Lifting.TitleLarge">
         <item name="android:textSize">18sp</item>
         <item name="android:textColor">?attr/colorPrimary</item>

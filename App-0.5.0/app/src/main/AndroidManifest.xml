@@ -30,6 +30,13 @@
             android:theme="@style/Theme.LIFTINGAPP"
             android:windowSoftInputMode="adjustResize"
         />
+        <activity
+            android:name=".WorkoutEditorActivity"
+            android:exported="false"
+            android:label="Workout"
+            android:theme="@style/Theme.LIFTINGAPP"
+            android:windowSoftInputMode="adjustResize"
+        />
 
     </application>
 
