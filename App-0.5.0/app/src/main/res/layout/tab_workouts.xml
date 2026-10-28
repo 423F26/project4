@@ -11,6 +11,34 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
+        <!-- Sport sections (ui/SportSections.kt): General = the workout library below; a sport shows its plan -->
+        <com.google.android.material.button.MaterialButtonToggleGroup
+            android:id="@+id/sportToggle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
+            app:selectionRequired="true"
+            app:singleSelection="true">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/sportGeneral"
+                style="@style/Widget.Lifting.SegmentButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="General" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/sportFootball"
+                style="@style/Widget.Lifting.SegmentButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Football" />
+        </com.google.android.material.button.MaterialButtonToggleGroup>
+
         <com.google.android.material.button.MaterialButtonToggleGroup
             android:id="@+id/filterToggle"
             android:layout_width="match_parent"
@@ -72,6 +100,115 @@
                 android:padding="24dp"
                 android:textAppearance="@style/TextAppearance.Lifting.Muted"
                 android:visibility="gone" />
+
+            <!-- Sport section (shown instead of the library when a sport is picked above) -->
+            <LinearLayout
+                android:id="@+id/sportSection"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <com.google.android.material.button.MaterialButtonToggleGroup
+                    android:id="@+id/seasonToggle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="12dp"
+                    android:layout_marginEnd="16dp"
+                    app:selectionRequired="true"
+                    app:singleSelection="true">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/seasonOff"
+                        style="@style/Widget.Lifting.SegmentButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Off-season" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/seasonIn"
+                        style="@style/Widget.Lifting.SegmentButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="In-season" />
+                </com.google.android.material.button.MaterialButtonToggleGroup>
+
+                <com.google.android.material.button.MaterialButtonToggleGroup
+                    android:id="@+id/weekToggle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="16dp"
+                    app:selectionRequired="true"
+                    app:singleSelection="true">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/week1"
+                        style="@style/Widget.Lifting.SegmentButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Wk 1" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/week2"
+                        style="@style/Widget.Lifting.SegmentButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Wk 2" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/week3"
+                        style="@style/Widget.Lifting.SegmentButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Wk 3" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/week4"
+                        style="@style/Widget.Lifting.SegmentButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Wk 4" />
+                </com.google.android.material.button.MaterialButtonToggleGroup>
+
+                <TextView
+                    android:id="@+id/seasonAbout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="16dp"
+                    android:textAppearance="@style/TextAppearance.Lifting.Caption" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/sportWorkoutList"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:clipToPadding="false"
+                    android:paddingStart="12dp"
+                    android:paddingTop="8dp"
+                    android:paddingEnd="12dp"
+                    android:paddingBottom="24dp"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+                <TextView
+                    android:id="@+id/sportSource"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:paddingBottom="12dp"
+                    android:textAppearance="@style/TextAppearance.Lifting.Caption" />
+            </LinearLayout>
         </FrameLayout>
     </LinearLayout>
 

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Android 12+ only: the system splash (loading) screen shows the app emblem on navy instead
+         of the default icon on a plain background. Same theme as values/themes.xml otherwise. -->
+    <style name="Theme.LIFTINGAPP" parent="Theme.LIFTINGAPP.BlueGold">
+        <item name="android:windowSplashScreenBackground">@color/bg_surface</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_launcher_emblem_foreground</item>
+    </style>
+</resources>

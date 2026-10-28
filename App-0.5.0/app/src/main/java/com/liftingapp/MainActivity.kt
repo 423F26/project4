@@ -14,6 +14,7 @@ import com.example.liftingapp.ui.AppTheme
 import com.example.liftingapp.ui.LeaderboardTab
 import com.example.liftingapp.ui.LogTab
 import com.example.liftingapp.ui.WorkoutsTab
+import com.example.liftingapp.ui.SportSections
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.tabs.TabLayout
 import kotlinx.coroutines.launch
@@ -45,6 +46,7 @@ class MainActivity : AppCompatActivity() {
 
         LogTab(this, binding.logTab, viewModel)
         WorkoutsTab(this, binding.workoutsTab, viewModel)
+        SportSections(this, binding.workoutsTab, viewModel)   // General / Football sections above the library
         LeaderboardTab(this, binding.leaderboardTab, viewModel)
 
         setupTabs(savedInstanceState?.getInt(KEY_TAB) ?: 0)
