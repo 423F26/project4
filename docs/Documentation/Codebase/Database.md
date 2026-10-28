@@ -2,7 +2,7 @@
 
 How MSU Lift Tracker stores data on the device: the Room database, its two tables, the DAO queries, the repository, and the rules that keep the data valid.
 
-> **Path convention.** Kotlin paths are relative to `App-0.5.0/app/src/main/java/com/example/liftingapp/`. Resource paths (`res/...`) are relative to `App-0.5.0/app/src/main/`.
+> **Path convention.** Kotlin paths are relative to `App-0.7.0/app/src/main/java/com/example/liftingapp/`. Resource paths (`res/...`) are relative to `App-0.7.0/app/src/main/`.
 
 ---
 
@@ -10,7 +10,7 @@ How MSU Lift Tracker stores data on the device: the Room database, its two table
 
 | Setting | Value | Source |
 |---|---|---|
-| Library | Room 2.8.4 (`room-runtime`, `room-ktx`, `room-compiler` through KSP) | `App-0.5.0/app/build.gradle.kts` |
+| Library | Room 2.8.4 (`room-runtime`, `room-ktx`, `room-compiler` through KSP) | `App-0.7.0/app/build.gradle.kts` |
 | Database class | `LiftDatabase` (extends `RoomDatabase`) | `data/LiftDatabase.kt` |
 | Database file name | `"lift_database"` | `data/LiftDatabase.kt` |
 | Schema version | `2` | `@Database(..., version = 2, ...)` |

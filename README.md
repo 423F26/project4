@@ -10,7 +10,7 @@ MSU Lift Tracker is an Android app that helps MSU sports teams track strength tr
 
 The goal is to show who is strongest, who needs more work, and how each athlete is progressing.
 
-**Status:** Beta (Beta Demo build, October 2026). The Android project lives in [`App-0.5.0/`](App-0.5.0/).
+**Status:** Beta (Beta Demo build, October 2026). The Android project lives in [`App-0.7.0/`](App-0.7.0/).
 
 ## Who it's for
 
@@ -43,10 +43,10 @@ This is a 16-week, two-person capstone project. Sprint records are in [`docs & a
 There's **no packaged build** yet: no Play Store listing and no release APK. You build the app from source and install it on an emulator or an Android phone (Android 7.0 or newer).
 
 1. **Install the tools:** Android Studio (a release that supports Android Gradle Plugin 9.4.1), Android SDK Platform 37, and Git. Gradle downloads JDK 25 and every library on the first sync.
-2. **Clone and open:** clone this repo, then in Android Studio choose **File → Open** and select the **`App-0.5.0`** folder. Don't select the repo root.
+2. **Clone and open:** clone this repo, then in Android Studio choose **File → Open** and select the **`App-0.7.0`** folder. Don't select the repo root.
 3. **Run:** pick the **app** run configuration and a device, then click **Run**.
 
-From the command line, run this inside `App-0.5.0`:
+From the command line, run this inside `App-0.7.0`:
 
 ```powershell
 .\gradlew.bat installDebug
@@ -86,7 +86,7 @@ Label the issue `bug` or `enhancement`. Items we plan to do also go into the spr
    ```
 
 2. **Commit in small steps** with messages that say what changed, for example `Fix chart line color in Daylight theme`. Never commit `local.properties`, keystores, passwords, or Gradle output folders (`build/`, `.gradle/`, `caches/`, `daemon/`).
-3. **Run the required checks** from `App-0.5.0`:
+3. **Run the required checks** from `App-0.7.0`:
 
    ```powershell
    .\gradlew.bat assembleDebug
@@ -117,7 +117,7 @@ Label the issue `bug` or `enhancement`. Items we plan to do also go into the spr
 ## Repository layout
 
 ```text
-App-0.5.0/       Android project (open this in Android Studio)
+App-0.7.0/       Android project (open this in Android Studio)
 docs/            developer.md and user.html
 docs & agile/    sprint records and earlier documentation
 Agents/          prompts for the team's AI review agents

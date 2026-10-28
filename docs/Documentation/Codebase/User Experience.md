@@ -2,7 +2,7 @@
 
 What a user sees and can do in MSU Lift Tracker, screen by screen, with the exact on-screen text and the math behind every number.
 
-> **Path convention.** Kotlin paths are relative to `App-0.5.0/app/src/main/java/com/example/liftingapp/`. Resource paths (`res/...`) are relative to `App-0.5.0/app/src/main/`.
+> **Path convention.** Kotlin paths are relative to `App-0.7.0/app/src/main/java/com/example/liftingapp/`. Resource paths (`res/...`) are relative to `App-0.7.0/app/src/main/`.
 >
 > **About the on-screen text.** `res/values/strings.xml` holds only three strings (`app_name`, `msu_logo_description`, `change_theme`). Every other label and message is hard-coded in the layouts or in Kotlin. The quotes below are copied from those files. `{braces}` mark values filled in at runtime.
 
