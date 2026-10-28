@@ -37,17 +37,20 @@ data class SportExercise(
 data class SportDay(val name: String, val notes: String, val exercises: List<SportExercise>)
 
 data class Season(
+    val sport: String,
     val name: String,
-    /** Main-lift scheme for each week of the cycle. */
+    /** Main-lift scheme for each week of the cycle. Empty = no weekly rotation (every week is the same). */
     val cycle: List<SetRep>,
     val about: String,
     val days: List<SportDay>
 ) {
     /** A day as a regular Workout + exercises for [weekIndex] (0-based), so it can use the Send dialog. */
+    val hasWeeks: Boolean get() = cycle.isNotEmpty()
+
     fun workoutFor(day: SportDay, weekIndex: Int): WorkoutWithExercises {
-        val week = weekIndex.coerceIn(0, cycle.lastIndex)
+        val week = if (hasWeeks) weekIndex.coerceIn(0, cycle.lastIndex) else 0
         val exercises = day.exercises.mapIndexed { position, e ->
-            val scheme = if (e.isMainLift) e.weekOverride[week] ?: cycle[week] else null
+            val scheme = if (e.isMainLift && hasWeeks) e.weekOverride[week] ?: cycle[week] else null
             WorkoutExercise(
                 position = position,
                 name = e.name,
@@ -57,9 +60,9 @@ data class Season(
                 notes = e.notes
             )
         }
-        val weekNote = if (day.exercises.any { it.isMainLift }) "Week ${week + 1} of ${cycle.size}. " else ""
+        val weekNote = if (hasWeeks && day.exercises.any { it.isMainLift }) "Week ${week + 1} of ${cycle.size}. " else ""
         return WorkoutWithExercises(
-            workout = Workout(name = "Football $name: ${day.name}", notes = weekNote + day.notes, isPremade = true),
+            workout = Workout(name = "$sport $name: ${day.name}", notes = weekNote + day.notes, isPremade = true),
             exercises = exercises
         )
     }
@@ -72,13 +75,13 @@ data class SportSection(val sport: String, val seasons: List<Season>, val source
 private const val WARM_UP = "Start with the dot drill. Finish with BFS flexibility."
 private const val SPRINT_REST = "Rest about 1 min for every 10 yd sprinted so every rep is fast."
 
-private fun mainLift(name: String, notes: String = "", week4: SetRep? = null) =
+internal fun mainLift(name: String, notes: String = "", week4: SetRep? = null) =
     SportExercise(name, isMainLift = true, notes = notes, weekOverride = week4?.let { mapOf(3 to it) } ?: emptyMap())
 
-private fun aux(name: String, reps: String = "8-10", notes: String = "") =
+internal fun aux(name: String, reps: String = "8-10", notes: String = "") =
     SportExercise(name, sets = 3, reps = reps, notes = notes)
 
-private fun drill(name: String, sets: Int, reps: String, load: String = "", notes: String = "") =
+internal fun drill(name: String, sets: Int, reps: String, load: String = "", notes: String = "") =
     SportExercise(name, sets = sets, reps = reps, load = load, notes = notes)
 
 // --- Football ---
@@ -87,6 +90,7 @@ val FOOTBALL = SportSection(
     sport = "Football",
     seasons = listOf(
         Season(
+            sport = "Football",
             name = "Off-season",
             cycle = listOf(SetRep(3, "3"), SetRep(5, "5"), SetRep(1, "5-4-3-2-1"), SetRep(1, "10-8-6")),
             about = "Lift Mon/Wed/Fri, speed and plyos Tue/Thu. Main lifts rotate every week, then the cycle repeats.",
@@ -131,6 +135,7 @@ val FOOTBALL = SportSection(
             )
         ),
         Season(
+            sport = "Football",
             name = "In-season",
             cycle = listOf(SetRep(3, "3"), SetRep(3, "5"), SetRep(1, "5-3-1"), SetRep(1, "6-8-10")),
             about = "Lift twice a week, about 30 min, mornings if possible. Hardest lift on the non-contact day.",
@@ -171,4 +176,4 @@ val FOOTBALL = SportSection(
 )
 
 /** Every sport section in the Workouts tab, in display order. Add new sports here. */
-val SPORT_SECTIONS: List<SportSection> = listOf(FOOTBALL)
+val SPORT_SECTIONS: List<SportSection> = listOf(FOOTBALL, BASKETBALL)

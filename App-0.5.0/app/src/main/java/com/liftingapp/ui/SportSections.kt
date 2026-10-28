@@ -10,9 +10,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.liftingapp.LiftViewModel
 import com.example.liftingapp.R
 import com.example.liftingapp.data.Athlete
-import com.example.liftingapp.data.SPORT_SECTIONS
+import com.example.liftingapp.data.BASKETBALL
+import com.example.liftingapp.data.FOOTBALL
 import com.example.liftingapp.data.Season
 import com.example.liftingapp.data.SportDay
+import com.example.liftingapp.data.SportSection
 import com.example.liftingapp.data.WorkoutShare
 import com.example.liftingapp.data.WorkoutWithExercises
 import com.example.liftingapp.databinding.ItemWorkoutBinding
@@ -20,13 +22,15 @@ import com.example.liftingapp.databinding.TabWorkoutsBinding
 import com.google.android.material.snackbar.Snackbar
 
 /**
- * Sport sections at the top of the Workouts tab: General | Football.
+ * Sport sections at the top of the Workouts tab: General | Football | Basketball.
  *  - General shows the regular workout library (WorkoutsTab, unchanged).
- *  - A sport shows its plan instead: Off-season / In-season, a week of the 4-week cycle, and one
- *    card per training day. Cards use the same layout as the library and can be sent to an athlete
- *    with the same Send dialog; they're read-only (no edit/delete).
+ *  - A sport shows its plan instead: season toggle (Off-season / In-season), a week of the cycle
+ *    for sports that rotate weekly (football), and one card per training day. Cards use the same
+ *    layout as the library and can be sent to an athlete with the same Send dialog; they're
+ *    read-only (no edit/delete).
  *
  * Kept separate from WorkoutsTab so the library code doesn't change. Wired up in MainActivity.
+ * To add a sport: add its SportSection in data/, a button in tab_workouts.xml, and a line in [sportButtons].
  */
 class SportSections(
     private val activity: AppCompatActivity,
@@ -34,62 +38,85 @@ class SportSections(
     private val viewModel: LiftViewModel
 ) {
     private val prefs = activity.getSharedPreferences("sport_sections", Context.MODE_PRIVATE)
-    private val sport = SPORT_SECTIONS.first()   // Football; more sports become more toggle buttons
     private var athletes: List<Athlete> = emptyList()
     private val adapter = SportDayAdapter(::send)
 
+    /** Sport toggle buttons -> their plans. General (the library) isn't in here. */
+    private val sportButtons = mapOf(
+        R.id.sportFootball to FOOTBALL,
+        R.id.sportBasketball to BASKETBALL
+    )
     private val seasonButtons = listOf(R.id.seasonOff, R.id.seasonIn)
     private val weekButtons = listOf(R.id.week1, R.id.week2, R.id.week3, R.id.week4)
 
-    private var seasonIndex: Int
-        get() = prefs.getInt(KEY_SEASON, 0).coerceIn(0, sport.seasons.lastIndex)
-        set(value) = prefs.edit { putInt(KEY_SEASON, value) }
+    /** The selected sport, or null for General. */
+    private var sport: SportSection?
+        get() = prefs.getString(KEY_SPORT, null)?.let { name -> sportButtons.values.firstOrNull { it.sport == name } }
+        set(value) = prefs.edit { putString(KEY_SPORT, value?.sport) }
 
-    private var weekIndex: Int
-        get() = prefs.getInt(KEY_WEEK, 0).coerceIn(0, weekButtons.lastIndex)
-        set(value) = prefs.edit { putInt(KEY_WEEK, value) }
+    // Season and week are remembered per sport.
+    private fun seasonIndex(s: SportSection) = prefs.getInt("${s.sport}_season", 0).coerceIn(0, s.seasons.lastIndex)
+    private fun weekIndex(s: SportSection) = prefs.getInt("${s.sport}_week", 0).coerceIn(0, weekButtons.lastIndex)
 
     init {
         binding.sportWorkoutList.adapter = adapter
-        binding.sportSource.text = "Source: ${sport.source}"
 
-        binding.seasonToggle.check(seasonButtons[seasonIndex])
         binding.seasonToggle.addOnButtonCheckedListener { _, checkedId, isChecked ->
+            val s = sport ?: return@addOnButtonCheckedListener
             val index = seasonButtons.indexOf(checkedId)
-            if (isChecked && index >= 0) { seasonIndex = index; render() }
+            if (isChecked && index in s.seasons.indices) {
+                prefs.edit { putInt("${s.sport}_season", index) }
+                render()
+            }
         }
-
-        binding.weekToggle.check(weekButtons[weekIndex])
         binding.weekToggle.addOnButtonCheckedListener { _, checkedId, isChecked ->
+            val s = sport ?: return@addOnButtonCheckedListener
             val index = weekButtons.indexOf(checkedId)
-            if (isChecked && index >= 0) { weekIndex = index; render() }
+            if (isChecked && index >= 0) {
+                prefs.edit { putInt("${s.sport}_week", index) }
+                render()
+            }
         }
 
-        val showSport = prefs.getBoolean(KEY_SHOW_SPORT, false)
-        binding.sportToggle.check(if (showSport) R.id.sportFootball else R.id.sportGeneral)
+        val selected = sport
+        binding.sportToggle.check(sportButtons.entries.firstOrNull { it.value == selected }?.key ?: R.id.sportGeneral)
         binding.sportToggle.addOnButtonCheckedListener { _, checkedId, isChecked ->
-            if (isChecked) showSection(checkedId == R.id.sportFootball)
+            if (!isChecked) return@addOnButtonCheckedListener
+            sport = sportButtons[checkedId]
+            showSection()
         }
 
         viewModel.athletes.observe(activity) { athletes = it }
-        showSection(showSport)
+        showSection()
     }
 
-    /** Swaps between the library (General) and the sport plan. Only visibility changes. */
-    private fun showSection(sportSelected: Boolean) {
-        prefs.edit { putBoolean(KEY_SHOW_SPORT, sportSelected) }
+    /** Swaps between the library (General) and a sport's plan. Only visibility changes. */
+    private fun showSection() {
+        val s = sport
+        val sportSelected = s != null
         binding.sportSection.isVisible = sportSelected
         binding.filterToggle.isVisible = !sportSelected
         binding.workoutList.isVisible = !sportSelected
         binding.newWorkoutFab.isVisible = !sportSelected
         binding.workoutsEmptyText.isVisible = !sportSelected && (binding.workoutList.adapter?.itemCount ?: 0) == 0
-        if (sportSelected) render()
+        if (s == null) return
+
+        // Point the season and week toggles at this sport's saved choices, then draw.
+        listOf(binding.seasonOff, binding.seasonIn).zip(s.seasons).forEach { (button, season) -> button.text = season.name }
+        binding.seasonToggle.check(seasonButtons[seasonIndex(s)])
+        binding.weekToggle.check(weekButtons[weekIndex(s)])
+        binding.sportSource.text = "Source: ${s.source}"
+        render()
     }
 
     private fun render() {
-        val season = sport.seasons[seasonIndex]
-        val week = weekIndex
-        binding.seasonAbout.text = "${season.about}\nWeek ${week + 1} main lifts: ${season.cycle[week].label}"
+        val s = sport ?: return
+        val season = s.seasons[seasonIndex(s)]
+        val week = weekIndex(s)
+        binding.weekToggle.isVisible = season.hasWeeks
+        binding.seasonAbout.text =
+            if (season.hasWeeks) "${season.about}\nWeek ${week + 1} main lifts: ${season.cycle[week].label}"
+            else season.about
         adapter.submit(season, week)
     }
 
@@ -104,9 +131,7 @@ class SportSections(
     }
 
     private companion object {
-        const val KEY_SHOW_SPORT = "show_sport"
-        const val KEY_SEASON = "season"
-        const val KEY_WEEK = "week"
+        const val KEY_SPORT = "sport"
     }
 }
 
@@ -120,7 +145,7 @@ private class SportDayAdapter(
     private var items: List<WorkoutWithExercises> = emptyList()
     private var days: List<SportDay> = emptyList()
 
-    @android.annotation.SuppressLint("NotifyDataSetChanged")   // 5 cards; they all change with the week
+    @android.annotation.SuppressLint("NotifyDataSetChanged")   // a handful of cards; they all change together
     fun submit(season: Season, weekIndex: Int) {
         days = season.days
         items = season.days.map { season.workoutFor(it, weekIndex) }

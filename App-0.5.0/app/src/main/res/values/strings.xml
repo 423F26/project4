@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">LIFTING APP</string>
+    <string name="app_name">CatPack</string>
     <string name="msu_logo_description">Montana State University logo</string>
     <string name="change_theme">Change theme</string>
     <string name="sign_out">Sign out</string>

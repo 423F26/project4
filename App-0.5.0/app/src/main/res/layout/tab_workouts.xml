@@ -37,6 +37,14 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Football" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/sportBasketball"
+                style="@style/Widget.Lifting.SegmentButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Basketball" />
         </com.google.android.material.button.MaterialButtonToggleGroup>
 
         <com.google.android.material.button.MaterialButtonToggleGroup
@@ -186,7 +194,9 @@
                     android:layout_marginStart="16dp"
                     android:layout_marginTop="8dp"
                     android:layout_marginEnd="16dp"
-                    android:textAppearance="@style/TextAppearance.Lifting.Caption" />
+                    android:lineSpacingExtra="2dp"
+                    android:textAppearance="@style/TextAppearance.Lifting.Body"
+                    android:textSize="15sp" />
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/sportWorkoutList"
