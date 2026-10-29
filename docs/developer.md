@@ -2,7 +2,7 @@
 
 This guide is for a developer joining the project. By the end you should have a working build, know where the code for each feature lives, and know how to test a change and submit it.
 
-> **Documented version:** the Beta Demo build on the `main` branch (October 2026). The Android project is in `App-0.7.0/`. The build file reports `versionName "0.7.0"` / `versionCode 7`, matching the folder.
+> **Documented version:** the Beta Demo build on the `main` branch (October 2026). The Android project is in `App-0.8.0/`. The build file reports `versionName "0.8.0"` / `versionCode 8`, matching the folder.
 
 **Contents:** [At a glance](#at-a-glance) · [Set up](#set-up) · [Build and run](#build-and-run) · [Understand the code](#understand-the-code) · [Test a change](#test-a-change) · [Troubleshoot](#troubleshoot)
 
@@ -35,12 +35,12 @@ How to propose and submit work (issues, branches, pull requests) is in the [READ
 |---|---|---|
 | Git | Any recent version | Used to clone the repo. |
 | Android Studio | A release that supports **AGP 9.4.1** and **compileSdk 37** | If sync says the Android Gradle Plugin is newer than Studio supports, update Android Studio. |
-| JDK | **25**, for running Gradle | Set in `App-0.7.0/gradle/gradle-daemon-jvm.properties`. If JDK 25 isn't installed, Gradle downloads it on the first sync. The app code itself compiles to Java 17. |
+| JDK | **25**, for running Gradle | Set in `App-0.8.0/gradle/gradle-daemon-jvm.properties`. If JDK 25 isn't installed, Gradle downloads it on the first sync. The app code itself compiles to Java 17. |
 | Android SDK | **Platform 37** plus Platform-Tools | Install them from Android Studio: **Tools → SDK Manager**. |
 | Device | Android 7.0 (API 24) or newer, emulator or phone | For Google sign-in, use a **Google Play** emulator image and sign in to a Google account on the device. |
 | Internet | Needed for the first sync and for signing in | Gradle downloads from Google Maven, Maven Central and JitPack. The app's sign-in talks to Firebase. |
 
-You don't install any libraries by hand. Gradle downloads everything declared in `App-0.7.0/app/build.gradle.kts`:
+You don't install any libraries by hand. Gradle downloads everything declared in `App-0.8.0/app/build.gradle.kts`:
 
 - Firebase BoM 34.4.0 (Auth, Firestore)
 - Credential Manager 1.5.0 and Google ID 1.1.1
@@ -49,13 +49,13 @@ You don't install any libraries by hand. Gradle downloads everything declared in
 - Material 1.13.0
 - MPAndroidChart v3.1.0
 
-**External service:** the Firebase project `liftingapp-9c495` provides Authentication and Cloud Firestore. It's already wired in through `App-0.7.0/app/google-services.json`. The team doesn't run any server of its own.
+**External service:** the Firebase project `liftingapp-9c495` provides Authentication and Cloud Firestore. It's already wired in through `App-0.8.0/app/google-services.json`. The team doesn't run any server of its own.
 
 ### Get the code
 
 ```powershell
 git clone https://github.com/423F26/project4.git
-cd project4\App-0.7.0
+cd project4\App-0.8.0
 dir
 ```
 
@@ -70,7 +70,7 @@ project4/
 ├── docs/                 developer.md (this file) and user.html (user guide)
 ├── docs & agile/         sprint records (Sprints/) and the earlier code reviews
 ├── Agents/               prompts for the team's AI review agents
-└── App-0.7.0/            the Android project; open THIS folder in Android Studio
+└── App-0.8.0/            the Android project; open THIS folder in Android Studio
     ├── settings.gradle.kts, build.gradle.kts, gradle.properties, gradlew, gradlew.bat
     ├── gradle/wrapper/   Gradle wrapper (9.6.0)
     └── app/              the app module: build.gradle.kts, google-services.json, src/
@@ -78,7 +78,7 @@ project4/
 
 ### Open the project in Android Studio
 
-1. **File → Open**, then select the **`project4\App-0.7.0`** folder (the one that contains `settings.gradle.kts`).
+1. **File → Open**, then select the **`project4\App-0.8.0`** folder (the one that contains `settings.gradle.kts`).
 
    Don't open the `project4` root. Its committed `.idea/gradle.xml` still points at the deleted `423-4/LIFTINGAPP` folder, so the sync fails with "run 'gradle init'" (see [Troubleshoot](#sync-says-to-create-a-new-gradle-build-in-this-directory-run-gradle-init)).
 2. Click **Trust Project** if asked, then wait for the Gradle sync. The first sync downloads Gradle 9.6.0, JDK 25 if needed, and all dependencies, so it can take several minutes.
@@ -90,10 +90,10 @@ There are no environment variables. Configuration lives in these files:
 
 | File | What it holds | In git? | What you do |
 |---|---|---|---|
-| `App-0.7.0/local.properties` | `sdk.dir`, the path to your Android SDK | No (`.gitignore`) | Android Studio creates it on the first sync. Create it yourself only if you build from the command line without ever opening Studio. |
-| `App-0.7.0/app/google-services.json` | Firebase project ID, app ID and API key | Yes | Nothing. Replace it only if the team moves to a different Firebase project. |
-| `google_web_client_id` in `App-0.7.0/app/src/main/res/values/strings.xml` | The OAuth "Web client ID" used for Google sign-in | Yes | Nothing. It must match **Firebase console → Authentication → Sign-in method → Google → Web SDK configuration**. |
-| `App-0.7.0/gradle.properties` | Gradle memory and configuration-cache settings | Yes | Nothing. |
+| `App-0.8.0/local.properties` | `sdk.dir`, the path to your Android SDK | No (`.gitignore`) | Android Studio creates it on the first sync. Create it yourself only if you build from the command line without ever opening Studio. |
+| `App-0.8.0/app/google-services.json` | Firebase project ID, app ID and API key | Yes | Nothing. Replace it only if the team moves to a different Firebase project. |
+| `google_web_client_id` in `App-0.8.0/app/src/main/res/values/strings.xml` | The OAuth "Web client ID" used for Google sign-in | Yes | Nothing. It must match **Firebase console → Authentication → Sign-in method → Google → Web SDK configuration**. |
+| `App-0.8.0/gradle.properties` | Gradle memory and configuration-cache settings | Yes | Nothing. |
 
 Example `local.properties` (use your own user name, and don't commit it):
 
@@ -114,7 +114,7 @@ Never commit real secrets: signing keystores (`*.jks`, `*.keystore`), passwords,
 
 **What needs a teammate:**
 
-- **Google sign-in on your build.** Google only accepts sign-ins from builds whose signing-key fingerprint is registered in Firebase. Your debug key is unique to your computer. From `App-0.7.0`, run:
+- **Google sign-in on your build.** Google only accepts sign-ins from builds whose signing-key fingerprint is registered in Firebase. Your debug key is unique to your computer. From `App-0.8.0`, run:
 
   ```powershell
   .\gradlew.bat signingReport
@@ -180,10 +180,10 @@ The only part of the app that runs online is Firebase, which Google hosts. Every
 
 ### Build from the command line (Windows PowerShell)
 
-Run every Gradle command from inside **`App-0.7.0`**:
+Run every Gradle command from inside **`App-0.8.0`**:
 
 ```powershell
-cd C:\path\to\project4\App-0.7.0
+cd C:\path\to\project4\App-0.8.0
 .\gradlew.bat assembleDebug
 ```
 
@@ -203,7 +203,7 @@ On macOS or Linux, use `./gradlew` instead of `.\gradlew.bat`. If you get "permi
 
 ## Understand the code
 
-Kotlin paths below are relative to `App-0.7.0/app/src/main/java/com/example/liftingapp/`.
+Kotlin paths below are relative to `App-0.8.0/app/src/main/java/com/example/liftingapp/`.
 
 ### Where things are
 
@@ -231,10 +231,10 @@ Kotlin paths below are relative to `App-0.7.0/app/src/main/java/com/example/lift
 
 Other important files:
 
-- **Manifest** (`App-0.7.0/app/src/main/AndroidManifest.xml`): `LoginActivity` is the launcher. `MainActivity` and `WorkoutEditorActivity` aren't exported. The app asks for no SMS or contacts permission: sending hands the message to another app.
+- **Manifest** (`App-0.8.0/app/src/main/AndroidManifest.xml`): `LoginActivity` is the launcher. `MainActivity` and `WorkoutEditorActivity` aren't exported. The app asks for no SMS or contacts permission: sending hands the message to another app.
 - **Layouts** (`res/layout/`): `activity_login.xml`, `activity_main.xml`, `activity_workout_editor.xml`, `tab_log.xml`, `tab_workouts.xml`, `tab_leaderboard.xml`, plus the `dialog_*.xml` and `item_*.xml` files.
 - **Values** (`res/values/`): strings, colors, themes and type styles.
-- **Tests:** `App-0.7.0/app/src/test/java/com/example/liftingapp/`.
+- **Tests:** `App-0.8.0/app/src/test/java/com/example/liftingapp/`.
 
 ### How the pieces fit
 
@@ -391,7 +391,7 @@ There's no screen to edit an athlete's name, position or body weight, or to dele
 
 ### Unit tests (required)
 
-There are 12 JVM tests in `App-0.7.0/app/src/test/java/com/example/liftingapp/`. They need no emulator and no test data. Run them from `App-0.7.0`:
+There are 12 JVM tests in `App-0.8.0/app/src/test/java/com/example/liftingapp/`. They need no emulator and no test data. Run them from `App-0.8.0`:
 
 ```powershell
 .\gradlew.bat :app:testDebugUnitTest
@@ -479,16 +479,16 @@ Run this on an emulator after a fresh install:
 Android Studio is syncing a folder that has no `settings.gradle.kts`. This usually happens because someone opened the `project4` root, whose committed `.idea/gradle.xml` links three Gradle projects under `423-4/LIFTINGAPP`, a folder that no longer exists.
 
 1. **Close it.** Choose **File → Close Project**.
-2. **Open the right folder.** Choose **File → Open** and pick **`App-0.7.0`**.
-3. **Remove stale links.** If Studio still syncs the wrong place, open the **Gradle** tool window (the elephant icon on the right edge). Right-click any project pointing at `423-4` and choose **Unlink Gradle Project**. Then click **+** and pick `App-0.7.0/settings.gradle.kts`.
+2. **Open the right folder.** Choose **File → Open** and pick **`App-0.8.0`**.
+3. **Remove stale links.** If Studio still syncs the wrong place, open the **Gradle** tool window (the elephant icon on the right edge). Right-click any project pointing at `423-4` and choose **Unlink Gradle Project**. Then click **+** and pick `App-0.8.0/settings.gradle.kts`.
 4. **Check the Gradle user home.** Go to **Settings → Build, Execution, Deployment → Build Tools → Gradle**. **Gradle user home** should be empty, which means the default `C:\Users\<you>\.gradle`. If it points at a folder inside the repo, Gradle fills that folder with `caches`, `daemon`, `native`, `wrapper/dists` and `.tmp` folders.
 5. **Clean up.** If a `423-4` folder appeared in your clone, Studio created it; delete it.
 
-### Gradle-generated folders appear inside `App-0.7.0` (`caches`, `daemon`, `native`, `.tmp`, a top-level `wrapper`)
+### Gradle-generated folders appear inside `App-0.8.0` (`caches`, `daemon`, `native`, `.tmp`, a top-level `wrapper`)
 
 This is the same wrong "Gradle user home" setting described in step 4 above. Fix the setting, then delete those folders. Don't commit them.
 
-Keep `App-0.7.0/gradle/wrapper/`. That's the real wrapper.
+Keep `App-0.8.0/gradle/wrapper/`. That's the real wrapper.
 
 ### "SDK location not found"
 
@@ -504,7 +504,7 @@ This library only exists on JitPack. Check that `maven { url = uri("https://jitp
 
 ### "File google-services.json is missing"
 
-The Google Services Gradle plugin needs `App-0.7.0/app/google-services.json`. Restore it from git:
+The Google Services Gradle plugin needs `App-0.8.0/app/google-services.json`. Restore it from git:
 
 ```powershell
 git checkout -- app/google-services.json

@@ -12,40 +12,15 @@
         android:orientation="vertical">
 
         <!-- Sport sections (ui/SportSections.kt): General = the workout library below; a sport shows its plan -->
-        <com.google.android.material.button.MaterialButtonToggleGroup
-            android:id="@+id/sportToggle"
+        <Spinner
+            android:id="@+id/sportSpinner"
+            style="@style/Widget.Lifting.Spinner"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
             android:layout_marginEnd="16dp"
-            app:selectionRequired="true"
-            app:singleSelection="true">
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/sportGeneral"
-                style="@style/Widget.Lifting.SegmentButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="General" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/sportFootball"
-                style="@style/Widget.Lifting.SegmentButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Football" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/sportBasketball"
-                style="@style/Widget.Lifting.SegmentButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Basketball" />
-        </com.google.android.material.button.MaterialButtonToggleGroup>
+            android:contentDescription="Sport" />
 
         <com.google.android.material.button.MaterialButtonToggleGroup
             android:id="@+id/filterToggle"
@@ -117,75 +92,32 @@
                 android:orientation="vertical"
                 android:visibility="gone">
 
-                <com.google.android.material.button.MaterialButtonToggleGroup
-                    android:id="@+id/seasonToggle"
+                <!-- Season and week of the cycle. The week dropdown hides for sports with no weekly rotation. -->
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
                     android:layout_marginTop="12dp"
                     android:layout_marginEnd="16dp"
-                    app:selectionRequired="true"
-                    app:singleSelection="true">
+                    android:orientation="horizontal">
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/seasonOff"
-                        style="@style/Widget.Lifting.SegmentButton"
+                    <Spinner
+                        android:id="@+id/seasonSpinner"
+                        style="@style/Widget.Lifting.Spinner"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Off-season" />
+                        android:contentDescription="Season" />
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/seasonIn"
-                        style="@style/Widget.Lifting.SegmentButton"
+                    <Spinner
+                        android:id="@+id/weekSpinner"
+                        style="@style/Widget.Lifting.Spinner"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
                         android:layout_weight="1"
-                        android:text="In-season" />
-                </com.google.android.material.button.MaterialButtonToggleGroup>
-
-                <com.google.android.material.button.MaterialButtonToggleGroup
-                    android:id="@+id/weekToggle"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginEnd="16dp"
-                    app:selectionRequired="true"
-                    app:singleSelection="true">
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/week1"
-                        style="@style/Widget.Lifting.SegmentButton"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Wk 1" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/week2"
-                        style="@style/Widget.Lifting.SegmentButton"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Wk 2" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/week3"
-                        style="@style/Widget.Lifting.SegmentButton"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Wk 3" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/week4"
-                        style="@style/Widget.Lifting.SegmentButton"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Wk 4" />
-                </com.google.android.material.button.MaterialButtonToggleGroup>
+                        android:contentDescription="Week" />
+                </LinearLayout>
 
                 <TextView
                     android:id="@+id/seasonAbout"

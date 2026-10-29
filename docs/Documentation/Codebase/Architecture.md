@@ -2,7 +2,7 @@
 
 How MSU Lift Tracker is built: the tech stack, where each file lives, how data moves through the layers, and how theming works.
 
-> **Path convention.** Kotlin paths are relative to `App-0.7.0/app/src/main/java/com/example/liftingapp/`. Resource paths (`res/...`) are relative to `App-0.7.0/app/src/main/`. Build files are given from `App-0.7.0/`.
+> **Path convention.** Kotlin paths are relative to `App-0.8.0/app/src/main/java/com/example/liftingapp/`. Resource paths (`res/...`) are relative to `App-0.8.0/app/src/main/`. Build files are given from `App-0.8.0/`.
 
 ---
 
@@ -29,7 +29,7 @@ MSU Lift Tracker is a single-Activity Android app written in Kotlin. It uses cla
 | `minSdk` | **24** (Android 7.0) | `app/build.gradle.kts` |
 | Java source / target compatibility | **17** (`JavaVersion.VERSION_17`) | `app/build.gradle.kts` |
 | `namespace` and `applicationId` | `com.example.liftingapp` | `app/build.gradle.kts` |
-| `versionCode` / `versionName` | `7` / `"0.7.0"` (matches the folder name `App-0.7.0`) | `app/build.gradle.kts` |
+| `versionCode` / `versionName` | `8` / `"0.8.0"` (matches the folder name `App-0.8.0`) | `app/build.gradle.kts` |
 | Build features | `viewBinding = true` | `app/build.gradle.kts` |
 | Release build | `isMinifyEnabled = false`. `app/src/main/keepRules/rules.keep` holds only the template comments. | `app/build.gradle.kts` |
 
@@ -102,25 +102,25 @@ com.example.liftingapp
 
 | File | What it does |
 |---|---|
-| [`MainActivity.kt`](../../App-0.7.0/app/src/main/java/com/example/liftingapp/MainActivity.kt) | The only Activity. Applies the saved theme, inflates `ActivityMainBinding`, creates the ViewModel and the three tab controllers, switches tabs, shows the theme picker, and saves the selected tab. |
-| [`LiftViewModel.kt`](../../App-0.7.0/app/src/main/java/com/example/liftingapp/LiftViewModel.kt) | `LiftViewModel` (an `AndroidViewModel`) holds the picker selections and exposes `LiveData` for each tab. Also defines `LeaderboardState`. |
-| [`data/Athlete.kt`](../../App-0.7.0/app/src/main/java/com/example/liftingapp/data/Athlete.kt) | Room entity for the `athletes` table. |
-| [`data/LiftEntry.kt`](../../App-0.7.0/app/src/main/java/com/example/liftingapp/data/LiftEntry.kt) | Room entity for the `lift_entries` table, with the foreign key to `athletes`. |
-| [`data/LiftWithAthlete.kt`](../../App-0.7.0/app/src/main/java/com/example/liftingapp/data/LiftWithAthlete.kt) | Room relation type: a set plus its athlete. |
-| [`data/LiftDao.kt`](../../App-0.7.0/app/src/main/java/com/example/liftingapp/data/LiftDao.kt) | All SQL queries and writes. |
-| [`data/LiftDatabase.kt`](../../App-0.7.0/app/src/main/java/com/example/liftingapp/data/LiftDatabase.kt) | The `RoomDatabase` singleton (`"lift_database"`, version 2). |
-| [`data/LiftRepository.kt`](../../App-0.7.0/app/src/main/java/com/example/liftingapp/data/LiftRepository.kt) | Thin wrapper over the DAO. The single entry point for data. |
-| [`data/Strength.kt`](../../App-0.7.0/app/src/main/java/com/example/liftingapp/data/Strength.kt) | `EXERCISES` list, `MAX_REPS = 20`, and `Strength.estimatedOneRepMax()` (Epley). |
-| [`data/Leaderboard.kt`](../../App-0.7.0/app/src/main/java/com/example/liftingapp/data/Leaderboard.kt) | `RankBy` enum, `LeaderboardRow`, and `buildLeaderboard()`. Plain Kotlin, unit tested. |
-| [`data/Progress.kt`](../../App-0.7.0/app/src/main/java/com/example/liftingapp/data/Progress.kt) | Chart math: `ChartRange`, `DayBest`, `ProgressWindow`, `localDay()`, `dailyBests()`, `progressWindow()`. Plain Kotlin, unit tested. |
-| [`ui/LogTab.kt`](../../App-0.7.0/app/src/main/java/com/example/liftingapp/ui/LogTab.kt) | Log tab: athlete and exercise pickers, progress card, range buttons, Log set button, edit and delete with Undo. |
-| [`ui/HistoryTab.kt`](../../App-0.7.0/app/src/main/java/com/example/liftingapp/ui/HistoryTab.kt) | History tab and its private `HistoryAdapter`. |
-| [`ui/LeaderboardTab.kt`](../../App-0.7.0/app/src/main/java/com/example/liftingapp/ui/LeaderboardTab.kt) | Leaderboard tab and its private `LeaderboardAdapter` (rank badge colors). |
-| [`ui/ProgressChart.kt`](../../App-0.7.0/app/src/main/java/com/example/liftingapp/ui/ProgressChart.kt) | MPAndroidChart code: `LineChart.setUpProgressChart()`, `LineChart.showProgress()`, `ProgressSummary`, and the tap tooltip `ProgressMarker`. |
-| [`ui/Dialogs.kt`](../../App-0.7.0/app/src/main/java/com/example/liftingapp/ui/Dialogs.kt) | `showLogSetDialog()` (log or edit a set) and `showAddAthleteDialog()`, including input validation. |
-| [`ui/AppTheme.kt`](../../App-0.7.0/app/src/main/java/com/example/liftingapp/ui/AppTheme.kt) | `AppTheme` enum (three themes) and saving the choice in `SharedPreferences`. |
-| [`ui/Format.kt`](../../App-0.7.0/app/src/main/java/com/example/liftingapp/ui/Format.kt) | Display helpers: `Float.lb()`, `Float.wholeLb()`, `Float.timesBodyWeight()`, `Long.shortDateTime()`, `Long.monthDay()`, `Long.shortTime()`, `Athlete.label()`. |
-| [`ui/Widgets.kt`](../../App-0.7.0/app/src/main/java/com/example/liftingapp/ui/Widgets.kt) | `spinnerAdapter()`, `Spinner.onItemSelected {}` and `View.themeColor()`. |
+| [`MainActivity.kt`](../../App-0.8.0/app/src/main/java/com/example/liftingapp/MainActivity.kt) | The only Activity. Applies the saved theme, inflates `ActivityMainBinding`, creates the ViewModel and the three tab controllers, switches tabs, shows the theme picker, and saves the selected tab. |
+| [`LiftViewModel.kt`](../../App-0.8.0/app/src/main/java/com/example/liftingapp/LiftViewModel.kt) | `LiftViewModel` (an `AndroidViewModel`) holds the picker selections and exposes `LiveData` for each tab. Also defines `LeaderboardState`. |
+| [`data/Athlete.kt`](../../App-0.8.0/app/src/main/java/com/example/liftingapp/data/Athlete.kt) | Room entity for the `athletes` table. |
+| [`data/LiftEntry.kt`](../../App-0.8.0/app/src/main/java/com/example/liftingapp/data/LiftEntry.kt) | Room entity for the `lift_entries` table, with the foreign key to `athletes`. |
+| [`data/LiftWithAthlete.kt`](../../App-0.8.0/app/src/main/java/com/example/liftingapp/data/LiftWithAthlete.kt) | Room relation type: a set plus its athlete. |
+| [`data/LiftDao.kt`](../../App-0.8.0/app/src/main/java/com/example/liftingapp/data/LiftDao.kt) | All SQL queries and writes. |
+| [`data/LiftDatabase.kt`](../../App-0.8.0/app/src/main/java/com/example/liftingapp/data/LiftDatabase.kt) | The `RoomDatabase` singleton (`"lift_database"`, version 2). |
+| [`data/LiftRepository.kt`](../../App-0.8.0/app/src/main/java/com/example/liftingapp/data/LiftRepository.kt) | Thin wrapper over the DAO. The single entry point for data. |
+| [`data/Strength.kt`](../../App-0.8.0/app/src/main/java/com/example/liftingapp/data/Strength.kt) | `EXERCISES` list, `MAX_REPS = 20`, and `Strength.estimatedOneRepMax()` (Epley). |
+| [`data/Leaderboard.kt`](../../App-0.8.0/app/src/main/java/com/example/liftingapp/data/Leaderboard.kt) | `RankBy` enum, `LeaderboardRow`, and `buildLeaderboard()`. Plain Kotlin, unit tested. |
+| [`data/Progress.kt`](../../App-0.8.0/app/src/main/java/com/example/liftingapp/data/Progress.kt) | Chart math: `ChartRange`, `DayBest`, `ProgressWindow`, `localDay()`, `dailyBests()`, `progressWindow()`. Plain Kotlin, unit tested. |
+| [`ui/LogTab.kt`](../../App-0.8.0/app/src/main/java/com/example/liftingapp/ui/LogTab.kt) | Log tab: athlete and exercise pickers, progress card, range buttons, Log set button, edit and delete with Undo. |
+| [`ui/HistoryTab.kt`](../../App-0.8.0/app/src/main/java/com/example/liftingapp/ui/HistoryTab.kt) | History tab and its private `HistoryAdapter`. |
+| [`ui/LeaderboardTab.kt`](../../App-0.8.0/app/src/main/java/com/example/liftingapp/ui/LeaderboardTab.kt) | Leaderboard tab and its private `LeaderboardAdapter` (rank badge colors). |
+| [`ui/ProgressChart.kt`](../../App-0.8.0/app/src/main/java/com/example/liftingapp/ui/ProgressChart.kt) | MPAndroidChart code: `LineChart.setUpProgressChart()`, `LineChart.showProgress()`, `ProgressSummary`, and the tap tooltip `ProgressMarker`. |
+| [`ui/Dialogs.kt`](../../App-0.8.0/app/src/main/java/com/example/liftingapp/ui/Dialogs.kt) | `showLogSetDialog()` (log or edit a set) and `showAddAthleteDialog()`, including input validation. |
+| [`ui/AppTheme.kt`](../../App-0.8.0/app/src/main/java/com/example/liftingapp/ui/AppTheme.kt) | `AppTheme` enum (three themes) and saving the choice in `SharedPreferences`. |
+| [`ui/Format.kt`](../../App-0.8.0/app/src/main/java/com/example/liftingapp/ui/Format.kt) | Display helpers: `Float.lb()`, `Float.wholeLb()`, `Float.timesBodyWeight()`, `Long.shortDateTime()`, `Long.monthDay()`, `Long.shortTime()`, `Athlete.label()`. |
+| [`ui/Widgets.kt`](../../App-0.8.0/app/src/main/java/com/example/liftingapp/ui/Widgets.kt) | `spinnerAdapter()`, `Spinner.onItemSelected {}` and `View.themeColor()`. |
 
 ### 3.2 Resources
 
@@ -142,7 +142,7 @@ com.example.liftingapp
 | `res/drawable/` | Background gradients (`bg_blue_gold`, `bg_grey_wash`, `bg_daylight`), shapes (`bg_spinner`, `bg_popup`, `bg_tab_track`, `tab_indicator_pill`, `bg_rank_badge`, `bg_chart_marker`), icons (`ic_add`, `ic_edit`, `ic_expand_more`, `ic_palette`, `ic_person_add`), the launcher icon, and `msu_logo.xml`. |
 | `res/font/` | `poppins_regular.ttf`, `poppins_medium.ttf`, `poppins_bold.ttf` |
 | `res/xml/backup_rules.xml`, `data_extraction_rules.xml` | Unmodified Android Studio templates. |
-| `App-0.7.0/third_party/POPPINS_FONT_LICENSE.txt` | Font license notice (see section 7.3). |
+| `App-0.8.0/third_party/POPPINS_FONT_LICENSE.txt` | Font license notice (see section 7.3). |
 
 ---
 
@@ -311,7 +311,7 @@ The palette button in the header lets the user pick one of three themes, defined
 - `res/values/type.xml` maps the whole Material 3 type scale to Poppins (`TextAppearance.Lifting.*`), and both base themes point at those styles. Buttons, tabs, dialogs and text fields therefore use Poppins without extra work.
 - Each style sets both `android:fontFamily` and `fontFamily`, so the font also loads on Android 7 (minSdk 24) through AppCompat.
 - The chart sets its own typefaces with `ResourcesCompat.getFont()` (regular for axes, legend and empty text; medium for the "Best" label).
-- **License:** `App-0.7.0/third_party/POPPINS_FONT_LICENSE.txt` says "Copyright 2020 The Poppins Project Authors (https://github.com/itfoundry/Poppins)" and that the font is licensed under the **SIL Open Font License, Version 1.1**. The file is a short notice that links to the full license text at https://openfontlicense.org.
+- **License:** `App-0.8.0/third_party/POPPINS_FONT_LICENSE.txt` says "Copyright 2020 The Poppins Project Authors (https://github.com/itfoundry/Poppins)" and that the font is licensed under the **SIL Open Font License, Version 1.1**. The file is a short notice that links to the full license text at https://openfontlicense.org.
 
 ### 7.4 Logo
 

@@ -4,8 +4,8 @@ Developer documentation for the MSU Lift Tracker Android app, the two-person Mon
 
 | | |
 |---|---|
-| **Code documented** | `App-0.7.0/` (folder name says **0.5.0**) |
-| **Version in the build file** | `versionName = "0.7.0"`, `versionCode = 7` (`App-0.7.0/app/build.gradle.kts`) |
+| **Code documented** | `App-0.8.0/` (folder name says **0.5.0**) |
+| **Version in the build file** | `versionName = "0.8.0"`, `versionCode = 8` (`App-0.8.0/app/build.gradle.kts`) |
 | **Date** | October 14, 2026 |
 | **Maintained by** | Document Manager agent |
 | **Source of truth** | The code. Where the README or the sprint records disagree with it, these docs describe what the code really does and list the difference below. |
@@ -21,7 +21,7 @@ Developer documentation for the MSU Lift Tracker Android app, the two-person Mon
 | [User Experience.md](User%20Experience.md) | Every tab and dialog, step-by-step flows, exact on-screen messages, empty states, the theme switcher, and the math behind every number (Epley e1RM, pound-for-pound, the progress chart) with worked examples. | You change a screen, a message, or a calculation. |
 | [Setup and Testing.md](Setup%20and%20Testing.md) | Prerequisites (JDK 25 for Gradle, SDK 37), which folder to open, Windows command-line builds, every unit test by name, a manual smoke test, and troubleshooting (including the "gradle init" sync error). | You set up a machine, run tests, or the build breaks. |
 
-**Path convention used in all docs:** Kotlin paths are relative to `App-0.7.0/app/src/main/java/com/example/liftingapp/`. Resource paths (`res/...`) are relative to `App-0.7.0/app/src/main/`.
+**Path convention used in all docs:** Kotlin paths are relative to `App-0.8.0/app/src/main/java/com/example/liftingapp/`. Resource paths (`res/...`) are relative to `App-0.8.0/app/src/main/`.
 
 **Other folders in `docs & agile`:**
 
@@ -45,9 +45,9 @@ Developer documentation for the MSU Lift Tracker Android app, the two-person Mon
 
 ## Docs vs code discrepancies
 
-Each item names the document, what it says, and what the code at `App-0.7.0` actually does.
+Each item names the document, what it says, and what the code at `App-0.8.0` actually does.
 
-1. **Version number.** Resolved in v0.7.0: the folder `App-0.7.0` and `versionName = "0.7.0"` (`versionCode = 7`) now match.
+1. **Version number.** Resolved: the folder `App-0.8.0` and `versionName = "0.8.0"` (`versionCode = 8`) match.
 2. **UI toolkit.** Sprint 1 Product Backlog item 2 and Sprint 1 Sprint Backlog items 7–9 describe a Jetpack Compose UI. The code uses Android Views with ViewBinding (`viewBinding = true`). There is no Compose dependency.
 3. **Database names.** Sprint 1 Sprint Backlog item 2 and the Sprint 1 Timesheet describe a `LiftSet` entity and an `AppDatabase`. The code has `LiftEntry` (table `lift_entries`), `Athlete` (table `athletes`) and `LiftDatabase` (file `"lift_database"`, version 2).
 4. **Exercise list.** Sprint 2 Sprint Backlog item 6 lists Bench, Squat, Deadlift and Power Clean. `EXERCISES` in `data/Strength.kt` also includes Pull-ups and Push-ups.
@@ -56,7 +56,7 @@ Each item names the document, what it says, and what the code at `App-0.7.0` act
 7. **Deleting athletes.** Sprint 2 Sprint Backlog item 3 and the 9/24 Timesheet entry say deleting an athlete cascades to their sets. The foreign key does have `onDelete = CASCADE`, but there is no DAO method or screen to delete (or edit) an athlete, so it never happens in the app.
 8. **Features with no sprint record.** Editing and deleting sets with Undo, the 1M/3M/6M/1Y/All range buttons, the heaviest-set line and tap tooltip, the theme picker (Blue & Gold, Graphite, Daylight) and the Poppins font are all in the code but in no backlog or timesheet.
 9. **Tests.** The Sprint 2 records, and the comment in `app/build.gradle.kts`, mention only `StrengthTest` and `LeaderboardTest`. The code also has `ProgressTest` (5 tests), the template `ExampleUnitTest`, and the template `ExampleInstrumentedTest`. The instrumented test can't compile because no AndroidX Test dependencies are declared.
-10. **The `423-4` folder.** Sprint 2 Sprint Backlog item 1 and the 9/25 Timesheet entry say the old `423-4` directory was removed. The folder is back, but the sprint record wasn't wrong. On October 14, 2026, Android Studio was still pointing at the old `project4/423-4/LIFTINGAPP` path, and it re-created `423-4/LIFTINGAPP/gradle/.gradle/` when it tried to sync there. That sync is what caused the "run 'gradle init'" error. Once Android Studio opens `App-0.7.0` (see Setup and Testing.md), delete `423-4` again.
+10. **The `423-4` folder.** Sprint 2 Sprint Backlog item 1 and the 9/25 Timesheet entry say the old `423-4` directory was removed. The folder is back, but the sprint record wasn't wrong. On October 14, 2026, Android Studio was still pointing at the old `project4/423-4/LIFTINGAPP` path, and it re-created `423-4/LIFTINGAPP/gradle/.gradle/` when it tried to sync there. That sync is what caused the "run 'gradle init'" error. Once Android Studio opens `App-0.8.0` (see Setup and Testing.md), delete `423-4` again.
 11. **README features.** The README promises different graph types (bench comparisons, pound-for-pound, overall heaviest weights) and tracking school records. The app has one per-athlete progress chart and a ranked leaderboard list. There is no choice of graph type and no records feature.
 12. **Code comments.** `res/layout/item_leaderboard.xml`, `res/drawable/bg_rank_badge.xml` and `ui/LeaderboardTab.kt` describe the 1st-place badge as gold. The code sets both the badge fill and its number to `colorOnPrimary`, which is `#FF231900` (near-black) in the default Blue & Gold theme.
 
