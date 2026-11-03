@@ -8,6 +8,7 @@ import androidx.core.content.edit
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.example.liftingapp.LiftViewModel
+import com.example.liftingapp.SportDayActivity
 import com.example.liftingapp.data.Athlete
 import com.example.liftingapp.data.BASKETBALL
 import com.example.liftingapp.data.FOOTBALL
@@ -38,7 +39,7 @@ class SportSections(
 ) {
     private val prefs = activity.getSharedPreferences("sport_sections", Context.MODE_PRIVATE)
     private var athletes: List<Athlete> = emptyList()
-    private val adapter = SportDayAdapter(::send)
+    private val adapter = SportDayAdapter(onOpen = ::openDay, onSend = ::send)
 
     /** Dropdown order. Index 0 is General (the workout library); the rest are sport plans. */
     private val sports: List<SportSection> = listOf(FOOTBALL, BASKETBALL)
@@ -122,6 +123,18 @@ class SportSections(
         adapter.submit(season, week)
     }
 
+    /**
+     * Full-screen view of one day (SportDayActivity), like tapping a workout in the library opens
+     * Garrett's editor: every exercise as a numbered card with its sets/reps and cue, plus Send.
+     */
+    private fun openDay(dayIndex: Int) {
+        val s = sport ?: return
+        val seasonIdx = seasonIndex(s)
+        activity.startActivity(
+            SportDayActivity.intent(activity, s.sport, seasonIdx, weekIndex(s, s.seasons[seasonIdx]), dayIndex)
+        )
+    }
+
     private fun send(item: WorkoutWithExercises) {
         showSendWorkoutDialog(
             context = activity,
@@ -137,8 +150,12 @@ class SportSections(
     }
 }
 
+/** Exercise lines a sport card shows before "+N more" (same as the library cards). */
+private const val PREVIEW_LINES = 5
+
 /** One card per training day, drawn with the library's item_workout layout. */
 private class SportDayAdapter(
+    private val onOpen: (dayIndex: Int) -> Unit,
     private val onSend: (WorkoutWithExercises) -> Unit
 ) : RecyclerView.Adapter<SportDayAdapter.Holder>() {
 
@@ -165,6 +182,11 @@ private class SportDayAdapter(
             val position = holder.bindingAdapterPosition
             if (position != RecyclerView.NO_POSITION) onSend(items[position])
         }
+        // Tap anywhere on the card for the full-screen view, same as the library cards.
+        b.root.setOnClickListener {
+            val position = holder.bindingAdapterPosition
+            if (position != RecyclerView.NO_POSITION) onOpen(position)
+        }
         return holder
     }
 
@@ -177,9 +199,15 @@ private class SportDayAdapter(
         b.meta.text = if (count == 1) "1 exercise" else "$count exercises"
         b.notes.text = item.workout.notes
         b.notes.isVisible = item.workout.notes.isNotBlank()
-        // Every line, not a preview: a day is short and the athlete needs all of it.
-        b.exercises.text = item.exercises.joinToString("\n") { WorkoutShare.exerciseLine(it, times = " × ") }
+        // A preview like the library cards; tapping the card opens every line full screen (SportDayActivity).
+        val shown = if (item.exercises.size > PREVIEW_LINES) item.exercises.take(PREVIEW_LINES - 1) else item.exercises
+        val more = item.exercises.size - shown.size
+        b.exercises.text = buildString {
+            append(shown.joinToString("\n") { WorkoutShare.exerciseLine(it, times = " × ") })
+            if (more > 0) append("\n+").append(more).append(" more · tap to see all")
+        }
         b.exercises.isVisible = item.exercises.isNotEmpty()
         b.sendButton.contentDescription = "Send ${item.workout.name}"
+        b.root.contentDescription = "Open ${item.workout.name}"
     }
 }

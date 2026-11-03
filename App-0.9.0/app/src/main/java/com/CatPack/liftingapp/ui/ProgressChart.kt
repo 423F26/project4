@@ -157,7 +157,9 @@ fun LineChart.showProgress(entries: List<LiftEntry>, range: ChartRange): Progres
     axisLeft.axisMinimum = max(0f, floor((low - headroom) / step) * step)
     axisLeft.axisMaximum = ceil((high + headroom * 0.6f) / step) * step
 
-    val primary = themeColor(MaterialR.attr.colorOnPrimary)
+    // colorPrimary, not colorOnPrimary: onPrimary is the text color for ON a primary-colored button,
+    // so it nearly matches the page background in every theme and made the est. max line invisible.
+    val primary = themeColor(androidx.appcompat.R.attr.colorPrimary)
     val secondary = themeColor(MaterialR.attr.colorSecondary)
     val hole = themeColor(MaterialR.attr.colorSurface)
     val labelFont = ResourcesCompat.getFont(context, R.font.poppins_medium)

@@ -30,6 +30,13 @@
             android:theme="@style/Theme.LIFTINGAPP"
             android:windowSoftInputMode="adjustResize"
         />
+        <!-- Read-only full view of a Football/Basketball plan day (ui/SportSections.kt) -->
+        <activity
+            android:name=".SportDayActivity"
+            android:exported="false"
+            android:label="Workout"
+            android:theme="@style/Theme.LIFTINGAPP" />
+
         <activity
             android:name=".WorkoutEditorActivity"
             android:exported="false"
