@@ -7,6 +7,7 @@ import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -27,15 +28,34 @@ class AuthRepository(
             .addOnFailureListener { onError(friendlyMessage(it)) }
     }
 
-    /** Creates the account, then writes a profile doc at users/{uid}. */
-    fun signUp(name: String, email: String, password: String, onSuccess: (FirebaseUser) -> Unit, onError: (String) -> Unit) {
+    /**
+     * Creates the account, then writes a profile doc at users/{uid} with the athlete details from the
+     * sign-up form. The athlete profile itself is made from these the first time the person opens a
+     * team or General use (LiftRepository.ensureOwnAthlete), so nobody has to add themselves.
+     * [positionGroup], [phone] and [bodyWeightLb] are optional (blank / null / 0).
+     */
+    fun signUp(
+        name: String,
+        email: String,
+        password: String,
+        positionGroup: String,
+        phone: String?,
+        bodyWeightLb: Float,
+        onSuccess: (FirebaseUser) -> Unit,
+        onError: (String) -> Unit
+    ) {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnSuccessListener { result ->
                 val user = result.user ?: return@addOnSuccessListener onError("Sign-up failed. Try again.")
+                // Shows in the header and on the team select screen before the profile loads.
+                user.updateProfile(UserProfileChangeRequest.Builder().setDisplayName(name).build())
                 val profile = hashMapOf(
                     "name" to name,
                     "email" to email,
                     "role" to "athlete",
+                    "positionGroup" to positionGroup,
+                    "phone" to phone,
+                    "bodyWeightLb" to bodyWeightLb.toDouble(),
                     "createdAt" to FieldValue.serverTimestamp()
                 )
                 db.collection("users").document(user.uid).set(profile)

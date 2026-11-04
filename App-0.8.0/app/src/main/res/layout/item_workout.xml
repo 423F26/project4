@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- One workout card on the Workouts tab. Tapping the card opens the editor (same as the pencil). -->
+<!-- One workout card on the Workouts tab. Tapping the card opens the editor (same as the pencil).
+     Send texts or emails it; Log records it in the Log tab's workout log. -->
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     style="@style/Widget.Lifting.Card"
@@ -93,6 +94,17 @@
                 android:layout_height="wrap_content"
                 android:text="Send"
                 app:icon="@drawable/ic_send"
+                app:iconSize="18dp" />
+
+            <!-- Log this workout for the Log tab's athlete, with a date and a checklist (ui/WorkoutLogger.kt) -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/logButton"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="Log"
+                app:icon="@drawable/ic_checklist"
                 app:iconSize="18dp" />
 
             <Space

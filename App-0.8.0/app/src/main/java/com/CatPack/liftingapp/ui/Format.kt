@@ -26,5 +26,5 @@ fun Long.monthDay(): String =
 fun Long.shortTime(): String =
     DateFormat.getTimeInstance(DateFormat.SHORT).format(Date(this))
 
-/** "Jordan Smith (OL)" — how athletes appear in spinners and the leaderboard. */
-fun com.example.liftingapp.data.Athlete.label(): String = "$name ($positionGroup)"
+/** "Jordan Smith (OL)", or just "Jordan Smith" without a position: how athletes appear in pickers. */
+fun com.example.liftingapp.data.Athlete.label(): String = if (positionGroup.isBlank()) name else "$name ($positionGroup)"

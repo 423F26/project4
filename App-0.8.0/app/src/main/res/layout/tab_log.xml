@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Garrett's project4 screen (exerciseSpinner + liftChart + addWeightFab, same ids),
-     with an athlete picker above the chart. The chart now sits in a card with a
-     best-max summary and a time-range selector underneath. -->
+<!-- Log tab (ui/LogTab.kt): athlete picker, exercise picker (every exercise from the Workouts tab,
+     plus your own), the progress chart card, and the workout log underneath. Log set (bottom right)
+     logs one set for the picked athlete and exercise. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
     <androidx.core.widget.NestedScrollView
+        android:id="@+id/logScroll"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipToPadding="false"
@@ -60,13 +61,34 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="10dp"
-                    android:minHeight="52dp"
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
+                    android:minHeight="52dp"
                     android:text="Add athlete"
                     app:icon="@drawable/ic_person_add"
                     app:iconSize="18dp" />
+
+                <!-- Edit / delete the picked athlete (only for people who may change them) -->
+                <ImageButton
+                    android:id="@+id/athleteMenuButton"
+                    android:layout_width="40dp"
+                    android:layout_height="52dp"
+                    android:layout_marginStart="2dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Athlete options"
+                    android:src="@drawable/ic_more_vert"
+                    android:visibility="gone"
+                    app:tint="?attr/colorOnSurfaceVariant" />
             </LinearLayout>
+
+            <!-- e.g. "You can add one athlete: yourself." or "Viewing Jordan's progress." -->
+            <TextView
+                android:id="@+id/athleteHint"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:textAppearance="@style/TextAppearance.Lifting.Caption"
+                android:visibility="gone" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -75,12 +97,21 @@
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
-                <Spinner
-                    android:id="@+id/exerciseSpinner"
+                <!-- Looks like the other dropdowns; opens the searchable exercise picker -->
+                <TextView
+                    android:id="@+id/exerciseField"
                     style="@style/Widget.Lifting.Spinner"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1" />
+                    android:layout_weight="1"
+                    android:clickable="true"
+                    android:contentDescription="Exercise"
+                    android:ellipsize="end"
+                    android:focusable="true"
+                    android:gravity="center_vertical"
+                    android:maxLines="1"
+                    android:textAppearance="@style/TextAppearance.Lifting.BodyLarge"
+                    android:textColor="?attr/colorOnSurface" />
 
                 <TextView
                     android:id="@+id/chartCaption"
@@ -160,7 +191,7 @@
                     <com.github.mikephil.charting.charts.LineChart
                         android:id="@+id/liftChart"
                         android:layout_width="match_parent"
-                        android:layout_height="300dp"
+                        android:layout_height="280dp"
                         android:layout_marginTop="8dp" />
 
                     <com.google.android.material.button.MaterialButtonToggleGroup
@@ -232,8 +263,144 @@
                 android:id="@+id/lastSavedText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="14dp"
+                android:layout_marginTop="10dp"
                 android:textAppearance="@style/TextAppearance.Lifting.Muted" />
+
+            <!-- Workout log: workouts logged from the Workouts tab, newest first, grouped by month -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/workoutLogCard"
+                style="@style/Widget.Lifting.Card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                app:cardCornerRadius="24dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingStart="16dp"
+                    android:paddingTop="14dp"
+                    android:paddingEnd="16dp"
+                    android:paddingBottom="10dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Workout log"
+                                android:textAppearance="@style/TextAppearance.Lifting.RowTitle" />
+
+                            <TextView
+                                android:id="@+id/workoutLogSummary"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:textAppearance="@style/TextAppearance.Lifting.Caption" />
+                        </LinearLayout>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/logWorkoutButton"
+                            style="@style/Widget.Material3.Button.TonalButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Log workout"
+                            app:icon="@drawable/ic_checklist"
+                            app:iconSize="18dp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/workoutLogControls"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <com.google.android.material.button.MaterialButtonToggleGroup
+                            android:id="@+id/logFilterToggle"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            app:selectionRequired="true"
+                            app:singleSelection="true">
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/logFilterAll"
+                                style="@style/Widget.Lifting.SegmentButton"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="All" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/logFilterOpen"
+                                style="@style/Widget.Lifting.SegmentButton"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1.3"
+                                android:text="To finish" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/logFilterDone"
+                                style="@style/Widget.Lifting.SegmentButton"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Done" />
+                        </com.google.android.material.button.MaterialButtonToggleGroup>
+
+                        <!-- Newest first / Oldest first -->
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/logSortButton"
+                            style="@style/Widget.Material3.Button.TextButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="4dp"
+                            android:minWidth="0dp"
+                            android:paddingStart="8dp"
+                            android:paddingEnd="8dp"
+                            app:icon="@drawable/ic_sort"
+                            app:iconSize="18dp" />
+                    </LinearLayout>
+
+                    <!-- Month headings (item_log_month) and log rows (item_session), filled by LogTab -->
+                    <LinearLayout
+                        android:id="@+id/workoutLogList"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:orientation="vertical" />
+
+                    <TextView
+                        android:id="@+id/workoutLogEmpty"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingTop="12dp"
+                        android:paddingBottom="8dp"
+                        android:textAppearance="@style/TextAppearance.Lifting.Muted"
+                        android:visibility="gone" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/showMoreButton"
+                        style="@style/Widget.Material3.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:text="Show more"
+                        android:visibility="gone" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 

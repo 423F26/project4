@@ -25,8 +25,8 @@ import com.google.android.material.snackbar.Snackbar
  *  - General shows the regular workout library (WorkoutsTab, unchanged).
  *  - A sport shows its plan instead: a season dropdown (Off-season / In-season), a week dropdown
  *    for sports that rotate weekly (football), and one card per training day. Cards use the same
- *    layout as the library and can be sent to an athlete with the same Send dialog; they're
- *    read-only (no edit/delete).
+ *    layout as the library and can be sent to an athlete with the same Send dialog or logged to the
+ *    Log tab's workout log; they're read-only (no edit/delete).
  *
  * Kept separate from WorkoutsTab so the library code doesn't change. Wired up in MainActivity.
  * To add a sport: add its SportSection in data/ and add it to [sports].
@@ -34,11 +34,12 @@ import com.google.android.material.snackbar.Snackbar
 class SportSections(
     private val activity: AppCompatActivity,
     private val binding: TabWorkoutsBinding,
-    private val viewModel: LiftViewModel
+    private val viewModel: LiftViewModel,
+    private val logger: WorkoutLogger
 ) {
-    private val prefs = activity.getSharedPreferences("sport_sections", Context.MODE_PRIVATE)
+    private val prefs = activity.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
     private var athletes: List<Athlete> = emptyList()
-    private val adapter = SportDayAdapter(::send)
+    private val adapter = SportDayAdapter(onSend = ::send, onLog = ::log)
 
     /** Dropdown order. Index 0 is General (the workout library); the rest are sport plans. */
     private val sports: List<SportSection> = listOf(FOOTBALL, BASKETBALL)
@@ -53,8 +54,7 @@ class SportSections(
 
     // Season and week are remembered per sport.
     private fun seasonIndex(s: SportSection) = prefs.getInt("${s.sport}_season", 0).coerceIn(0, s.seasons.lastIndex)
-    private fun weekIndex(s: SportSection, season: Season) =
-        if (season.hasWeeks) prefs.getInt("${s.sport}_week", 0).coerceIn(0, season.cycle.lastIndex) else 0
+    private fun weekIndex(s: SportSection, season: Season) = weekIndex(activity, s, season)
 
     init {
         binding.sportWorkoutList.adapter = adapter
@@ -127,19 +127,39 @@ class SportSections(
             context = activity,
             item = item,
             athletes = athletes,
+            canSaveContact = viewModel::canEdit,
             onAthleteChanged = viewModel::updateAthlete,
             onProblem = { message -> Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show() }
         )
     }
 
-    private companion object {
-        const val KEY_SPORT = "sport"
+    /** Logs a plan day; the source says which plan and week it came from. */
+    private fun log(item: WorkoutWithExercises) {
+        val s = sport ?: return
+        val season = s.seasons[seasonIndex(s)]
+        val source = buildString {
+            append(s.sport).append(' ').append(season.name)
+            if (season.hasWeeks) append(", week ").append(weekIndex(s, season) + 1)
+        }
+        logger.log(item, source)
+    }
+
+    companion object {
+        private const val PREFS = "sport_sections"
+        private const val KEY_SPORT = "sport"
+
+        /** The week picked for [section]'s plan on the Workouts tab (0-based; always 0 without weekly rotation). */
+        fun weekIndex(context: Context, section: SportSection, season: Season): Int =
+            if (!season.hasWeeks) 0
+            else context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+                .getInt("${section.sport}_week", 0).coerceIn(0, season.cycle.lastIndex)
     }
 }
 
 /** One card per training day, drawn with the library's item_workout layout. */
 private class SportDayAdapter(
-    private val onSend: (WorkoutWithExercises) -> Unit
+    private val onSend: (WorkoutWithExercises) -> Unit,
+    private val onLog: (WorkoutWithExercises) -> Unit
 ) : RecyclerView.Adapter<SportDayAdapter.Holder>() {
 
     class Holder(val binding: ItemWorkoutBinding) : RecyclerView.ViewHolder(binding.root)
@@ -165,6 +185,10 @@ private class SportDayAdapter(
             val position = holder.bindingAdapterPosition
             if (position != RecyclerView.NO_POSITION) onSend(items[position])
         }
+        b.logButton.setOnClickListener {
+            val position = holder.bindingAdapterPosition
+            if (position != RecyclerView.NO_POSITION) onLog(items[position])
+        }
         return holder
     }
 
@@ -181,5 +205,6 @@ private class SportDayAdapter(
         b.exercises.text = item.exercises.joinToString("\n") { WorkoutShare.exerciseLine(it, times = " × ") }
         b.exercises.isVisible = item.exercises.isNotEmpty()
         b.sendButton.contentDescription = "Send ${item.workout.name}"
+        b.logButton.contentDescription = "Log ${item.workout.name}"
     }
 }

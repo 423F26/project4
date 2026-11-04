@@ -31,6 +31,27 @@
             android:windowSoftInputMode="adjustResize"
         />
         <activity
+            android:name=".TeamSelectActivity"
+            android:exported="false"
+            android:label="Choose a team"
+            android:theme="@style/Theme.LIFTINGAPP"
+            android:windowSoftInputMode="adjustResize"
+        />
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="false"
+            android:label="Account &amp; settings"
+            android:theme="@style/Theme.LIFTINGAPP"
+            android:windowSoftInputMode="adjustResize"
+        />
+        <activity
+            android:name=".WorkoutSessionActivity"
+            android:exported="false"
+            android:label="Workout"
+            android:theme="@style/Theme.LIFTINGAPP"
+            android:windowSoftInputMode="adjustResize"
+        />
+        <activity
             android:name=".WorkoutEditorActivity"
             android:exported="false"
             android:label="Workout"

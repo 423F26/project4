@@ -12,6 +12,9 @@ import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.credentials.exceptions.GetCredentialException
 import androidx.lifecycle.lifecycleScope
 import com.example.liftingapp.data.AuthRepository
+import com.example.liftingapp.data.ScopeStore
+import com.example.liftingapp.data.isValidPhone
+import com.example.liftingapp.data.orNullIfBlank
 import com.example.liftingapp.databinding.ActivityLoginBinding
 import com.example.liftingapp.ui.AppTheme
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
@@ -21,8 +24,10 @@ import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 
 /**
- * Launcher screen. Already signed in -> straight to MainActivity.
- * Otherwise one form that toggles between "Sign in" and "Create account", plus "Continue with Google".
+ * Launcher screen. Already signed in -> back to the last team (or the team select screen if none
+ * was picked yet, or if Account & settings asks to choose every time). Otherwise one form that toggles
+ * between "Sign in" and "Create account", plus "Continue with Google". Signing in always leads to
+ * the team select screen.
  */
 class LoginActivity : AppCompatActivity() {
 
@@ -31,11 +36,13 @@ class LoginActivity : AppCompatActivity() {
     private var isSignUp = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        setTheme(AppTheme.current(this).styleRes)
+        AppTheme.apply(this)
         super.onCreate(savedInstanceState)
 
-        if (auth.currentUser != null) {
-            openMain()
+        val signedIn = auth.currentUser
+        if (signedIn != null) {
+            val lastScope = ScopeStore.load(this, signedIn.uid)
+            if (lastScope != null && !ScopeStore.askEveryLaunch(this)) openMain() else openTeamSelect()
             return
         }
 
@@ -56,6 +63,7 @@ class LoginActivity : AppCompatActivity() {
 
     private fun updateMode() {
         binding.nameLayout.visibility = if (isSignUp) View.VISIBLE else View.GONE
+        binding.signUpExtras.visibility = if (isSignUp) View.VISIBLE else View.GONE
         binding.forgotPasswordButton.visibility = if (isSignUp) View.GONE else View.VISIBLE
         binding.submitButton.text = if (isSignUp) "Create account" else "Sign in"
         binding.toggleModeButton.text =
@@ -68,21 +76,28 @@ class LoginActivity : AppCompatActivity() {
         val name = binding.nameInput.text.toString().trim()
         val email = binding.emailInput.text.toString().trim()
         val password = binding.passwordInput.text.toString()
+        // Optional athlete details (create account only).
+        val position = binding.positionInput.text.toString().trim().uppercase()
+        val phone = binding.phoneInput.text.toString().trim()
+        val weightText = binding.bodyWeightInput.text.toString().trim()
+        val bodyWeight = if (weightText.isEmpty()) 0f else weightText.toFloatOrNull()?.takeIf { it > 0f }
 
         var valid = true
         if (isSignUp && name.isEmpty()) { binding.nameLayout.error = "Enter your name"; valid = false }
         if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) { binding.emailLayout.error = "Enter a valid email"; valid = false }
         if (password.length < 6) { binding.passwordLayout.error = "At least 6 characters"; valid = false }
+        if (isSignUp && bodyWeight == null) { binding.bodyWeightLayout.error = "Enter pounds, e.g. 185"; valid = false }
+        if (isSignUp && !isValidPhone(phone)) { binding.phoneLayout.error = "Enter a phone number, e.g. 406-555-0100"; valid = false }
         if (!valid) return
 
         setLoading(true)
-        val onSuccess: (com.google.firebase.auth.FirebaseUser) -> Unit = { openMain() }
+        val onSuccess: (com.google.firebase.auth.FirebaseUser) -> Unit = { openTeamSelect() }
         val onError: (String) -> Unit = { message ->
             setLoading(false)
             Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
         }
 
-        if (isSignUp) auth.signUp(name, email, password, onSuccess, onError)
+        if (isSignUp) auth.signUp(name, email, password, position, phone.orNullIfBlank(), bodyWeight ?: 0f, onSuccess, onError)
         else auth.signIn(email, password, onSuccess, onError)
     }
 
@@ -102,7 +117,7 @@ class LoginActivity : AppCompatActivity() {
                     credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
                 ) {
                     val idToken = GoogleIdTokenCredential.createFrom(credential.data).idToken
-                    auth.signInWithGoogle(idToken, onSuccess = { openMain() }, onError = ::showError)
+                    auth.signInWithGoogle(idToken, onSuccess = { openTeamSelect() }, onError = ::showError)
                 } else {
                     showError("Google sign-in failed. Try again.")
                 }
@@ -143,11 +158,19 @@ class LoginActivity : AppCompatActivity() {
         binding.nameLayout.error = null
         binding.emailLayout.error = null
         binding.passwordLayout.error = null
+        binding.bodyWeightLayout.error = null
+        binding.phoneLayout.error = null
     }
 
     private fun openMain() {
         startActivity(Intent(this, MainActivity::class.java))
         finish()   // so Back from MainActivity doesn't return to the login screen
+    }
+
+    /** After signing in: pick a team (or General use) first. */
+    private fun openTeamSelect() {
+        startActivity(TeamSelectActivity.intent(this, switching = false))
+        finish()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

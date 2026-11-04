@@ -5,9 +5,10 @@ import android.content.DialogInterface
 import android.view.LayoutInflater
 import android.widget.ArrayAdapter
 import androidx.core.widget.doAfterTextChanged
-import com.example.liftingapp.LiftViewModel
+import androidx.core.view.isVisible
 import com.example.liftingapp.R
 import com.example.liftingapp.data.Athlete
+import com.example.liftingapp.data.AthleteDetails
 import com.example.liftingapp.data.LiftEntry
 import com.example.liftingapp.data.MAX_REPS
 import com.example.liftingapp.data.MAX_SETS
@@ -28,12 +29,14 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
  * (needed for e1RM) and shows the estimate live. Save stays disabled until the input is valid.
  *
  * Pass [initial] to edit an existing set instead: the fields start filled in with its weight and reps.
+ * [subtitle] adds a line under the title, e.g. the workout's prescription when logging from a workout.
  */
 fun showLogSetDialog(
     context: Context,
     athlete: Athlete,
     exercise: String,
     initial: LiftEntry? = null,
+    subtitle: String? = null,
     onSave: (weight: Float, reps: Int) -> Unit
 ) {
     val b = DialogLogSetBinding.inflate(LayoutInflater.from(context))
@@ -45,6 +48,7 @@ fun showLogSetDialog(
 
     val dialog = MaterialAlertDialogBuilder(context)
         .setTitle(if (initial == null) "Log $exercise for ${athlete.name}" else "Edit $exercise for ${athlete.name}")
+        .apply { if (!subtitle.isNullOrBlank()) setMessage(subtitle) }
         .setView(b.root)
         .setPositiveButton("Save", null)   // click handled below so invalid input doesn't close the dialog
         .setNegativeButton("Cancel", null)
@@ -78,13 +82,19 @@ fun showLogSetDialog(
 }
 
 /**
- * Add one exercise to a workout, or edit one ([initial]). Same pattern as showLogSetDialog:
+ * Add one exercise to a workout, or edit one ([initial]). [suggestions] is the app's exercise list
+ * (the same one the Log tab offers, including custom exercises). Same pattern as showLogSetDialog:
  * the save button stays disabled until the exercise has a name, 1–[MAX_SETS] sets and reps,
  * and a live preview shows the line the athlete will get.
  */
-fun showExerciseDialog(context: Context, initial: WorkoutExercise? = null, onSave: (WorkoutExercise) -> Unit) {
+fun showExerciseDialog(
+    context: Context,
+    initial: WorkoutExercise? = null,
+    suggestions: List<String> = WORKOUT_EXERCISE_SUGGESTIONS,
+    onSave: (WorkoutExercise) -> Unit
+) {
     val b = DialogWorkoutExerciseBinding.inflate(LayoutInflater.from(context))
-    b.nameInput.setAdapter(ArrayAdapter(context, R.layout.item_spinner_dropdown, WORKOUT_EXERCISE_SUGGESTIONS.toMutableList()))
+    b.nameInput.setAdapter(ArrayAdapter(context, R.layout.item_spinner_dropdown, suggestions.toMutableList()))
     b.setsLayout.helperText = "1–$MAX_SETS"
     if (initial != null) {
         b.nameInput.setText(initial.name, false)   // false: don't pop the suggestion list open
@@ -140,44 +150,73 @@ fun showExerciseDialog(context: Context, initial: WorkoutExercise? = null, onSav
     refresh()
 }
 
-fun showAddAthleteDialog(context: Context, viewModel: LiftViewModel, onAdded: (Long) -> Unit) {
+/**
+ * Add an athlete, or edit one (start from [initial]). Only the name is required; position and
+ * body weight are optional (body weight is needed for pound-for-pound), and any phone or email
+ * typed has to look real.
+ *
+ * [intro] adds a line of explanation at the top; [showEmail] = false hides the contact email
+ * (editing your own profile: your account's email is used).
+ */
+fun showAthleteDialog(
+    context: Context,
+    title: String,
+    initial: AthleteDetails? = null,
+    intro: String? = null,
+    showEmail: Boolean = true,
+    saveLabel: String = if (initial == null) "Add" else "Save",
+    onSave: (AthleteDetails) -> Unit
+) {
     val b = DialogAddAthleteBinding.inflate(LayoutInflater.from(context))
+    b.introText.text = intro
+    b.introText.isVisible = !intro.isNullOrBlank()
+    b.emailLayout.isVisible = showEmail
+    if (initial != null) {
+        b.nameInput.setText(initial.name)
+        b.positionInput.setText(initial.positionGroup)
+        if (initial.bodyWeightLb > 0f) b.bodyWeightInput.setText(initial.bodyWeightLb.lb())
+        b.phoneInput.setText(initial.phone.orEmpty())
+        b.emailInput.setText(initial.email.orEmpty())
+    }
 
     val dialog = MaterialAlertDialogBuilder(context)
-        .setTitle("Add athlete")
+        .setTitle(title)
         .setView(b.root)
-        .setPositiveButton("Add", null)
+        .setPositiveButton(saveLabel, null)
         .setNegativeButton("Cancel", null)
         .show()
-    val add = dialog.getButton(DialogInterface.BUTTON_POSITIVE)
+    val save = dialog.getButton(DialogInterface.BUTTON_POSITIVE)
 
-    fun bodyWeight() = b.bodyWeightInput.text?.toString()?.toFloatOrNull()?.takeIf { it > 0f }
+    fun weightText() = b.bodyWeightInput.text?.toString()?.trim().orEmpty()
+    /** Blank = not set (0); otherwise it must be a positive number. Null = invalid. */
+    fun bodyWeight(): Float? = if (weightText().isEmpty()) 0f else weightText().toFloatOrNull()?.takeIf { it > 0f }
     fun phone() = b.phoneInput.text?.toString().orEmpty()
-    fun email() = b.emailInput.text?.toString().orEmpty()
+    fun email() = if (showEmail) b.emailInput.text?.toString().orEmpty() else ""
     fun refresh() {
-        // Phone and email are optional, but if one is typed it has to look real.
+        // Phone, email and body weight are optional, but if one is typed it has to look real.
         val phoneOk = isValidPhone(phone())
         val emailOk = isValidEmail(email())
+        val weightOk = bodyWeight() != null
         b.phoneLayout.error = if (phoneOk) null else "Enter a phone number, e.g. 406-555-0100"
         b.emailLayout.error = if (emailOk) null else "Enter an email address, e.g. name@example.com"
-        add.isEnabled = !b.nameInput.text.isNullOrBlank() && !b.positionInput.text.isNullOrBlank() &&
-            bodyWeight() != null && phoneOk && emailOk
+        b.bodyWeightLayout.error = if (weightOk) null else "Enter a weight in pounds, e.g. 185"
+        save.isEnabled = !b.nameInput.text.isNullOrBlank() && phoneOk && emailOk && weightOk
     }
 
     b.nameInput.doAfterTextChanged { refresh() }
-    b.positionInput.doAfterTextChanged { refresh() }
     b.bodyWeightInput.doAfterTextChanged { refresh() }
     b.phoneInput.doAfterTextChanged { refresh() }
     b.emailInput.doAfterTextChanged { refresh() }
-    add.setOnClickListener {
+    save.setOnClickListener {
         val weight = bodyWeight() ?: return@setOnClickListener
-        viewModel.addAthlete(
-            name = b.nameInput.text.toString(),
-            positionGroup = b.positionInput.text.toString(),
-            bodyWeightLb = weight,
-            phone = phone().orNullIfBlank(),
-            email = email().orNullIfBlank(),
-            onAdded = onAdded
+        onSave(
+            AthleteDetails(
+                name = b.nameInput.text.toString().trim(),
+                positionGroup = b.positionInput.text.toString().trim().uppercase(),
+                bodyWeightLb = weight,
+                phone = phone().orNullIfBlank(),
+                email = if (showEmail) email().orNullIfBlank() else initial?.email
+            )
         )
         dialog.dismiss()
     }

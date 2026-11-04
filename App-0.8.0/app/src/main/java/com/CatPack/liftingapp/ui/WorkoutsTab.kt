@@ -24,19 +24,22 @@ import com.google.android.material.snackbar.Snackbar
 
 /**
  * The coach's workout library: premade workouts plus the ones they made, filtered by the
- * All / Premade / Mine toggle. Each card can be sent (text, email or another app), edited
- * or deleted (with Undo). New workout and Edit open WorkoutEditorActivity.
+ * All / Premade / Mine toggle. Each card can be sent (text, email or another app), logged to the
+ * Log tab's workout log, edited or deleted (with Undo). New workout and Edit open
+ * WorkoutEditorActivity. The library is kept on this phone.
  */
 class WorkoutsTab(
     private val activity: AppCompatActivity,
     private val binding: TabWorkoutsBinding,
-    private val viewModel: LiftViewModel
+    private val viewModel: LiftViewModel,
+    private val logger: WorkoutLogger
 ) {
     private var athletes: List<Athlete> = emptyList()
 
     private val adapter = WorkoutAdapter(
         onEdit = { openEditor(it.workout.id) },
         onSend = ::send,
+        onLog = { logger.log(it, if (it.workout.isPremade) "Premade" else "Your workout") },
         onDelete = ::delete
     )
 
@@ -101,6 +104,7 @@ class WorkoutsTab(
             context = activity,
             item = item,
             athletes = athletes,
+            canSaveContact = viewModel::canEdit,
             onAthleteChanged = viewModel::updateAthlete,
             onProblem = ::showMessage
         )
@@ -136,6 +140,7 @@ private object WorkoutDiff : DiffUtil.ItemCallback<WorkoutWithExercises>() {
 private class WorkoutAdapter(
     private val onEdit: (WorkoutWithExercises) -> Unit,
     private val onSend: (WorkoutWithExercises) -> Unit,
+    private val onLog: (WorkoutWithExercises) -> Unit,
     private val onDelete: (WorkoutWithExercises) -> Unit
 ) : ListAdapter<WorkoutWithExercises, WorkoutAdapter.Holder>(WorkoutDiff) {
 
@@ -154,6 +159,7 @@ private class WorkoutAdapter(
         b.root.onItemClick(onEdit)
         b.editButton.onItemClick(onEdit)
         b.sendButton.onItemClick(onSend)
+        b.logButton.onItemClick(onLog)
         b.deleteButton.onItemClick(onDelete)
         return holder
     }
@@ -183,6 +189,7 @@ private class WorkoutAdapter(
 
         // Say which workout each button acts on, for TalkBack.
         b.sendButton.contentDescription = "Send ${workout.name}"
+        b.logButton.contentDescription = "Log ${workout.name}"
         b.editButton.contentDescription = "Edit ${workout.name}"
         b.deleteButton.contentDescription = "Delete ${workout.name}"
     }

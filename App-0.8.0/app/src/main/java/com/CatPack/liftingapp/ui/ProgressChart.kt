@@ -2,7 +2,6 @@ package com.example.liftingapp.ui
 
 import android.content.Context
 import android.graphics.Color
-import android.graphics.DashPathEffect
 import android.graphics.drawable.GradientDrawable
 import android.widget.TextView
 import androidx.core.content.res.ResourcesCompat
@@ -16,7 +15,6 @@ import com.example.liftingapp.data.dailyBests
 import com.example.liftingapp.data.localDay
 import com.example.liftingapp.data.progressWindow
 import com.github.mikephil.charting.charts.LineChart
-import com.github.mikephil.charting.components.Legend
 import com.github.mikephil.charting.components.LimitLine
 import com.github.mikephil.charting.components.MarkerView
 import com.github.mikephil.charting.components.XAxis
@@ -36,6 +34,7 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
+import androidx.appcompat.R as AppCompatR
 import com.google.android.material.R as MaterialR
 
 // ---- How "zoomed out" the chart is. Raise these for a flatter, wider view. ----
@@ -58,7 +57,6 @@ data class ProgressSummary(val best: DayBest, val gain: Float?, val since: Strin
 /** One-time styling. Colors come from the current theme, so this re-runs after a theme change. */
 fun LineChart.setUpProgressChart() {
     val muted = themeColor(MaterialR.attr.colorOnSurfaceVariant)
-    val onSurface = themeColor(MaterialR.attr.colorOnSurface)
     val grid = themeColor(MaterialR.attr.colorOutlineVariant)
     val font = ResourcesCompat.getFont(context, R.font.poppins_regular)
 
@@ -76,19 +74,8 @@ fun LineChart.setUpProgressChart() {
     minOffset = 4f
     extraBottomOffset = 6f
 
-    legend.apply {
-        textColor = onSurface
-        typeface = font
-        textSize = 12f
-        form = Legend.LegendForm.LINE
-        formSize = 18f
-        formLineWidth = 2.5f
-        xEntrySpace = 18f
-        verticalAlignment = Legend.LegendVerticalAlignment.TOP
-        horizontalAlignment = Legend.LegendHorizontalAlignment.LEFT
-        orientation = Legend.LegendOrientation.HORIZONTAL
-        setDrawInside(false)
-    }
+    // One line (the best estimated max per day), so no legend: the card's header already says what it is.
+    legend.isEnabled = false
 
     xAxis.apply {
         position = XAxis.XAxisPosition.BOTTOM
@@ -125,8 +112,10 @@ fun LineChart.setUpProgressChart() {
 }
 
 /**
- * Plots one athlete's progress for one lift: the best estimated max per training day
- * (solid, filled) and the heaviest weight moved that day (dashed), on a real time axis.
+ * Plots one athlete's progress for one lift: the best estimated max per training day (solid,
+ * filled) on a real time axis. There's deliberately no "heaviest set" line: the heaviest weight of
+ * a day depends on too many things (rep scheme, warm-ups, a light day) to read as progress, while
+ * the estimated max puts every set on the same scale.
  * Resets any pinch-zoom so every redraw starts fully zoomed out.
  *
  * Returns the numbers for the card header, or null when nothing falls inside [range]
@@ -150,34 +139,17 @@ fun LineChart.showProgress(entries: List<LiftEntry>, range: ChartRange): Progres
 
     // Y: padded well past the data and snapped to round numbers, so small changes
     // don't look like huge swings.
-    val low = shown.minOf { it.heaviest }
+    val low = shown.minOf { it.bestE1rm }
     val high = shown.maxOf { it.bestE1rm }
     val headroom = max(high * Y_HEADROOM, Y_MIN_HEADROOM_LB)
     val step = if (high >= 400f) 50f else 25f
     axisLeft.axisMinimum = max(0f, floor((low - headroom) / step) * step)
     axisLeft.axisMaximum = ceil((high + headroom * 0.6f) / step) * step
 
-    val primary = themeColor(MaterialR.attr.colorOnPrimary)
-    val secondary = themeColor(MaterialR.attr.colorSecondary)
+    val primary = themeColor(AppCompatR.attr.colorPrimary)   // colorPrimary is an AppCompat attribute, not a Material one
     val hole = themeColor(MaterialR.attr.colorSurface)
     val labelFont = ResourcesCompat.getFont(context, R.font.poppins_medium)
     val showCircles = shown.size <= MAX_POINTS_WITH_CIRCLES
-
-    val heaviestLine = LineDataSet(
-        shown.map { Entry((it.day - start).toFloat(), it.heaviest, it) },
-        "Heaviest set"
-    ).apply {
-        color = secondary
-        lineWidth = 1.5f
-        enableDashedLine(10f, 8f, 0f)
-        formLineDashEffect = DashPathEffect(floatArrayOf(6f, 4f), 0f)
-        setDrawCircles(showCircles)
-        setCircleColor(secondary)
-        circleRadius = 2.5f
-        setDrawCircleHole(false)
-        setDrawValues(false)
-        isHighlightEnabled = false   // taps go to the est. max line; its tooltip shows both
-    }
 
     val maxLine = LineDataSet(
         shown.map { Entry((it.day - start).toFloat(), it.bestE1rm, it) },
@@ -215,7 +187,7 @@ fun LineChart.showProgress(entries: List<LiftEntry>, range: ChartRange): Progres
         labelPosition = LimitLine.LimitLabelPosition.LEFT_TOP
     })
 
-    data = LineData(heaviestLine, maxLine)
+    data = LineData(maxLine)
     highlightValues(null)
     fitScreen()                                              // undo any leftover pinch-zoom
     setVisibleXRangeMinimum(min(MIN_VISIBLE_DAYS, span + 2 * xPad))
@@ -235,7 +207,7 @@ private fun dayFormat(pattern: String) =
 
 private fun SimpleDateFormat.formatDay(day: Long): String = format(Date(day * DAY_MS))
 
-/** Tooltip for a tapped point: date, est. max (and the set it came from), heaviest set. */
+/** Tooltip for a tapped point: date, and the est. max with the set it came from. */
 private class ProgressMarker(context: Context) : MarkerView(context, R.layout.chart_marker) {
 
     private val text: TextView = findViewById(R.id.markerText)
@@ -248,7 +220,6 @@ private class ProgressMarker(context: Context) : MarkerView(context, R.layout.ch
             text.text = buildString {
                 append(dateFormat.formatDay(day.day))
                 append("\nEst. max ${day.bestE1rm.wholeLb()} lb (${set.weight.lb()} × ${set.reps})")
-                if (day.heaviest > set.weight) append("\nHeaviest set ${day.heaviest.lb()} lb")
             }
         }
         super.refreshContent(e, highlight)   // re-measures to fit the new text

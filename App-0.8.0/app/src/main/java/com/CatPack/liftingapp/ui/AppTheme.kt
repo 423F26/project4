@@ -1,18 +1,30 @@
 package com.example.liftingapp.ui
 
+import android.app.Activity
 import android.content.Context
+import android.content.res.Configuration
 import androidx.annotation.StyleRes
 import androidx.core.content.edit
 import com.example.liftingapp.R
 
 /**
- * The themes offered in the palette menu (header, top right). Each maps to a style in
- * res/values/themes.xml. The choice is saved on the device and applied on launch.
+ * Light or dark mode, picked in Account & settings → Appearance. "System default" follows the phone's own
+ * dark-mode setting (and switches with it). Each mode maps to a style in res/values/themes.xml:
+ * Dark is the navy-and-gold look, Light is the bright navy-on-white look.
  */
-enum class AppTheme(val label: String, @StyleRes val styleRes: Int) {
-    BLUE_GOLD("Blue & Gold", R.style.Theme_LIFTINGAPP_BlueGold),
-    GRAPHITE("Graphite", R.style.Theme_LIFTINGAPP_Graphite),
-    DAYLIGHT("Daylight", R.style.Theme_LIFTINGAPP_Daylight);
+enum class AppTheme(val label: String) {
+    SYSTEM("System default"),
+    LIGHT("Light"),
+    DARK("Dark");
+
+    fun isDark(context: Context): Boolean = when (this) {
+        DARK -> true
+        LIGHT -> false
+        SYSTEM -> (context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+    }
+
+    @StyleRes
+    fun styleRes(context: Context): Int = if (isDark(context)) R.style.Theme_LIFTINGAPP_Dark else R.style.Theme_LIFTINGAPP_Light
 
     companion object {
         private const val PREFS = "appearance"
@@ -20,11 +32,19 @@ enum class AppTheme(val label: String, @StyleRes val styleRes: Int) {
 
         fun current(context: Context): AppTheme {
             val saved = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(KEY_THEME, null)
-            return entries.firstOrNull { it.name == saved } ?: BLUE_GOLD
+            return when (saved) {
+                // Themes saved by 0.8 and earlier: the two dark palettes became Dark, Daylight became Light.
+                "BLUE_GOLD", "GRAPHITE" -> DARK
+                "DAYLIGHT" -> LIGHT
+                else -> entries.firstOrNull { it.name == saved } ?: SYSTEM
+            }
         }
 
         fun save(context: Context, theme: AppTheme) {
             context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit { putString(KEY_THEME, theme.name) }
         }
+
+        /** Call in onCreate before any views are inflated. */
+        fun apply(activity: Activity) = activity.setTheme(current(activity).styleRes(activity))
     }
 }

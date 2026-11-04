@@ -25,12 +25,14 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
  *  - Send with another app: the system share sheet (GroupMe, WhatsApp, copy, ...)
  * Nothing is sent until the coach hits send in that app.
  *
- * [onAthleteChanged] saves new contact details; [onProblem] shows a message if no app can send.
+ * [onAthleteChanged] saves new contact details (only for athletes [canSaveContact] allows: coaches,
+ * or the athlete themselves); [onProblem] shows a message if no app can send.
  */
 fun showSendWorkoutDialog(
     context: Context,
     item: WorkoutWithExercises,
     athletes: List<Athlete>,
+    canSaveContact: (Athlete) -> Boolean,
     onAthleteChanged: (Athlete) -> Unit,
     onProblem: (String) -> Unit
 ) {
@@ -52,7 +54,7 @@ fun showSendWorkoutDialog(
         b.textButton.isEnabled = phoneOk
         b.emailButton.isEnabled = emailOk
         b.preview.text = message()
-        b.contactNote.isVisible = athlete != null
+        b.contactNote.isVisible = athlete?.let(canSaveContact) == true
         b.contactNote.text = athlete?.let { "Phone and email are saved to ${it.name} for next time." }.orEmpty()
     }
 
@@ -73,7 +75,7 @@ fun showSendWorkoutDialog(
 
     /** Saves whichever of phone/email the coach typed or changed for the picked athlete (valid ones only). */
     fun rememberContact() {
-        val current = athlete ?: return
+        val current = athlete?.takeIf(canSaveContact) ?: return
         val newPhone = if (isValidPhone(phone())) phone().orNullIfBlank() else current.phone
         val newEmail = if (isValidEmail(email())) email().orNullIfBlank() else current.email
         if (newPhone != current.phone || newEmail != current.email) {

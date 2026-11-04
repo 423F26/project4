@@ -22,12 +22,11 @@ enum class ChartRange(val days: Int?, val phrase: String) {
     ALL(null, "")
 }
 
-/** One training day for one lift: the set with the best e1RM, plus the heaviest weight moved that day. */
+/** One training day for one lift: the set with the best e1RM that day. */
 data class DayBest(
     val day: Long,           // local calendar day number, see localDay()
     val bestSet: LiftEntry,
-    val bestE1rm: Float,
-    val heaviest: Float
+    val bestE1rm: Float
 )
 
 /** The days that fall inside a chart range, plus the range's first and last day. */
@@ -39,6 +38,16 @@ data class ProgressWindow(val startDay: Long, val endDay: Long, val days: List<D
 fun localDay(millis: Long, zone: TimeZone = TimeZone.getDefault()): Long =
     (millis + zone.getOffset(millis)).floorDiv(DAY_MS)
 
+/**
+ * A moment on local calendar day [day] to stamp a set with: right now if [day] is today,
+ * otherwise noon that day (so the set lands on the right day on the chart in any time zone shift).
+ */
+fun timeOnDay(day: Long, now: Long = System.currentTimeMillis(), zone: TimeZone = TimeZone.getDefault()): Long {
+    if (localDay(now, zone) == day) return now
+    val noonUtc = day * DAY_MS + DAY_MS / 2
+    return noonUtc - zone.getOffset(noonUtc)
+}
+
 /** Collapses sets into one [DayBest] per calendar day, oldest first. */
 fun dailyBests(entries: List<LiftEntry>, zone: TimeZone = TimeZone.getDefault()): List<DayBest> =
     entries
@@ -48,8 +57,7 @@ fun dailyBests(entries: List<LiftEntry>, zone: TimeZone = TimeZone.getDefault())
             DayBest(
                 day = day,
                 bestSet = best,
-                bestE1rm = Strength.estimatedOneRepMax(best.weight, best.reps),
-                heaviest = sets.maxOf { it.weight }
+                bestE1rm = Strength.estimatedOneRepMax(best.weight, best.reps)
             )
         }
         .sortedBy { it.day }

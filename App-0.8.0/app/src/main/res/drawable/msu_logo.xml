@@ -10,8 +10,8 @@
 
   The header (activity_main.xml, @id/homeLogo) keeps the logo 48dp tall and
   sizes the width from the image, so square marks and wide wordmarks both fit.
-  Use the logo version made for dark backgrounds with the Blue & Gold and
-  Graphite themes.
+  The app has a light and a dark mode; a logo that works on both (or a
+  drawable-night/msu_logo variant for dark mode) looks best.
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="48dp"

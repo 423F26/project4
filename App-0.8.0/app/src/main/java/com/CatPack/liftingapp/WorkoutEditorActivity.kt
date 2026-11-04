@@ -12,7 +12,12 @@ import androidx.appcompat.widget.TooltipCompat
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.asLiveData
+import com.example.liftingapp.data.ExerciseCatalog
+import com.example.liftingapp.data.ProfileRepository
 import com.example.liftingapp.data.WorkoutShare
+import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.flow.catch
 import com.example.liftingapp.databinding.ActivityWorkoutEditorBinding
 import com.example.liftingapp.databinding.ItemWorkoutExerciseEditBinding
 import com.example.liftingapp.ui.AppTheme
@@ -34,8 +39,11 @@ class WorkoutEditorActivity : AppCompatActivity() {
     /** Whether this activity instance has filled in its views from the ViewModel yet. */
     private var bound = false
 
+    /** Exercise names to suggest: the same list as the Log tab, including this person's own exercises. */
+    private var suggestions: List<String> = ExerciseCatalog.build(emptyList())
+
     override fun onCreate(savedInstanceState: Bundle?) {
-        setTheme(AppTheme.current(this).styleRes)   // must happen before any views are inflated
+        AppTheme.apply(this)   // must happen before any views are inflated
         super.onCreate(savedInstanceState)
         binding = ActivityWorkoutEditorBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -52,6 +60,13 @@ class WorkoutEditorActivity : AppCompatActivity() {
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() = leave()
         })
+
+        FirebaseAuth.getInstance().currentUser?.uid?.let { uid ->
+            ProfileRepository(uid).profile()
+                .catch { /* offline or signed out: the built-in list is fine */ }
+                .asLiveData()
+                .observe(this) { profile -> suggestions = ExerciseCatalog.build(profile.customExercises) }
+        }
 
         viewModel.ready.observe(this) { ready -> if (ready && !bound) bindDraft() }
         viewModel.saved.observe(this) { saved ->
@@ -116,7 +131,7 @@ class WorkoutEditorActivity : AppCompatActivity() {
     private fun editExercise(index: Int?) {
         if (!bound) return
         val initial = index?.let { viewModel.exercises.getOrNull(it) }
-        showExerciseDialog(this, initial) { exercise ->
+        showExerciseDialog(this, initial, suggestions) { exercise ->
             if (index == null) viewModel.addExercise(exercise) else viewModel.replaceExercise(index, exercise)
             renderExercises()
         }

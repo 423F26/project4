@@ -10,14 +10,14 @@ class ProgressTest {
     private val hour = 3_600_000L
 
     private fun set(day: Long, weight: Float, reps: Int) =
-        LiftEntry(athleteId = 1, exercise = "Bench", weight = weight, reps = reps, date = day * DAY_MS + 10 * hour)
+        LiftEntry(athleteId = "a", exercise = "Bench", weight = weight, reps = reps, date = day * DAY_MS + 10 * hour)
 
     @Test
     fun oneBestPerDayOldestFirst() {
         val days = dailyBests(listOf(set(101, 200f, 3), set(100, 225f, 5), set(100, 245f, 1)), utc)
         assertEquals(listOf(100L, 101L), days.map { it.day })
         assertEquals(262.5f, days[0].bestE1rm, 0.01f)   // 225×5 (262.5) beats 245×1 (245)
-        assertEquals(245f, days[0].heaviest, 0.01f)     // heaviest weight is tracked separately
+        assertEquals(225f, days[0].bestSet.weight, 0.01f)
     }
 
     @Test
@@ -43,6 +43,16 @@ class ProgressTest {
         val window = progressWindow(days, ChartRange.MONTH, today = 100)
         assertEquals(71L, window.startDay)
         assertEquals(listOf(90L), window.days.map { it.day })
+    }
+
+    @Test
+    fun timeOnDayIsNowForTodayAndNoonOtherwise() {
+        val denver = TimeZone.getTimeZone("America/Denver")
+        val now = 200 * DAY_MS + 18 * hour   // 18:00 UTC = noon in Denver (UTC-6 in summer, -7 in winter)
+        val today = localDay(now, denver)
+        assertEquals(now, timeOnDay(today, now, denver))
+        val earlier = timeOnDay(today - 3, now, denver)
+        assertEquals(today - 3, localDay(earlier, denver))
     }
 
     @Test

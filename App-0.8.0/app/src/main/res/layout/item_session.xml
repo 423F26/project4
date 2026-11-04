@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- One logged workout in the Log tab's workout log: date, name, how much is checked off.
+     Tapping it opens the checklist (WorkoutSessionActivity). -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/selectableItemBackground"
+    android:gravity="center_vertical"
+    android:minHeight="64dp"
+    android:orientation="horizontal"
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp">
+
+    <!-- Date block: weekday over day of month -->
+    <LinearLayout
+        android:layout_width="48dp"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/weekday"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAllCaps="true"
+            android:textAppearance="@style/TextAppearance.Lifting.LabelSmall"
+            android:textColor="?attr/colorOnSurfaceVariant" />
+
+        <TextView
+            android:id="@+id/dayOfMonth"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.Lifting.StatSmall" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:textAppearance="@style/TextAppearance.Lifting.RowTitle" />
+
+        <TextView
+            android:id="@+id/meta"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textAppearance="@style/TextAppearance.Lifting.Caption" />
+
+        <!-- saveEnabled off: every row reuses this id; LogTab sets the progress from the data. -->
+        <com.google.android.material.progressindicator.LinearProgressIndicator
+            android:id="@+id/progress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:max="100"
+            android:saveEnabled="false"
+            app:indicatorColor="?attr/colorPrimary"
+            app:trackColor="?attr/colorOutlineVariant"
+            app:trackCornerRadius="4dp"
+            app:trackThickness="4dp" />
+    </LinearLayout>
+
+    <!-- "4/6", or a check mark once everything is done -->
+    <FrameLayout
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:layout_marginStart="8dp">
+
+        <TextView
+            android:id="@+id/count"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:textAppearance="@style/TextAppearance.Lifting.LabelMedium"
+            android:textColor="?attr/colorOnSurfaceVariant" />
+
+        <ImageView
+            android:id="@+id/doneIcon"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_gravity="center"
+            android:background="@drawable/bg_rank_badge"
+            android:backgroundTint="?attr/colorPrimary"
+            android:contentDescription="Done"
+            android:padding="5dp"
+            android:src="@drawable/ic_check"
+            android:visibility="gone"
+            app:tint="?attr/colorOnPrimary" />
+    </FrameLayout>
+</LinearLayout>

@@ -10,11 +10,12 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
-    entities = [Athlete::class, LiftEntry::class, Workout::class, WorkoutExercise::class],
+    entities = [LocalAthlete::class, LocalLiftEntry::class, Workout::class, WorkoutExercise::class],
     version = 3,
     exportSchema = false
 )
 abstract class LiftDatabase : RoomDatabase() {
+    /** Pre-0.9 athletes and sets, read once by LegacyImport. */
     abstract fun liftDao(): LiftDao
     abstract fun workoutDao(): WorkoutDao
 

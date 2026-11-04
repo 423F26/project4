@@ -4,38 +4,52 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import androidx.credentials.ClearCredentialStateRequest
-import androidx.credentials.CredentialManager
+import androidx.appcompat.widget.TooltipCompat
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
-import com.example.liftingapp.data.AuthRepository
+import com.example.liftingapp.data.Scope
+import com.example.liftingapp.data.ScopeStore
 import com.example.liftingapp.databinding.ActivityMainBinding
 import com.example.liftingapp.ui.AppTheme
 import com.example.liftingapp.ui.LeaderboardTab
 import com.example.liftingapp.ui.LogTab
-import com.example.liftingapp.ui.WorkoutsTab
 import com.example.liftingapp.ui.SportSections
+import com.example.liftingapp.ui.WorkoutLogger
+import com.example.liftingapp.ui.WorkoutsTab
+import com.example.liftingapp.ui.showAvatar
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
-import kotlinx.coroutines.launch
+import com.google.firebase.auth.FirebaseAuth
 
 /**
- * Views + ViewBinding, like project4. The Log tab is Garrett's spinner/chart/FAB screen;
- * Workouts and Leaderboard are separate tabs. Each tab's wiring lives in ui/ to keep this file short.
+ * The app for one team (or General use): Log, Workouts and Leaderboard tabs. Each tab's wiring
+ * lives in ui/ to keep this file short. The header shows the open team; its Switch team button goes
+ * back to the team select screen, and the profile picture opens Account & settings (SettingsActivity).
  */
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var viewModel: LiftViewModel
-    private val auth = AuthRepository()
+
+    /** Whether this screen was drawn in dark mode, so a change made in Account & settings can redraw it. */
+    private var drawnDark = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        setTheme(AppTheme.current(this).styleRes)   // must happen before any views are inflated
+        AppTheme.apply(this)   // must happen before any views are inflated
+        drawnDark = AppTheme.current(this).isDark(this)
         super.onCreate(savedInstanceState)
 
         // Not signed in (e.g. session expired) -> back to the login screen.
-        if (auth.currentUser == null) {
-            openLogin()
+        val user = FirebaseAuth.getInstance().currentUser
+        if (user == null) {
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish()
+            return
+        }
+        // No team picked yet on this phone -> pick one first.
+        if (ScopeStore.load(this, user.uid) == null) {
+            startActivity(TeamSelectActivity.intent(this, switching = false))
+            finish()
             return
         }
 
@@ -43,15 +57,44 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         viewModel = ViewModelProvider(this)[LiftViewModel::class.java]
+        val scope = viewModel.scope
 
-        LogTab(this, binding.logTab, viewModel)
-        WorkoutsTab(this, binding.workoutsTab, viewModel)
-        SportSections(this, binding.workoutsTab, viewModel)   // General / Football sections above the library
+        val logger = WorkoutLogger(this, viewModel, ::showMessage)
+        val logTab = LogTab(this, binding.logTab, viewModel, logger)
+        WorkoutsTab(this, binding.workoutsTab, viewModel, logger)
+        SportSections(this, binding.workoutsTab, viewModel, logger)   // General / Football / Basketball sections above the library
         LeaderboardTab(this, binding.leaderboardTab, viewModel)
 
-        setupTabs(savedInstanceState?.getInt(KEY_TAB) ?: 0)
-        binding.themeButton.setOnClickListener { showThemePicker() }
-        binding.signOutButton.setOnClickListener { confirmSignOut() }
+        setupHeader(scope)
+        setupTabs(savedInstanceState?.getInt(KEY_TAB) ?: TAB_LOG)
+
+        viewModel.cloudMessages.observe(this) { event -> event.take()?.let(::showMessage) }
+        viewModel.profile.observe(this) { showHeaderAvatar() }
+        viewModel.checkMembership(::removedFromTeam)
+        if (savedInstanceState == null) viewModel.checkLegacyData(logTab::offerLegacyImport)
+    }
+
+    private fun setupHeader(scope: Scope) {
+        binding.switchTeamButton.text = scope.title
+        binding.switchTeamButton.contentDescription = "${scope.title}. ${getString(R.string.switch_team)}"
+        TooltipCompat.setTooltipText(binding.switchTeamButton, getString(R.string.switch_team))
+        binding.switchTeamButton.setOnClickListener { switchTeam() }
+        TooltipCompat.setTooltipText(binding.avatarButton, getString(R.string.open_settings))
+        binding.avatarButton.setOnClickListener { startActivity(Intent(this, SettingsActivity::class.java)) }
+        showHeaderAvatar()
+    }
+
+    /** Back from Account & settings: pick up a new theme or profile picture. */
+    override fun onResume() {
+        super.onResume()
+        if (!::binding.isInitialized) return
+        if (AppTheme.current(this).isDark(this) != drawnDark) recreate() else showHeaderAvatar()
+    }
+
+    private fun showHeaderAvatar() {
+        val name = viewModel.currentProfile?.name?.takeIf { it.isNotBlank() }
+            ?: FirebaseAuth.getInstance().currentUser?.displayName.orEmpty()
+        binding.avatarButton.showAvatar(this, viewModel.uid, name)
     }
 
     private fun setupTabs(initialTab: Int) {
@@ -65,47 +108,33 @@ class MainActivity : AppCompatActivity() {
             override fun onTabUnselected(tab: TabLayout.Tab) {}
             override fun onTabReselected(tab: TabLayout.Tab) {}
         })
-        binding.tabs.getTabAt(initialTab)?.select()
-        show(initialTab)
+        val start = initialTab.coerceIn(0, pages.lastIndex)
+        binding.tabs.getTabAt(start)?.select()
+        show(start)
     }
 
-    /** Sign-out button (header, top right): confirm, sign out of Firebase, return to login. */
-    private fun confirmSignOut() {
+    /** Opens the team select screen. Picking a team there replaces this screen; Back returns here. */
+    private fun switchTeam() {
+        startActivity(TeamSelectActivity.intent(this, switching = true))
+    }
+
+    /** This person left the open team on another phone, or a coach removed them. */
+    private fun removedFromTeam() {
+        if (isFinishing) return
+        ScopeStore.clear(this, viewModel.uid)
         MaterialAlertDialogBuilder(this)
-            .setTitle("Sign out?")
-            .setMessage(auth.currentUser?.email?.let { "You're signed in as $it." })
-            .setPositiveButton("Sign out") { _, _ ->
-                auth.signOut()
-                lifecycleScope.launch {
-                    // Forget the Google account choice so the picker shows again next time.
-                    runCatching { CredentialManager.create(this@MainActivity).clearCredentialState(ClearCredentialStateRequest()) }
-                    openLogin()
-                }
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
-    }
-
-    private fun openLogin() {
-        startActivity(Intent(this, LoginActivity::class.java))
-        finish()
-    }
-
-    /** Palette button: pick a theme, save it, and rebuild the screen in the new colors. */
-    private fun showThemePicker() {
-        val themes = AppTheme.entries
-        val current = AppTheme.current(this)
-        MaterialAlertDialogBuilder(this)
-            .setTitle("Theme")
-            .setSingleChoiceItems(themes.map { it.label }.toTypedArray(), themes.indexOf(current)) { dialog, which ->
-                dialog.dismiss()
-                val chosen = themes[which]
-                if (chosen != current) {
-                    AppTheme.save(this, chosen)
-                    recreate()   // ViewModel and the selected tab survive this
-                }
+            .setTitle("You're not on ${viewModel.scope.title} any more")
+            .setMessage("Pick another team, or use the app on your own.")
+            .setCancelable(false)
+            .setPositiveButton("Choose a team") { _, _ ->
+                startActivity(TeamSelectActivity.intent(this, switching = false))
+                finish()
             }
             .show()
+    }
+
+    private fun showMessage(message: String) {
+        Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -115,5 +144,6 @@ class MainActivity : AppCompatActivity() {
 
     private companion object {
         const val KEY_TAB = "selected_tab"
+        const val TAB_LOG = 0
     }
 }
