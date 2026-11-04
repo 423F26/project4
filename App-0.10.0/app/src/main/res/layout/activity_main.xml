@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- App shell: header (logo, app name, Switch team button, profile picture), pill-style tab bar,
+     then the three tab layouts stacked underneath (only one visible at a time). The profile
+     picture opens Account & settings (SettingsActivity).
+     fitsSystemWindows keeps content out from under the status bar (targetSdk 36 is edge-to-edge). -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mainRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+
+    <!-- Header: university logo, app name with the open team under it, profile picture -->
+    <LinearLayout
+        android:id="@+id/header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="16dp"
+        android:paddingTop="10dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="10dp">
+
+        <!-- Swap res/drawable/msu_logo.xml for the official logo (see the note in that file).
+             Height is fixed; width follows the image so wide wordmarks fit too. -->
+        <ImageView
+            android:id="@+id/homeLogo"
+            android:layout_width="wrap_content"
+            android:layout_height="44dp"
+            android:adjustViewBounds="true"
+            android:contentDescription="@string/msu_logo_description"
+            android:maxWidth="140dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/msu_logo" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/appTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="@string/app_name"
+                android:textAppearance="@style/TextAppearance.Lifting.AppTitle" />
+
+            <!-- Switch team: shows the open team (or General use); opens the team select screen -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/switchTeamButton"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="wrap_content"
+                android:layout_height="34dp"
+                android:layout_marginTop="2dp"
+                android:ellipsize="end"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:maxLines="1"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:paddingStart="12dp"
+                android:paddingEnd="10dp"
+                android:textAppearance="@style/TextAppearance.Lifting.LabelMedium"
+                app:icon="@drawable/ic_swap"
+                app:iconGravity="end"
+                app:iconPadding="6dp"
+                app:iconSize="16dp" />
+        </LinearLayout>
+
+        <!-- Profile picture; opens Account & settings -->
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/avatarButton"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="10dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/open_settings"
+            android:scaleType="centerCrop"
+            app:shapeAppearanceOverlay="@style/ShapeAppearance.Lifting.Circle" />
+    </LinearLayout>
+
+    <!-- Segmented tab bar: rounded track, sliding pill for the selected tab -->
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabs"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="4dp"
+        android:background="@drawable/bg_tab_track"
+        android:padding="4dp"
+        app:tabGravity="fill"
+        app:tabIndicator="@drawable/tab_indicator_pill"
+        app:tabIndicatorAnimationDuration="260"
+        app:tabIndicatorAnimationMode="elastic"
+        app:tabIndicatorColor="?attr/colorPrimary"
+        app:tabIndicatorFullWidth="true"
+        app:tabIndicatorGravity="stretch"
+        app:tabMaxWidth="0dp"
+        app:tabMode="fixed"
+        app:tabPaddingEnd="6dp"
+        app:tabPaddingStart="6dp"
+        app:tabRippleColor="@android:color/transparent"
+        app:tabSelectedTextColor="?attr/colorOnPrimary"
+        app:tabTextAppearance="@style/TextAppearance.Lifting.Tab"
+        app:tabTextColor="?attr/colorOnSurfaceVariant" />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <include
+            android:id="@+id/logTab"
+            layout="@layout/tab_log" />
+
+        <include
+            android:id="@+id/workoutsTab"
+            layout="@layout/tab_workouts"
+            android:visibility="gone" />
+
+        <include
+            android:id="@+id/leaderboardTab"
+            layout="@layout/tab_leaderboard"
+            android:visibility="gone" />
+
+    </FrameLayout>
+</LinearLayout>
