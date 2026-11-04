@@ -1,13 +1,16 @@
 package com.example.liftingapp.ui
 
+import android.app.Activity
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.edit
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.example.liftingapp.LiftViewModel
+import com.example.liftingapp.SportDayActivity
 import com.example.liftingapp.data.Athlete
 import com.example.liftingapp.data.BASKETBALL
 import com.example.liftingapp.data.FOOTBALL
@@ -26,7 +29,8 @@ import com.google.android.material.snackbar.Snackbar
  *  - A sport shows its plan instead: a season dropdown (Off-season / In-season), a week dropdown
  *    for sports that rotate weekly (football), and one card per training day. Cards use the same
  *    layout as the library and can be sent to an athlete with the same Send dialog or logged to the
- *    Log tab's workout log; they're read-only (no edit/delete).
+ *    Log tab's workout log; they're read-only (no edit/delete). Tapping a card opens the whole day
+ *    full screen (SportDayActivity), whose Log/Send buttons come back here.
  *
  * Kept separate from WorkoutsTab so the library code doesn't change. Wired up in MainActivity.
  * To add a sport: add its SportSection in data/ and add it to [sports].
@@ -39,7 +43,29 @@ class SportSections(
 ) {
     private val prefs = activity.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
     private var athletes: List<Athlete> = emptyList()
-    private val adapter = SportDayAdapter(onSend = ::send, onLog = ::log)
+    private val adapter = SportDayAdapter(onOpen = ::openDay, onSend = ::send, onLog = ::log)
+
+    /**
+     * The full-screen day view (SportDayActivity). Its Log and Send buttons come back here, so they
+     * run exactly like this card's buttons. Registered here (during MainActivity.onCreate) so the
+     * result still arrives after a rotation, same as WorkoutsTab's editor.
+     */
+    private val dayScreen = activity.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        val data = result.data
+        if (result.resultCode != Activity.RESULT_OK || data == null) return@registerForActivityResult
+        val section = sports.firstOrNull { it.sport == data.getStringExtra(SportDayActivity.EXTRA_SPORT) }
+            ?: return@registerForActivityResult
+        val season = section.seasons.getOrNull(data.getIntExtra(SportDayActivity.EXTRA_SEASON, 0))
+            ?: return@registerForActivityResult
+        val day = season.days.getOrNull(data.getIntExtra(SportDayActivity.EXTRA_DAY, 0))
+            ?: return@registerForActivityResult
+        val week = data.getIntExtra(SportDayActivity.EXTRA_WEEK, 0)
+        val item = season.workoutFor(day, week)
+        when (data.getStringExtra(SportDayActivity.EXTRA_ACTION)) {
+            SportDayActivity.ACTION_SEND -> send(item)
+            SportDayActivity.ACTION_LOG -> logger.log(item, sourceOf(section, season, week))
+        }
+    }
 
     /** Dropdown order. Index 0 is General (the workout library); the rest are sport plans. */
     private val sports: List<SportSection> = listOf(FOOTBALL, BASKETBALL)
@@ -137,11 +163,22 @@ class SportSections(
     private fun log(item: WorkoutWithExercises) {
         val s = sport ?: return
         val season = s.seasons[seasonIndex(s)]
-        val source = buildString {
-            append(s.sport).append(' ').append(season.name)
-            if (season.hasWeeks) append(", week ").append(weekIndex(s, season) + 1)
-        }
-        logger.log(item, source)
+        logger.log(item, sourceOf(s, season, weekIndex(s, season)))
+    }
+
+    /** "Football Off-season, week 2" or "Basketball In-season". */
+    private fun sourceOf(section: SportSection, season: Season, week: Int): String = buildString {
+        append(section.sport).append(' ').append(season.name)
+        if (season.hasWeeks) append(", week ").append(week + 1)
+    }
+
+    /** Tapping a day card: the full-screen view of that day for the season and week picked above. */
+    private fun openDay(dayIndex: Int) {
+        val s = sport ?: return
+        val seasonIdx = seasonIndex(s)
+        dayScreen.launch(
+            SportDayActivity.intent(activity, s.sport, seasonIdx, weekIndex(s, s.seasons[seasonIdx]), dayIndex)
+        )
     }
 
     companion object {
@@ -156,8 +193,12 @@ class SportSections(
     }
 }
 
+/** Exercise lines a sport card shows before "+N more" (same as the library cards). */
+private const val PREVIEW_LINES = 5
+
 /** One card per training day, drawn with the library's item_workout layout. */
 private class SportDayAdapter(
+    private val onOpen: (dayIndex: Int) -> Unit,
     private val onSend: (WorkoutWithExercises) -> Unit,
     private val onLog: (WorkoutWithExercises) -> Unit
 ) : RecyclerView.Adapter<SportDayAdapter.Holder>() {
@@ -189,6 +230,11 @@ private class SportDayAdapter(
             val position = holder.bindingAdapterPosition
             if (position != RecyclerView.NO_POSITION) onLog(items[position])
         }
+        // Tap anywhere else on the card for the full-screen view, like the library cards open the editor.
+        b.root.setOnClickListener {
+            val position = holder.bindingAdapterPosition
+            if (position != RecyclerView.NO_POSITION) onOpen(position)
+        }
         return holder
     }
 
@@ -201,10 +247,16 @@ private class SportDayAdapter(
         b.meta.text = if (count == 1) "1 exercise" else "$count exercises"
         b.notes.text = item.workout.notes
         b.notes.isVisible = item.workout.notes.isNotBlank()
-        // Every line, not a preview: a day is short and the athlete needs all of it.
-        b.exercises.text = item.exercises.joinToString("\n") { WorkoutShare.exerciseLine(it, times = " × ") }
+        // A preview like the library cards; tapping the card opens every line full screen.
+        val shown = if (item.exercises.size > PREVIEW_LINES) item.exercises.take(PREVIEW_LINES - 1) else item.exercises
+        val more = item.exercises.size - shown.size
+        b.exercises.text = buildString {
+            append(shown.joinToString("\n") { WorkoutShare.exerciseLine(it, times = " × ") })
+            if (more > 0) append("\n+").append(more).append(" more · tap to see all")
+        }
         b.exercises.isVisible = item.exercises.isNotEmpty()
         b.sendButton.contentDescription = "Send ${item.workout.name}"
         b.logButton.contentDescription = "Log ${item.workout.name}"
+        b.root.contentDescription = "Open ${item.workout.name}"
     }
 }
