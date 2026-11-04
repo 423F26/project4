@@ -141,7 +141,7 @@ class SportSections(
         binding.weekSpinner.isVisible = season.hasWeeks
         if (season.hasWeeks) {
             weekAdapter.clear()
-            weekAdapter.addAll(season.cycle.mapIndexed { i, scheme -> "Week ${i + 1}: ${scheme.label}" })
+            weekAdapter.addAll((0 until season.totalWeeks).map(season::weekLabel))
             binding.weekSpinner.setSelection(week, false)
         }
         binding.seasonAbout.text = season.about
@@ -189,7 +189,7 @@ class SportSections(
         fun weekIndex(context: Context, section: SportSection, season: Season): Int =
             if (!season.hasWeeks) 0
             else context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-                .getInt("${section.sport}_week", 0).coerceIn(0, season.cycle.lastIndex)
+                .getInt("${section.sport}_week", 0).coerceIn(0, season.totalWeeks - 1)
     }
 }
 

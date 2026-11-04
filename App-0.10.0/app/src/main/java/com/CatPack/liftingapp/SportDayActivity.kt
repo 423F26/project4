@@ -53,7 +53,7 @@ class SportDayActivity : AppCompatActivity() {
         val count = item.exercises.size
         val countText = if (count == 1) "1 exercise" else "$count exercises"
         binding.dayMeta.text = listOfNotNull(
-            if (season.hasWeeks) "Week ${week.coerceIn(0, season.cycle.lastIndex) + 1} of ${season.cycle.size}" else null,
+            if (season.hasWeeks) "Week ${week.coerceIn(0, season.totalWeeks - 1) + 1} of ${season.totalWeeks}" else null,
             countText
         ).joinToString(" · ")
 
