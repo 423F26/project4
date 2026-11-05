@@ -1,7 +1,7 @@
 rules_version = '2';
 
 // Cloud Firestore security rules for CatPack (MSU Lift Tracker), version 0.10.
-// The data layout is described in App-0.10.0/app/src/main/java/com/CatPack/liftingapp/data/CloudPaths.kt.
+// The data layout is described in App-0.11.0/app/src/main/java/com/CatPack/liftingapp/data/CloudPaths.kt.
 //
 // Deploy: Firebase console → Firestore Database → Rules → paste this file → Publish,
 // or `firebase deploy --only firestore:rules` from the repo root (uses firebase.json).

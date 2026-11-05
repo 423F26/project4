@@ -17,6 +17,7 @@ import com.example.liftingapp.data.SessionExercise
 import com.example.liftingapp.data.UserProfile
 import com.example.liftingapp.data.WorkoutSession
 import com.example.liftingapp.data.allMarked
+import com.example.liftingapp.data.inBackground
 import com.example.liftingapp.data.timeOnDay
 import com.example.liftingapp.data.toggled
 import com.example.liftingapp.data.withLoggedSet
@@ -50,7 +51,9 @@ class WorkoutSessionViewModel(application: Application) : AndroidViewModel(appli
         if (ids.value == null) ids.value = athleteId to sessionId
     }
 
-    private val profileState: StateFlow<UserProfile?> = ProfileRepository(uid).profile()
+    private val profileRepository = ProfileRepository(uid)
+
+    private val profileState: StateFlow<UserProfile?> = profileRepository.profile()
         .onEach { repository.profile = it }
         .catch { CloudErrors.report("load your profile", it) }
         .stateIn(viewModelScope, SharingStarted.Eagerly, null)
@@ -99,7 +102,17 @@ class WorkoutSessionViewModel(application: Application) : AndroidViewModel(appli
 
     fun changeDay(day: Long) = save { it.copy(day = day) }
 
-    fun addExercise(exercise: SessionExercise) = save { it.copy(exercises = it.exercises + exercise) }
+    fun addExercise(exercise: SessionExercise) {
+        save { it.copy(exercises = it.exercises + exercise) }
+        rememberExercise(exercise.name)
+    }
+
+    /** An exercise added to a logged workout also goes into "Your exercises" (Account & settings). */
+    private fun rememberExercise(raw: String) {
+        val name = ExerciseCatalog.cleanNewName(raw)?.let { ExerciseCatalog.canonical(it, catalog) } ?: return
+        if (ExerciseCatalog.contains(profileState.value?.customExercises.orEmpty(), name)) return
+        inBackground("add $name to your exercises") { profileRepository.addCustomExercise(name) }
+    }
 
     fun removeExercise(index: Int) = save { session ->
         session.copy(exercises = session.exercises.filterIndexed { i, _ -> i != index })

@@ -119,13 +119,11 @@ class LiftViewModel(application: Application) : AndroidViewModel(application) {
     /** This person's own athlete profile in this scope, if they've added one. */
     val ownAthlete: Athlete? get() = athleteList.find { it.id == uid }
 
-    /** Coaches can add any number of athletes; everyone else gets one: themselves. */
-    val canAddAthlete: Boolean get() = isCoach || ownAthlete == null
-
     init {
         // Accounts are athletes: make this person's own athlete profile here from their sign-up
         // details, so nobody has to add themselves. Not on teams for coaches (they'd land on their
-        // own roster and leaderboard); they can still add themselves there by hand.
+        // own roster and leaderboard). There's no adding athletes by hand: a team's roster is
+        // everyone who joined with its code.
         viewModelScope.launch {
             val profile = profileState.filterNotNull().first()
             if (scope == Scope.General || !profile.isCoach) {
@@ -275,32 +273,6 @@ class LiftViewModel(application: Application) : AndroidViewModel(application) {
 
     // --- Writes: athletes ---
 
-    /** Adds an athlete and returns their id right away (the write syncs in the background). */
-    fun addAthlete(
-        name: String,
-        positionGroup: String,
-        bodyWeightLb: Float,
-        phone: String? = null,
-        email: String? = null
-    ): String {
-        val ownProfile = !isCoach   // the rules give athlete accounts exactly one athlete: their own profile
-        val id = repository.newAthleteId(isOwnProfile = ownProfile)
-        repository.addAthlete(
-            Athlete(
-                id = id,
-                name = name.trim(),
-                positionGroup = positionGroup.trim().uppercase(),
-                bodyWeightLb = bodyWeightLb,
-                phone = phone,
-                email = email,
-                ownerUid = uid,
-                linkedUid = if (ownProfile) uid else null,
-                hideProgress = ownProfile && currentProfile?.shareProgress == false
-            )
-        )
-        return id
-    }
-
     /**
      * Saves changed details (the edit dialog, and the Send dialog for phone and email). Editing your
      * own athlete also updates your account and your athlete profile on every other team.
@@ -361,8 +333,25 @@ class LiftViewModel(application: Application) : AndroidViewModel(application) {
     // --- Writes: workout log ---
 
     /** Logs [item] for [athleteId] on local day [day]. Returns the log entry's id. */
-    fun logWorkout(item: WorkoutWithExercises, athleteId: String, day: Long, source: String): String =
-        repository.addSession(sessionFrom(item, athleteId, day, source))
+    fun logWorkout(item: WorkoutWithExercises, athleteId: String, day: Long, source: String): String {
+        val id = repository.addSession(sessionFrom(item, athleteId, day, source))
+        rememberExercises(item.exercises.map { it.name })
+        return id
+    }
+
+    /**
+     * Puts the exercises of a logged workout in this person's "Your exercises" list (Account &
+     * settings), so what they actually do is easy to find. Same spelling as the exercise list.
+     */
+    fun rememberExercises(names: List<String>) {
+        val known = customExercises
+        val new = names.mapNotNull(ExerciseCatalog::cleanNewName)
+            .map { ExerciseCatalog.canonical(it, currentCatalog) }
+            .filter { !ExerciseCatalog.contains(known, it) }
+            .distinctBy { it.lowercase() }
+        if (new.isEmpty()) return
+        inBackground("add to your exercises") { profileRepository.addCustomExercises(new) }
+    }
 
     fun deleteSession(session: WorkoutSession) = repository.deleteSession(session)
 

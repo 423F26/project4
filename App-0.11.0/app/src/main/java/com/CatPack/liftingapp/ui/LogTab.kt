@@ -18,7 +18,6 @@ import com.example.liftingapp.data.LogFilter
 import com.example.liftingapp.data.LogItem
 import com.example.liftingapp.data.LogSort
 import com.example.liftingapp.data.Strength
-import com.example.liftingapp.data.athleteDetails
 import com.example.liftingapp.data.details
 import com.example.liftingapp.data.localDay
 import com.example.liftingapp.databinding.ItemLogMonthBinding
@@ -91,7 +90,6 @@ class LogTab(
         setupChartSelection()
         binding.addWeightFab.setOnClickListener { onAddSetClicked() }
         binding.editSetButton.setOnClickListener { delLog() }
-        binding.addAthleteButton.setOnClickListener { onAddAthleteClicked() }
         binding.athleteMenuButton.setOnClickListener { showAthleteMenu(it) }
         observeData()
     }
@@ -217,16 +215,12 @@ class LogTab(
         val canEdit = viewModel.canEdit(athlete)
         binding.athleteMenuButton.isVisible = canEdit
         binding.logWorkoutButton.isVisible = canEdit
-        // Your own athlete profile is made from your account, so athlete accounts only see this
-        // if it couldn't be made yet (e.g. offline the first time).
-        binding.addAthleteButton.isVisible = viewModel.isCoach || viewModel.ownAthlete == null
-        binding.addAthleteButton.text = if (viewModel.isCoach) "Add athlete" else "Add me"
 
         binding.athleteHint.text = when {
             athlete != null && !viewModel.canSeeProgress(athlete) -> "${athlete.name.firstName()} keeps their progress private."
             athlete != null && !canEdit -> "Viewing ${athlete.name.firstName()}'s progress. Only coaches and ${athlete.name.firstName()} can log for them."
             !viewModel.isCoach && viewModel.ownAthlete == null && viewModel.athleteList.isNotEmpty() ->
-                "Your athlete profile hasn't been made yet. Tap Add me to make it now."
+                "Your athlete profile is still being set up. Check your connection if this doesn't go away."
             else -> ""
         }
         binding.athleteHint.isVisible = binding.athleteHint.text.isNotEmpty()
@@ -250,7 +244,9 @@ class LogTab(
         if (summary == null) {
             chart.setNoDataText(
                 when {
-                    viewModel.athleteId == null -> "Add an athlete to start logging."
+                    viewModel.athleteId == null ->
+                        if (viewModel.isCoach) "No athletes yet. They show up here once they join with your team code."
+                        else "Setting up your athlete profile…"
                     athlete != null && !viewModel.canSeeProgress(athlete) -> "${athlete.name.firstName()}'s progress is private."
                     sets.isEmpty() -> "No ${viewModel.exercise} sets yet." + if (viewModel.canEdit(athlete)) " Tap Log set to add one." else ""
                     else -> "No ${viewModel.exercise} sets in the last ${viewModel.chartRange.phrase}. Tap All to see every set."
@@ -274,24 +270,6 @@ class LogTab(
     }
 
     // --- Athletes ---
-
-    private fun onAddAthleteClicked() {
-        if (!viewModel.canAddAthlete) {
-            showMessage("Athlete accounts can add one athlete: themselves. Ask a coach to add anyone else.")
-            return
-        }
-        val own = !viewModel.isCoach
-        showAthleteDialog(
-            context = activity,
-            title = if (own) "Your athlete profile" else "Add athlete",
-            initial = if (own) viewModel.currentProfile?.athleteDetails() else null,
-            intro = if (own) "This is you on ${viewModel.scope.title}, from your account. Coaches add everyone else." else null,
-            saveLabel = "Add"
-        ) { details ->
-            val id = viewModel.addAthlete(details.name, details.positionGroup, details.bodyWeightLb, details.phone, details.email)
-            selectAthlete(id)
-        }
-    }
 
     private fun showAthleteMenu(anchor: View) {
         val athlete = viewModel.selected ?: return
@@ -346,9 +324,12 @@ class LogTab(
         val athlete = viewModel.selected
         when {
             athlete != null && viewModel.canEdit(athlete) -> Unit
-            athletes.isEmpty() || (viewModel.ownAthlete == null && viewModel.canAddAthlete) -> {
-                // No one this person can log for yet: go straight to adding an athlete.
-                onAddAthleteClicked()
+            athletes.isEmpty() || (!viewModel.isCoach && viewModel.ownAthlete == null) -> {
+                // No one to log for yet: the roster fills itself (no adding athletes by hand).
+                showMessage(
+                    if (viewModel.isCoach) "No athletes yet. They show up here once they join with your team code."
+                    else "Your athlete profile is still being set up. Check your connection and try again."
+                )
                 return
             }
             viewModel.ownAthlete != null -> {

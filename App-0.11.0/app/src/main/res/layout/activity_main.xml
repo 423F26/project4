@@ -30,7 +30,7 @@
         <ImageView
             android:id="@+id/homeLogo"
             android:layout_width="wrap_content"
-            android:layout_height="44dp"
+            android:layout_height="56dp"
             android:adjustViewBounds="true"
             android:contentDescription="@string/msu_logo_description"
             android:maxWidth="140dp"
@@ -49,6 +49,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
+                android:includeFontPadding="false"
                 android:maxLines="1"
                 android:text="@string/app_name"
                 android:textAppearance="@style/TextAppearance.Lifting.AppTitle" />
@@ -58,8 +59,8 @@
                 android:id="@+id/switchTeamButton"
                 style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="wrap_content"
-                android:layout_height="34dp"
-                android:layout_marginTop="2dp"
+                android:layout_height="30dp"
+                android:layout_marginTop="6dp"
                 android:ellipsize="end"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
@@ -87,16 +88,23 @@
             app:shapeAppearanceOverlay="@style/ShapeAppearance.Lifting.Circle" />
     </LinearLayout>
 
-    <!-- Segmented tab bar: rounded track, sliding pill for the selected tab -->
-    <com.google.android.material.tabs.TabLayout
-        android:id="@+id/tabs"
+    <!-- Segmented tab bar: rounded track, sliding pill for the selected tab. The track is on this
+         wrapper (not the TabLayout) because TabLayout ignores its own padding when it draws the
+         pill, which let the Leaderboard pill poke out past the track's right edge. -->
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="4dp"
         android:background="@drawable/bg_tab_track"
-        android:padding="4dp"
+        android:padding="4dp">
+
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabs"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
         app:tabGravity="fill"
         app:tabIndicator="@drawable/tab_indicator_pill"
         app:tabIndicatorAnimationDuration="260"
@@ -112,6 +120,7 @@
         app:tabSelectedTextColor="?attr/colorOnPrimary"
         app:tabTextAppearance="@style/TextAppearance.Lifting.Tab"
         app:tabTextColor="?attr/colorOnSurfaceVariant" />
+    </FrameLayout>
 
     <FrameLayout
         android:layout_width="match_parent"

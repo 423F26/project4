@@ -266,3 +266,11 @@ val FOOTBALL = SportSection(
 
 /** Every sport section in the Workouts tab, in display order. Add new sports here. */
 val SPORT_SECTIONS: List<SportSection> = listOf(FOOTBALL, BASKETBALL)
+
+/**
+ * The one plan a scope's Workouts tab shows: a team's sport plan (a Football team sees only
+ * Football). Null for General use, and for teams whose sport has no plan yet; those see the
+ * general workout library instead.
+ */
+fun sportSectionFor(scope: Scope): SportSection? =
+    (scope as? Scope.Team)?.let { team -> SPORT_SECTIONS.firstOrNull { it.sport.equals(team.sport.trim(), ignoreCase = true) } }

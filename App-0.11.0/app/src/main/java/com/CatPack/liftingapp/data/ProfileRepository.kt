@@ -61,6 +61,12 @@ class ProfileRepository(val uid: String) {
         ref.set(mapOf("customExercises" to FieldValue.arrayUnion(name)), SetOptions.merge()).awaitResult()
     }
 
+    /** Adds several at once (e.g. every exercise in a workout just logged). Names already there are skipped. */
+    suspend fun addCustomExercises(names: List<String>) {
+        if (names.isEmpty()) return
+        ref.set(mapOf("customExercises" to FieldValue.arrayUnion(*names.toTypedArray())), SetOptions.merge()).awaitResult()
+    }
+
     suspend fun removeCustomExercise(name: String) {
         ref.set(mapOf("customExercises" to FieldValue.arrayRemove(name)), SetOptions.merge()).awaitResult()
     }

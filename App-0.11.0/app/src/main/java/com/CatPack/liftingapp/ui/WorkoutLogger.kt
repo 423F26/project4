@@ -6,8 +6,9 @@ import com.example.liftingapp.LiftViewModel
 import com.example.liftingapp.WorkoutSessionActivity
 import com.example.liftingapp.data.Athlete
 import com.example.liftingapp.data.DAY_MS
-import com.example.liftingapp.data.SPORT_SECTIONS
+import com.example.liftingapp.data.Scope
 import com.example.liftingapp.data.WorkoutWithExercises
+import com.example.liftingapp.data.sportSectionFor
 import com.google.android.material.datepicker.MaterialDatePicker
 
 /**
@@ -27,7 +28,7 @@ class WorkoutLogger(
     /** From the Log tab: choose the workout first. */
     fun pickAndLog() {
         val athlete = targetAthlete() ?: return
-        val sections = workoutSections(activity, viewModel.workoutLibraryAll)
+        val sections = workoutSections(activity, viewModel.workoutLibraryAll, viewModel.scope)
         showPickerDialog(
             context = activity,
             title = "Log a workout for ${athlete.name.firstName()}",
@@ -49,8 +50,9 @@ class WorkoutLogger(
         if (viewModel.canEdit(selected)) return selected
         viewModel.ownAthlete?.let { return it }
         showMessage(
-            if (viewModel.isCoach || viewModel.athleteList.isEmpty()) "Add an athlete on the Log tab first, then log workouts."
-            else "Add your athlete profile on the Log tab first, then log your workouts."
+            if (viewModel.isCoach && viewModel.athleteList.isEmpty()) "No athletes yet. They show up once they join with your team code."
+            else if (viewModel.isCoach) "Pick an athlete on the Log tab first, then log their workout."
+            else "Your athlete profile is still being set up. Check your connection and try again."
         )
         return null
     }
@@ -71,27 +73,34 @@ class WorkoutLogger(
 
     companion object {
         /**
-         * Every workout on the Workouts tab, grouped the way it shows them: the library (yours, then
-         * premade), then each sport's seasons at the week currently picked there.
+         * The workouts the Workouts tab shows for [scope], grouped the same way: General use gets
+         * the library (yours, then premade); a team gets only its sport's seasons, at the week
+         * currently picked there.
          */
-        fun workoutSections(context: Context, library: List<WorkoutWithExercises>): List<PickerSection<Pair<WorkoutWithExercises, String>>> {
-            val mine = library.filter { !it.workout.isPremade }
-            val premade = library.filter { it.workout.isPremade }
+        fun workoutSections(
+            context: Context,
+            library: List<WorkoutWithExercises>,
+            scope: Scope
+        ): List<PickerSection<Pair<WorkoutWithExercises, String>>> {
             val sections = mutableListOf<PickerSection<Pair<WorkoutWithExercises, String>>>()
-            if (mine.isNotEmpty()) sections += PickerSection("Your workouts", mine.map { it.toPickerItem("Your workout") })
-            if (premade.isNotEmpty()) sections += PickerSection("Premade", premade.map { it.toPickerItem("Premade") })
-            SPORT_SECTIONS.forEach { section ->
-                section.seasons.forEach { season ->
-                    val week = SportSections.weekIndex(context, section, season)
-                    val label = buildString {
-                        append(section.sport).append(' ').append(season.name)
-                        if (season.hasWeeks) append(", week ").append(week + 1)
-                    }
-                    sections += PickerSection(label, season.days.map { day ->
-                        val item = season.workoutFor(day, week)
-                        PickerItem(day.name, exerciseSummary(item), item to label)
-                    })
+            val teamSport = sportSectionFor(scope)
+            if (teamSport == null) {
+                val mine = library.filter { !it.workout.isPremade }
+                val premade = library.filter { it.workout.isPremade }
+                if (mine.isNotEmpty()) sections += PickerSection("Your workouts", mine.map { it.toPickerItem("Your workout") })
+                if (premade.isNotEmpty()) sections += PickerSection("Premade", premade.map { it.toPickerItem("Premade") })
+                return sections
+            }
+            teamSport.seasons.forEach { season ->
+                val week = SportSections.weekIndex(context, teamSport, season)
+                val label = buildString {
+                    append(teamSport.sport).append(' ').append(season.name)
+                    if (season.hasWeeks) append(", week ").append(week + 1)
                 }
+                sections += PickerSection(label, season.days.map { day ->
+                    val item = season.workoutFor(day, week)
+                    PickerItem(day.name, exerciseSummary(item), item to label)
+                })
             }
             return sections
         }

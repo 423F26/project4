@@ -19,14 +19,17 @@ import com.example.liftingapp.data.SportDay
 import com.example.liftingapp.data.SportSection
 import com.example.liftingapp.data.WorkoutShare
 import com.example.liftingapp.data.WorkoutWithExercises
+import com.example.liftingapp.data.sportSectionFor
 import com.example.liftingapp.databinding.ItemWorkoutBinding
 import com.example.liftingapp.databinding.TabWorkoutsBinding
 import com.google.android.material.snackbar.Snackbar
 
 /**
- * Sport dropdown at the top of the Workouts tab: General, Football, Basketball.
- *  - General shows the regular workout library (WorkoutsTab, unchanged).
- *  - A sport shows its plan instead: a season dropdown (Off-season / In-season), a week dropdown
+ * Which workouts the Workouts tab shows depends on where you are (picked on the team select screen):
+ *  - General use shows only the general workout library (WorkoutsTab, unchanged).
+ *  - A team shows only its own sport's plan (a Football team sees only Football). Teams whose sport
+ *    has no plan yet get the general library. See sportSectionFor().
+ *  - A sport's plan has a season dropdown (Off-season / In-season), a week dropdown
  *    for sports that rotate weekly (football), and one card per training day. Cards use the same
  *    layout as the library and can be sent to an athlete with the same Send dialog or logged to the
  *    Log tab's workout log; they're read-only (no edit/delete). Tapping a card opens the whole day
@@ -67,16 +70,13 @@ class SportSections(
         }
     }
 
-    /** Dropdown order. Index 0 is General (the workout library); the rest are sport plans. */
+    /** Every sport plan, for matching the full-screen day view's result. */
     private val sports: List<SportSection> = listOf(FOOTBALL, BASKETBALL)
-    private val sportAdapter = spinnerAdapter(activity, listOf("General") + sports.map { it.sport })
     private val seasonAdapter = spinnerAdapter(activity, emptyList())
     private val weekAdapter = spinnerAdapter(activity, emptyList())
 
-    /** The selected sport, or null for General. */
-    private var sport: SportSection?
-        get() = prefs.getString(KEY_SPORT, null)?.let { name -> sports.firstOrNull { it.sport == name } }
-        set(value) = prefs.edit { putString(KEY_SPORT, value?.sport) }
+    /** This team's sport plan, or null for the general workout library (General use, or a sport with no plan). */
+    private val sport: SportSection? = sportSectionFor(viewModel.scope)
 
     // Season and week are remembered per sport.
     private fun seasonIndex(s: SportSection) = prefs.getInt("${s.sport}_season", 0).coerceIn(0, s.seasons.lastIndex)
@@ -85,12 +85,8 @@ class SportSections(
     init {
         binding.sportWorkoutList.adapter = adapter
 
-        binding.sportSpinner.adapter = sportAdapter
-        binding.sportSpinner.setSelection(sport?.let { sports.indexOf(it) + 1 } ?: 0, false)
-        binding.sportSpinner.onItemSelected { position ->
-            val picked = sports.getOrNull(position - 1)
-            if (picked != sport) { sport = picked; showSection() }
-        }
+        // No sport dropdown: the scope decides (General = library, a team = its sport's plan).
+        binding.sportSpinner.isVisible = false
 
         binding.seasonSpinner.adapter = seasonAdapter
         binding.seasonSpinner.onItemSelected { position ->
@@ -183,7 +179,6 @@ class SportSections(
 
     companion object {
         private const val PREFS = "sport_sections"
-        private const val KEY_SPORT = "sport"
 
         /** The week picked for [section]'s plan on the Workouts tab (0-based; always 0 without weekly rotation). */
         fun weekIndex(context: Context, section: SportSection, season: Season): Int =
