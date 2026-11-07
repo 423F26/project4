@@ -14,6 +14,22 @@
       },
       "oauth_client": [
         {
+          "client_id": "699950750126-j1m1cpoqgjnmr13pskekkd8t3l2dognu.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.CatPack.liftingapp",
+            "certificate_hash": "8588477e98194405875879caf59d8856de01d45f"
+          }
+        },
+        {
+          "client_id": "699950750126-p677i8fnjm1r38cg9fllk29rk8htjqbv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.CatPack.liftingapp",
+            "certificate_hash": "9c6e770e3e422d317e0ae49cf6d9282e685b3875"
+          }
+        },
+        {
           "client_id": "699950750126-ajr7nknq7n3f7pj7m2kpcus396hgtv8m.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -29,6 +45,13 @@
             {
               "client_id": "699950750126-ajr7nknq7n3f7pj7m2kpcus396hgtv8m.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "699950750126-5eqo4169e4vrnut39tb6lp60pi799vjm.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.CatPack.liftingapp"
+              }
             }
           ]
         }
@@ -74,6 +97,13 @@
             {
               "client_id": "699950750126-ajr7nknq7n3f7pj7m2kpcus396hgtv8m.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "699950750126-5eqo4169e4vrnut39tb6lp60pi799vjm.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.CatPack.liftingapp"
+              }
             }
           ]
         }
