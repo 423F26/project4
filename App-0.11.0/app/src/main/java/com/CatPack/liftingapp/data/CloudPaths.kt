@@ -48,4 +48,10 @@ object CloudPaths {
     fun lifts(scope: Scope, uid: String, athleteId: String): CollectionReference = athlete(scope, uid, athleteId).collection("lifts")
     fun sessions(scope: Scope, uid: String, athleteId: String): CollectionReference =
         athlete(scope, uid, athleteId).collection("sessions")
+
+    /** Workouts made by someone on the team, which everyone on it can see (TeamWorkouts.kt). */
+    fun teamWorkouts(teamId: String): CollectionReference = team(teamId).collection("workouts")
+
+    /** Workouts sent in the app to the whole team or to one teammate (TeamWorkouts.kt). */
+    fun teamSent(teamId: String): CollectionReference = team(teamId).collection("sent")
 }

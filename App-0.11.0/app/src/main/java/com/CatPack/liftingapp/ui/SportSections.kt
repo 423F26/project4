@@ -14,6 +14,7 @@ import com.example.liftingapp.SportDayActivity
 import com.example.liftingapp.data.Athlete
 import com.example.liftingapp.data.BASKETBALL
 import com.example.liftingapp.data.FOOTBALL
+import com.example.liftingapp.data.Scope
 import com.example.liftingapp.data.Season
 import com.example.liftingapp.data.SportDay
 import com.example.liftingapp.data.SportSection
@@ -26,9 +27,10 @@ import com.google.android.material.snackbar.Snackbar
 
 /**
  * Which workouts the Workouts tab shows depends on where you are (picked on the team select screen):
- *  - General use shows only the general workout library (WorkoutsTab, unchanged).
- *  - A team shows only its own sport's plan (a Football team sees only Football). Teams whose sport
- *    has no plan yet get the general library. See sportSectionFor().
+ *  - General use: the general workout library (WorkoutsTab).
+ *  - A team: a dropdown with the team's sport plan (if its sport has one, e.g. Football), Team
+ *    workouts (made by anyone on the team and shared with everyone, plus workouts sent in the app;
+ *    see TeamWorkoutsSection), and General workouts (the library).
  *  - A sport's plan has a season dropdown (Off-season / In-season), a week dropdown
  *    for sports that rotate weekly (football), and one card per training day. Cards use the same
  *    layout as the library and can be sent to an athlete with the same Send dialog or logged to the
@@ -42,7 +44,8 @@ class SportSections(
     private val activity: AppCompatActivity,
     private val binding: TabWorkoutsBinding,
     private val viewModel: LiftViewModel,
-    private val logger: WorkoutLogger
+    private val logger: WorkoutLogger,
+    private val workoutsTab: WorkoutsTab
 ) {
     private val prefs = activity.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
     private var athletes: List<Athlete> = emptyList()
@@ -75,8 +78,24 @@ class SportSections(
     private val seasonAdapter = spinnerAdapter(activity, emptyList())
     private val weekAdapter = spinnerAdapter(activity, emptyList())
 
-    /** This team's sport plan, or null for the general workout library (General use, or a sport with no plan). */
+    /** This team's sport plan, or null (General use, or a sport with no plan yet). */
     private val sport: SportSection? = sportSectionFor(viewModel.scope)
+
+    /** What the Workouts tab is showing. */
+    private enum class Mode { PLAN, TEAM, GENERAL }
+
+    /** The dropdown's choices: on a team, its plan (if any), Team workouts, General workouts. */
+    private val modes: List<Mode> = when {
+        viewModel.scope !is Scope.Team -> listOf(Mode.GENERAL)
+        sport != null -> listOf(Mode.PLAN, Mode.TEAM, Mode.GENERAL)
+        else -> listOf(Mode.TEAM, Mode.GENERAL)
+    }
+    private val modeKey = "mode_" + ((viewModel.scope as? Scope.Team)?.id ?: "general")
+    private var mode: Mode
+        get() = prefs.getString(modeKey, null)?.let { saved -> modes.firstOrNull { it.name == saved } } ?: modes.first()
+        set(value) = prefs.edit { putString(modeKey, value.name) }
+
+    private val team = TeamWorkoutsSection(activity, binding, viewModel, logger, ::send)
 
     // Season and week are remembered per sport.
     private fun seasonIndex(s: SportSection) = prefs.getInt("${s.sport}_season", 0).coerceIn(0, s.seasons.lastIndex)
@@ -85,8 +104,22 @@ class SportSections(
     init {
         binding.sportWorkoutList.adapter = adapter
 
-        // No sport dropdown: the scope decides (General = library, a team = its sport's plan).
-        binding.sportSpinner.isVisible = false
+        // Teams pick between their plan, team workouts and the general library; General use has just the library.
+        binding.sportSpinner.isVisible = modes.size > 1
+        binding.sportSpinner.adapter = spinnerAdapter(activity, modes.map { m ->
+            when (m) {
+                Mode.PLAN -> "${sport?.sport} plan"
+                Mode.TEAM -> "Team workouts"
+                Mode.GENERAL -> "General workouts"
+            }
+        })
+        binding.sportSpinner.setSelection(modes.indexOf(mode), false)
+        binding.sportSpinner.onItemSelected { position ->
+            val picked = modes.getOrNull(position) ?: return@onItemSelected
+            if (picked != mode) { mode = picked; showSection() }
+        }
+        // New workout: a team workout in Team workouts, otherwise one in the general library.
+        binding.newWorkoutFab.setOnClickListener { if (mode == Mode.TEAM) team.newWorkout() else workoutsTab.newWorkout() }
 
         binding.seasonSpinner.adapter = seasonAdapter
         binding.seasonSpinner.onItemSelected { position ->
@@ -110,16 +143,19 @@ class SportSections(
         showSection()
     }
 
-    /** Swaps between the library (General) and a sport's plan. Only visibility changes. */
+    /** Swaps between the plan, team workouts and the library. Only visibility changes. */
     private fun showSection() {
+        val current = mode
+        val library = current == Mode.GENERAL
+        binding.sportSection.isVisible = current == Mode.PLAN
+        team.setVisible(current == Mode.TEAM)
+        binding.filterToggle.isVisible = library
+        binding.workoutList.isVisible = library
+        binding.newWorkoutFab.isVisible = current != Mode.PLAN
+        binding.newWorkoutFab.text = if (current == Mode.TEAM) "New team workout" else "New workout"
+        binding.workoutsEmptyText.isVisible = library && (binding.workoutList.adapter?.itemCount ?: 0) == 0
         val s = sport
-        val sportSelected = s != null
-        binding.sportSection.isVisible = sportSelected
-        binding.filterToggle.isVisible = !sportSelected
-        binding.workoutList.isVisible = !sportSelected
-        binding.newWorkoutFab.isVisible = !sportSelected
-        binding.workoutsEmptyText.isVisible = !sportSelected && (binding.workoutList.adapter?.itemCount ?: 0) == 0
-        if (s == null) return
+        if (current != Mode.PLAN || s == null) return
 
         seasonAdapter.clear()
         seasonAdapter.addAll(s.seasons.map { it.name })
@@ -144,14 +180,17 @@ class SportSections(
         adapter.submit(season, week)
     }
 
-    private fun send(item: WorkoutWithExercises) {
+    fun send(item: WorkoutWithExercises) {
         showSendWorkoutDialog(
             context = activity,
             item = item,
             athletes = athletes,
             canSaveContact = viewModel::canEdit,
             onAthleteChanged = viewModel::updateAthlete,
-            onProblem = { message -> Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show() }
+            onProblem = { message -> Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show() },
+            onSendInApp = if (viewModel.scope is Scope.Team) { athlete ->
+                viewModel.sendInApp(item, athlete) { message -> Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show() }
+            } else null
         )
     }
 

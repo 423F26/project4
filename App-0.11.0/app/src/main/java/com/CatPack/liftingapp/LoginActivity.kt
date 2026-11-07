@@ -10,6 +10,7 @@ import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.credentials.exceptions.GetCredentialException
+import androidx.credentials.exceptions.NoCredentialException
 import androidx.lifecycle.lifecycleScope
 import com.example.liftingapp.data.AuthRepository
 import com.example.liftingapp.data.ScopeStore
@@ -20,6 +21,7 @@ import com.example.liftingapp.ui.AppTheme
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
+import com.example.liftingapp.data.UserProfile
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 
@@ -54,6 +56,9 @@ class LoginActivity : AppCompatActivity() {
 
         binding.submitButton.setOnClickListener { submit() }
         binding.googleButton.setOnClickListener { signInWithGoogle() }
+        binding.roleToggle.addOnButtonCheckedListener { _, checkedId, isChecked ->
+            if (isChecked) binding.coachNote.visibility = if (checkedId == R.id.roleCoach) View.VISIBLE else View.GONE
+        }
         binding.toggleModeButton.setOnClickListener {
             isSignUp = !isSignUp
             updateMode()
@@ -64,6 +69,7 @@ class LoginActivity : AppCompatActivity() {
     private fun updateMode() {
         binding.nameLayout.visibility = if (isSignUp) View.VISIBLE else View.GONE
         binding.signUpExtras.visibility = if (isSignUp) View.VISIBLE else View.GONE
+        binding.roleSection.visibility = if (isSignUp) View.VISIBLE else View.GONE
         binding.forgotPasswordButton.visibility = if (isSignUp) View.GONE else View.VISIBLE
         binding.submitButton.text = if (isSignUp) "Create account" else "Sign in"
         binding.toggleModeButton.text =
@@ -97,7 +103,8 @@ class LoginActivity : AppCompatActivity() {
             Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
         }
 
-        if (isSignUp) auth.signUp(name, email, password, position, phone.orNullIfBlank(), bodyWeight ?: 0f, onSuccess, onError)
+        val requestedRole = if (binding.roleToggle.checkedButtonId == R.id.roleCoach) UserProfile.ROLE_COACH else UserProfile.ROLE_ATHLETE
+        if (isSignUp) auth.signUp(name, email, password, position, phone.orNullIfBlank(), bodyWeight ?: 0f, requestedRole, onSuccess, onError)
         else auth.signIn(email, password, onSuccess, onError)
     }
 
@@ -123,8 +130,17 @@ class LoginActivity : AppCompatActivity() {
                 }
             } catch (e: GetCredentialCancellationException) {
                 setLoading(false)   // user closed the account picker; nothing to report
+            } catch (e: NoCredentialException) {
+                showError("No Google account on this phone. Add one in Settings → Passwords & accounts, then try again.")
             } catch (e: GetCredentialException) {
-                showError("Google sign-in failed: ${e.message ?: "no Google account available"}")
+                val detail = e.message.orEmpty()
+                // 28444 / 10 / "Developer console": this build's signing key (SHA-1) isn't registered in
+                // Firebase for com.CatPack.liftingapp. See README → Google sign-in.
+                val notSetUp = "28444" in detail || "eveloper console" in detail || "[10]" in detail
+                showError(
+                    if (notSetUp) "Google sign-in isn't set up for this build yet (its SHA-1 isn't in Firebase). See README → Google sign-in."
+                    else "Google sign-in failed: ${detail.ifBlank { "no Google account available" }}"
+                )
             } catch (e: GoogleIdTokenParsingException) {
                 showError("Google sign-in failed. Try again.")
             }

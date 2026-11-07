@@ -65,6 +65,18 @@
             android:textAppearance="@style/TextAppearance.Lifting.Caption"
             android:visibility="gone" />
 
+        <!-- Teams only: send it inside CatPack (to the picked athlete's account, or the whole team) -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/inAppButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:text="Send in CatPack"
+            android:visibility="gone"
+            app:icon="@drawable/ic_send"
+            app:iconGravity="textStart"
+            app:iconSize="18dp" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

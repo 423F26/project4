@@ -15,6 +15,7 @@ import com.example.liftingapp.LiftViewModel
 import com.example.liftingapp.R
 import com.example.liftingapp.WorkoutEditorActivity
 import com.example.liftingapp.data.Athlete
+import com.example.liftingapp.data.Scope
 import com.example.liftingapp.data.WorkoutFilter
 import com.example.liftingapp.data.WorkoutShare
 import com.example.liftingapp.data.WorkoutWithExercises
@@ -81,7 +82,7 @@ class WorkoutsTab(
                 WorkoutFilter.PREMADE -> "No premade workouts left. Workouts you make are under Mine."
                 WorkoutFilter.MINE -> "You haven't made a workout yet. Tap New workout to build one."
             }
-            binding.workoutsEmptyText.isVisible = state.workouts.isEmpty()
+            binding.workoutsEmptyText.isVisible = state.workouts.isEmpty() && binding.workoutList.isVisible
         }
     }
 
@@ -93,6 +94,9 @@ class WorkoutsTab(
             if (isChecked && filter != null) viewModel.setWorkoutFilter(filter)
         }
     }
+
+    /** The New workout button (SportSections routes it here for the general library). */
+    fun newWorkout() = openEditor(null)
 
     /** [workoutId] null = new workout. */
     private fun openEditor(workoutId: Long?) {
@@ -106,7 +110,8 @@ class WorkoutsTab(
             athletes = athletes,
             canSaveContact = viewModel::canEdit,
             onAthleteChanged = viewModel::updateAthlete,
-            onProblem = ::showMessage
+            onProblem = ::showMessage,
+            onSendInApp = if (viewModel.scope is Scope.Team) { athlete -> viewModel.sendInApp(item, athlete, ::showMessage) } else null
         )
     }
 

@@ -53,6 +53,11 @@ class ProfileRepository(val uid: String) {
     }
 
     /** One privacy switch: showOnGeneral, initialsOnGeneral, showPhoto or shareProgress. */
+    /** "athlete" or "coach" (a coach request an admin approves in the Firebase console). */
+    suspend fun setRequestedRole(role: String) {
+        ref.set(mapOf("requestedRole" to role), SetOptions.merge()).awaitResult()
+    }
+
     suspend fun setFlag(field: String, value: Boolean) {
         ref.set(mapOf(field to value), SetOptions.merge()).awaitResult()
     }

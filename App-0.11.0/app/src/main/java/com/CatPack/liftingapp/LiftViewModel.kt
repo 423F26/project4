@@ -30,6 +30,10 @@ import com.example.liftingapp.data.RankBy
 import com.example.liftingapp.data.Scope
 import com.example.liftingapp.data.ScopeStore
 import com.example.liftingapp.data.TeamRepository
+import com.example.liftingapp.data.SentWorkout
+import com.example.liftingapp.data.TeamInbox
+import com.example.liftingapp.data.TeamWorkouts
+import com.example.liftingapp.data.TeamWorkout
 import com.example.liftingapp.data.UserProfile
 import com.example.liftingapp.data.WorkoutFilter
 import com.example.liftingapp.data.WorkoutRepository
@@ -372,6 +376,57 @@ class LiftViewModel(application: Application) : AndroidViewModel(application) {
     /** Puts a deleted workout back exactly as it was (same ids). Used by the Undo snackbar. */
     fun restoreWorkout(item: WorkoutWithExercises) {
         viewModelScope.launch { workoutRepository.restore(item) }
+    }
+
+    // --- Team workouts and in-app sending (teams only; see data/TeamWorkouts.kt) ---
+
+    /** Workouts anyone on the team made, shared with everyone on it. Empty in General use. */
+    val teamWorkouts: LiveData<List<TeamWorkout>> = when (scope) {
+        is Scope.Team -> TeamWorkouts.list(scope.id)
+            .catch { report("load the team workouts", it); emit(emptyList()) }
+            .asLiveData()
+        Scope.General -> flowOf(emptyList<TeamWorkout>()).asLiveData()
+    }
+
+    /** Workouts sent in the app to this person or the whole team (and ones they sent). */
+    val inbox: LiveData<List<SentWorkout>> = when (scope) {
+        is Scope.Team -> TeamInbox.list(scope.id, uid)
+            .catch { report("load sent workouts", it); emit(emptyList()) }
+            .asLiveData()
+        Scope.General -> flowOf(emptyList<SentWorkout>()).asLiveData()
+    }
+
+    /** A team workout's maker, or any coach, can edit or delete it. */
+    fun canEditTeamWorkout(createdBy: String): Boolean = createdBy == uid || isCoach
+
+    fun deleteTeamWorkout(workout: TeamWorkout) {
+        val team = scope as? Scope.Team ?: return
+        inBackground("delete ${workout.name}") { TeamWorkouts.delete(team.id, workout.id) }
+    }
+
+    fun deleteSent(sent: SentWorkout) {
+        val team = scope as? Scope.Team ?: return
+        inBackground("remove ${sent.name}") { TeamInbox.delete(team.id, sent.id) }
+    }
+
+    /**
+     * Sends [item] in the app: to [athlete]'s account, or to everyone on the team when null.
+     * Athletes a coach added without an account can't get it in the app ([onDone] says so).
+     */
+    fun sendInApp(item: WorkoutWithExercises, athlete: Athlete?, onDone: (String) -> Unit) {
+        val team = scope as? Scope.Team ?: return
+        val firstName = athlete?.name?.trim()?.split(Regex("\\s+"))?.firstOrNull().orEmpty()
+        val toUid = athlete?.linkedUid
+        if (athlete != null && toUid == null) {
+            onDone("$firstName doesn't have the app yet. Use Text or Email instead.")
+            return
+        }
+        val myName = currentProfile?.name?.takeIf { it.isNotBlank() }
+            ?: FirebaseAuth.getInstance().currentUser?.displayName.orEmpty().ifBlank { "A teammate" }
+        inBackground("send the workout") {
+            TeamInbox.send(team.id, item, uid, myName, toUid, athlete?.name ?: "Everyone on ${team.name}")
+            onDone(if (athlete == null) "Sent to everyone on ${team.name}" else "Sent to ${athlete.name}")
+        }
     }
 
     // --- Team checks and old data ---

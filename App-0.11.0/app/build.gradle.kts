@@ -16,7 +16,22 @@ android {
         versionName = "0.11.0"
     }
 
+    // One debug key for everyone on the project (keys/catpack-debug.keystore), so Google sign-in works
+    // on every developer's machine with a single SHA-1 registered in Firebase. Debug builds only;
+    // the Play Store build is signed with the separate upload key.
+    signingConfigs {
+        getByName("debug") {
+            storeFile = rootProject.file("../keys/catpack-debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+
     buildTypes {
+        debug {
+            signingConfig = signingConfigs.getByName("debug")
+        }
         release {
             isMinifyEnabled = false
         }

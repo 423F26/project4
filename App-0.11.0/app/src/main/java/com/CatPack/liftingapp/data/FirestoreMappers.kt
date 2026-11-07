@@ -154,7 +154,8 @@ fun DocumentSnapshot.toProfile(uid: String, fallbackName: String, fallbackEmail:
         showOnGeneral = get("showOnGeneral").asBool(true),
         initialsOnGeneral = get("initialsOnGeneral").asBool(false),
         showPhoto = get("showPhoto").asBool(true),
-        shareProgress = get("shareProgress").asBool(true)
+        shareProgress = get("shareProgress").asBool(true),
+        requestedRole = getString("requestedRole").orEmpty()
     )
 }
 

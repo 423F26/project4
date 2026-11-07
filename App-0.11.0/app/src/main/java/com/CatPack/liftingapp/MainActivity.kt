@@ -61,8 +61,8 @@ class MainActivity : AppCompatActivity() {
 
         val logger = WorkoutLogger(this, viewModel, ::showMessage)
         val logTab = LogTab(this, binding.logTab, viewModel, logger)
-        WorkoutsTab(this, binding.workoutsTab, viewModel, logger)
-        SportSections(this, binding.workoutsTab, viewModel, logger)   // General / Football / Basketball sections above the library
+        val workoutsTab = WorkoutsTab(this, binding.workoutsTab, viewModel, logger)
+        SportSections(this, binding.workoutsTab, viewModel, logger, workoutsTab)   // team: plan / team workouts / general; General: library
         LeaderboardTab(this, binding.leaderboardTab, viewModel)
 
         setupHeader(scope)

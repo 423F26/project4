@@ -82,6 +82,57 @@
 
         <!-- Create account only: optional athlete details. Your athlete profile is made from these
              (and your name) automatically, so you never have to add yourself. -->
+        <!-- Create account: athlete or coach. Coach is a request an admin approves (role stays athlete until then). -->
+        <LinearLayout
+            android:id="@+id/roleSection"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="I'm a…"
+                android:textAppearance="@style/TextAppearance.Lifting.FieldLabel" />
+
+            <com.google.android.material.button.MaterialButtonToggleGroup
+                android:id="@+id/roleToggle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                app:checkedButton="@+id/roleAthlete"
+                app:selectionRequired="true"
+                app:singleSelection="true">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/roleAthlete"
+                    style="@style/Widget.Lifting.SegmentButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Athlete" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/roleCoach"
+                    style="@style/Widget.Lifting.SegmentButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Coach" />
+            </com.google.android.material.button.MaterialButtonToggleGroup>
+
+            <TextView
+                android:id="@+id/coachNote"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="Coach accounts are approved by your CatPack admin. Until then you can use the app as an athlete."
+                android:textAppearance="@style/TextAppearance.Lifting.Caption"
+                android:visibility="gone" />
+        </LinearLayout>
+
         <LinearLayout
             android:id="@+id/signUpExtras"
             android:layout_width="match_parent"

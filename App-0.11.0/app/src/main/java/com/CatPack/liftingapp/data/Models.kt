@@ -66,9 +66,17 @@ data class UserProfile(
     /** Privacy: other people can see this account's profile picture. */
     val showPhoto: Boolean = true,
     /** Privacy: teammates who aren't coaches can open this person's progress chart and workout log. */
-    val shareProgress: Boolean = true
+    val shareProgress: Boolean = true,
+    /**
+     * What they said they are when they signed up ("athlete" or "coach"); blank = not asked yet.
+     * Saying "coach" is only a request: [role] stays athlete until an admin sets it to coach in the
+     * Firebase console (the security rules don't let the app change [role]).
+     */
+    val requestedRole: String = ""
 ) {
     val isCoach: Boolean get() = role == ROLE_COACH
+    /** Asked to be a coach, not approved yet. */
+    val coachPending: Boolean get() = requestedRole == ROLE_COACH && !isCoach
 
     companion object {
         const val ROLE_COACH = "coach"

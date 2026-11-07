@@ -9,10 +9,15 @@ import com.example.liftingapp.data.LiftDatabase
 import com.example.liftingapp.data.Workout
 import com.example.liftingapp.data.WorkoutExercise
 import com.example.liftingapp.data.WorkoutRepository
+import com.example.liftingapp.data.Scope
+import com.example.liftingapp.data.ScopeStore
+import com.example.liftingapp.data.TeamWorkouts
+import com.example.liftingapp.data.inBackground
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 
 /** What the editor reports back when it saves, so the Workouts tab can say "Saved" and offer Send. */
-data class SavedWorkout(val id: Long, val name: String, val wasNew: Boolean)
+data class SavedWorkout(val id: Long, val name: String, val wasNew: Boolean, val teamWorkoutId: String? = null)
 
 /**
  * The workout being edited in WorkoutEditorActivity. Holding the draft here (not in the views)
@@ -24,6 +29,11 @@ class WorkoutEditorViewModel(application: Application) : AndroidViewModel(applic
 
     /** The workout as loaded, or null for a new one. */
     private var original: Workout? = null
+
+    /** Set for a team workout (shared in Firestore with everyone on the team) instead of one on this phone. */
+    private var teamId: String? = null
+    private var teamWorkoutId: String? = null
+    val isTeamWorkout: Boolean get() = teamId != null
     private var originalDraft: Draft? = null
     private var started = false
     private var saving = false
@@ -49,9 +59,31 @@ class WorkoutEditorViewModel(application: Application) : AndroidViewModel(applic
     val saved: LiveData<SavedWorkout?> = _saved
 
     /** Loads [workoutId] (null = new workout). Only the first call does anything, so rotation doesn't reload. */
-    fun start(workoutId: Long?) {
+    fun start(workoutId: Long?, teamMode: Boolean = false, teamWorkoutId: String? = null) {
         if (started) return
         started = true
+        if (teamMode) {
+            val uid = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
+            teamId = (ScopeStore.load(getApplication(), uid) as? Scope.Team)?.id
+            this.teamWorkoutId = teamWorkoutId
+            val team = teamId
+            if (team != null && teamWorkoutId != null) {
+                viewModelScope.launch {
+                    val item = runCatching { TeamWorkouts.get(team, teamWorkoutId) }.getOrNull()
+                    if (item == null) {
+                        notFound = true
+                    } else {
+                        original = item.asItem().workout
+                        name = item.name
+                        notes = item.notes
+                        _exercises += item.exercises
+                    }
+                    originalDraft = draft()
+                    _ready.value = true
+                }
+                return
+            }
+        }
         if (workoutId == null) {
             originalDraft = draft()
             _ready.value = true
@@ -101,6 +133,22 @@ class WorkoutEditorViewModel(application: Application) : AndroidViewModel(applic
         val workout = original?.copy(name = name.trim(), notes = notes.trim(), updatedAt = now)
             ?: Workout(name = name.trim(), notes = notes.trim(), createdAt = now, updatedAt = now)
         val exercisesToSave = _exercises.toList()
+        val team = teamId
+        if (team != null) {
+            val user = FirebaseAuth.getInstance().currentUser
+            val wasNew = teamWorkoutId == null
+            viewModelScope.launch {
+                try {
+                    val id = TeamWorkouts.save(team, teamWorkoutId, workout.name, workout.notes, exercisesToSave,
+                                               user?.uid.orEmpty(), user?.displayName.orEmpty())
+                    _saved.value = SavedWorkout(0, workout.name, wasNew, teamWorkoutId = id)
+                } catch (e: Exception) {
+                    saving = false
+                    inBackground("save the team workout") { throw e }   // shows the error message
+                }
+            }
+            return
+        }
         viewModelScope.launch {
             val id = repository.save(workout, exercisesToSave)
             _saved.value = SavedWorkout(id, workout.name, wasNew = original == null)

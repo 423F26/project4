@@ -84,6 +84,37 @@
                 android:textAppearance="@style/TextAppearance.Lifting.Muted"
                 android:visibility="gone" />
 
+            <!-- Team workouts (ui/TeamWorkoutsSection.kt): workouts sent in the app, then ones made by
+                 anyone on the team. Shown instead of the library when Team workouts is picked above. -->
+            <FrameLayout
+                android:id="@+id/teamSection"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/teamWorkoutList"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:clipToPadding="false"
+                    android:paddingStart="12dp"
+                    android:paddingTop="12dp"
+                    android:paddingEnd="12dp"
+                    android:paddingBottom="96dp"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+                <TextView
+                    android:id="@+id/teamEmptyText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:padding="24dp"
+                    android:text="No team workouts yet. Tap New team workout to make one everyone on the team can see, or send one from any workout's Send button."
+                    android:textAppearance="@style/TextAppearance.Lifting.Muted"
+                    android:visibility="gone" />
+            </FrameLayout>
+
             <!-- Sport section (shown instead of the library when a sport is picked above) -->
             <LinearLayout
                 android:id="@+id/sportSection"

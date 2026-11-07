@@ -99,7 +99,7 @@ class SettingsPage(
             if (p.bodyWeightLb > 0f) "${p.bodyWeightLb.lb()} lb" else null,
             p.phone
         ).joinToString(" · ").ifEmpty { "Add your position and body weight" }
-        binding.roleBadge.text = if (p.isCoach) "Coach account" else "Athlete account"
+        binding.roleBadge.text = when { p.isCoach -> "Coach account"; p.coachPending -> "Coach request pending"; else -> "Athlete account" }
         bindSwitch(binding.showOnGeneralRow, p.showOnGeneral) { setFlag(ProfileRepository.FIELD_SHOW_ON_GENERAL, it) }
         bindSwitch(binding.initialsRow, p.initialsOnGeneral) { setFlag(ProfileRepository.FIELD_INITIALS_ON_GENERAL, it) }
         binding.initialsRow.root.alpha = if (p.showOnGeneral) 1f else 0.5f

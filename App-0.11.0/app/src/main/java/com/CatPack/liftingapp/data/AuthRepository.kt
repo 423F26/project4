@@ -41,6 +41,7 @@ class AuthRepository(
         positionGroup: String,
         phone: String?,
         bodyWeightLb: Float,
+        requestedRole: String,
         onSuccess: (FirebaseUser) -> Unit,
         onError: (String) -> Unit
     ) {
@@ -56,6 +57,8 @@ class AuthRepository(
                     "positionGroup" to positionGroup,
                     "phone" to phone,
                     "bodyWeightLb" to bodyWeightLb.toDouble(),
+                    // A coach request; role stays "athlete" until an admin approves it in the console.
+                    "requestedRole" to requestedRole,
                     "createdAt" to FieldValue.serverTimestamp()
                 )
                 db.collection("users").document(user.uid).set(profile)

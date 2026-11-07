@@ -23,6 +23,7 @@ import com.example.liftingapp.ui.showAvatar
 import com.example.liftingapp.ui.showCreateTeamDialog
 import com.example.liftingapp.ui.showJoinTeamDialog
 import com.example.liftingapp.ui.showTeamCodeDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.catch
@@ -42,6 +43,7 @@ class TeamSelectActivity : AppCompatActivity() {
     private lateinit var uid: String
     private lateinit var teams: TeamRepository
     private var profile: UserProfile? = null
+    private var askedRole = false
 
     /** The open scope when this screen came from Switch team (marked "Current"), else null. */
     private var current: Scope? = null
@@ -92,6 +94,14 @@ class TeamSelectActivity : AppCompatActivity() {
                 showWho(p.name.ifBlank { displayName })
                 binding.createButton.isVisible = p.isCoach
                 binding.coachHint.isVisible = !p.isCoach
+                binding.coachHint.text =
+                    if (p.coachPending) "Coach request sent. You can create teams once a CatPack admin approves it."
+                    else "Coach accounts can also create teams."
+                // Accounts made before this question, or with Google: ask once.
+                if (p.requestedRole.isBlank() && !p.isCoach && !askedRole) {
+                    askedRole = true
+                    askAthleteOrCoach(profiles)
+                }
             }
 
         teams.myTeams()
@@ -177,6 +187,24 @@ class TeamSelectActivity : AppCompatActivity() {
         ScopeStore.save(this, uid, scope)
         startActivity(Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK))
         finish()
+    }
+
+    /** "Are you an athlete or a coach?" Coach is a request; an admin approves it in the Firebase console. */
+    private fun askAthleteOrCoach(profiles: ProfileRepository) {
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Are you an athlete or a coach?")
+            .setMessage("Coach accounts are approved by your CatPack admin. Until then you can use the app as an athlete.")
+            .setCancelable(false)
+            .setPositiveButton("Athlete") { _, _ ->
+                lifecycleScope.launch { runCatching { profiles.setRequestedRole(UserProfile.ROLE_ATHLETE) } }
+            }
+            .setNegativeButton("Coach") { _, _ ->
+                lifecycleScope.launch {
+                    runCatching { profiles.setRequestedRole(UserProfile.ROLE_COACH) }
+                        .onSuccess { showMessage("Coach request sent. You'll be able to create teams once it's approved.") }
+                }
+            }
+            .show()
     }
 
     private fun showMessage(message: String) {

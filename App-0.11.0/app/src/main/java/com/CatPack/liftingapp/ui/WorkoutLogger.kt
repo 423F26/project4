@@ -7,6 +7,7 @@ import com.example.liftingapp.WorkoutSessionActivity
 import com.example.liftingapp.data.Athlete
 import com.example.liftingapp.data.DAY_MS
 import com.example.liftingapp.data.Scope
+import com.example.liftingapp.data.TeamWorkout
 import com.example.liftingapp.data.WorkoutWithExercises
 import com.example.liftingapp.data.sportSectionFor
 import com.google.android.material.datepicker.MaterialDatePicker
@@ -28,7 +29,7 @@ class WorkoutLogger(
     /** From the Log tab: choose the workout first. */
     fun pickAndLog() {
         val athlete = targetAthlete() ?: return
-        val sections = workoutSections(activity, viewModel.workoutLibraryAll, viewModel.scope)
+        val sections = workoutSections(activity, viewModel.workoutLibraryAll, viewModel.scope, viewModel.teamWorkouts.value.orEmpty())
         showPickerDialog(
             context = activity,
             title = "Log a workout for ${athlete.name.firstName()}",
@@ -73,35 +74,38 @@ class WorkoutLogger(
 
     companion object {
         /**
-         * The workouts the Workouts tab shows for [scope], grouped the same way: General use gets
-         * the library (yours, then premade); a team gets only its sport's seasons, at the week
-         * currently picked there.
+         * The workouts the Workouts tab shows for [scope], grouped the same way: on a team, its
+         * sport's seasons (at the week currently picked there) and its team workouts; then the
+         * general library (yours, then premade), which teams see too.
          */
         fun workoutSections(
             context: Context,
             library: List<WorkoutWithExercises>,
-            scope: Scope
+            scope: Scope,
+            teamWorkouts: List<TeamWorkout> = emptyList()
         ): List<PickerSection<Pair<WorkoutWithExercises, String>>> {
             val sections = mutableListOf<PickerSection<Pair<WorkoutWithExercises, String>>>()
             val teamSport = sportSectionFor(scope)
-            if (teamSport == null) {
-                val mine = library.filter { !it.workout.isPremade }
-                val premade = library.filter { it.workout.isPremade }
-                if (mine.isNotEmpty()) sections += PickerSection("Your workouts", mine.map { it.toPickerItem("Your workout") })
-                if (premade.isNotEmpty()) sections += PickerSection("Premade", premade.map { it.toPickerItem("Premade") })
-                return sections
-            }
-            teamSport.seasons.forEach { season ->
-                val week = SportSections.weekIndex(context, teamSport, season)
-                val label = buildString {
-                    append(teamSport.sport).append(' ').append(season.name)
-                    if (season.hasWeeks) append(", week ").append(week + 1)
+            if (teamSport != null) {
+                teamSport.seasons.forEach { season ->
+                    val week = SportSections.weekIndex(context, teamSport, season)
+                    val label = buildString {
+                        append(teamSport.sport).append(' ').append(season.name)
+                        if (season.hasWeeks) append(", week ").append(week + 1)
+                    }
+                    sections += PickerSection(label, season.days.map { day ->
+                        val item = season.workoutFor(day, week)
+                        PickerItem(day.name, exerciseSummary(item), item to label)
+                    })
                 }
-                sections += PickerSection(label, season.days.map { day ->
-                    val item = season.workoutFor(day, week)
-                    PickerItem(day.name, exerciseSummary(item), item to label)
-                })
             }
+            if (teamWorkouts.isNotEmpty()) {
+                sections += PickerSection("Team workouts", teamWorkouts.map { it.asItem().toPickerItem("Team workout") })
+            }
+            val mine = library.filter { !it.workout.isPremade }
+            val premade = library.filter { it.workout.isPremade }
+            if (mine.isNotEmpty()) sections += PickerSection("Your workouts", mine.map { it.toPickerItem("Your workout") })
+            if (premade.isNotEmpty()) sections += PickerSection("Premade", premade.map { it.toPickerItem("Premade") })
             return sections
         }
 

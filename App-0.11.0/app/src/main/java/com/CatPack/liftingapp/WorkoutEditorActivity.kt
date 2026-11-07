@@ -50,9 +50,16 @@ class WorkoutEditorActivity : AppCompatActivity() {
 
         viewModel = ViewModelProvider(this)[WorkoutEditorViewModel::class.java]
         val workoutId = intent.getLongExtra(EXTRA_WORKOUT_ID, NO_ID).takeIf { it != NO_ID }
-        viewModel.start(workoutId)
+        val teamMode = intent.getBooleanExtra(EXTRA_TEAM, false)
+        val teamWorkoutId = intent.getStringExtra(EXTRA_TEAM_WORKOUT_ID)
+        viewModel.start(workoutId, teamMode, teamWorkoutId)
 
-        binding.screenTitle.text = if (workoutId == null) "New workout" else "Edit workout"
+        binding.screenTitle.text = when {
+            teamMode && teamWorkoutId == null -> "New team workout"
+            teamMode -> "Edit team workout"
+            workoutId == null -> "New workout"
+            else -> "Edit workout"
+        }
         TooltipCompat.setTooltipText(binding.closeButton, binding.closeButton.contentDescription)
         binding.closeButton.setOnClickListener { leave() }
         binding.saveButton.setOnClickListener { save() }
@@ -77,6 +84,7 @@ class WorkoutEditorActivity : AppCompatActivity() {
                     .putExtra(EXTRA_SAVED_ID, saved.id)
                     .putExtra(EXTRA_SAVED_NAME, saved.name)
                     .putExtra(EXTRA_WAS_NEW, saved.wasNew)
+                    .putExtra(EXTRA_TEAM_SAVED_ID, saved.teamWorkoutId)
             )
             finish()
         }
@@ -203,6 +211,9 @@ class WorkoutEditorActivity : AppCompatActivity() {
         const val EXTRA_SAVED_ID = "saved_id"
         const val EXTRA_SAVED_NAME = "saved_name"
         const val EXTRA_WAS_NEW = "was_new"
+        const val EXTRA_TEAM_SAVED_ID = "team_saved_id"
+        private const val EXTRA_TEAM = "team"
+        private const val EXTRA_TEAM_WORKOUT_ID = "team_workout_id"
 
         private const val MENU_EDIT = 1
         private const val MENU_UP = 2
@@ -213,6 +224,13 @@ class WorkoutEditorActivity : AppCompatActivity() {
         fun intent(context: Context, workoutId: Long?): Intent =
             Intent(context, WorkoutEditorActivity::class.java).apply {
                 if (workoutId != null) putExtra(EXTRA_WORKOUT_ID, workoutId)
+            }
+
+        /** A team workout, shared with everyone on the open team. [teamWorkoutId] null = new. */
+        fun teamIntent(context: Context, teamWorkoutId: String?): Intent =
+            Intent(context, WorkoutEditorActivity::class.java).apply {
+                putExtra(EXTRA_TEAM, true)
+                if (teamWorkoutId != null) putExtra(EXTRA_TEAM_WORKOUT_ID, teamWorkoutId)
             }
     }
 }

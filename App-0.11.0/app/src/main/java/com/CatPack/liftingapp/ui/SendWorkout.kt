@@ -23,7 +23,8 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
  *  - Text: opens the texting app with the message ready and the number filled in
  *  - Email: opens the email app with subject, message and address filled in
  *  - Send with another app: the system share sheet (GroupMe, WhatsApp, copy, ...)
- * Nothing is sent until the coach hits send in that app.
+ * Nothing is sent until the coach hits send in that app. On a team there's also Send in CatPack,
+ * which puts it on the Workouts tab of the picked athlete (or everyone on the team).
  *
  * [onAthleteChanged] saves new contact details (only for athletes [canSaveContact] allows: coaches,
  * or the athlete themselves); [onProblem] shows a message if no app can send.
@@ -34,7 +35,9 @@ fun showSendWorkoutDialog(
     athletes: List<Athlete>,
     canSaveContact: (Athlete) -> Boolean,
     onAthleteChanged: (Athlete) -> Unit,
-    onProblem: (String) -> Unit
+    onProblem: (String) -> Unit,
+    /** Teams only: send inside the app to the picked athlete (null = the whole team). */
+    onSendInApp: ((Athlete?) -> Unit)? = null
 ) {
     val b = DialogSendWorkoutBinding.inflate(LayoutInflater.from(context))
     val workout = item.workout
@@ -56,6 +59,7 @@ fun showSendWorkoutDialog(
         b.preview.text = message()
         b.contactNote.isVisible = athlete?.let(canSaveContact) == true
         b.contactNote.text = athlete?.let { "Phone and email are saved to ${it.name} for next time." }.orEmpty()
+        b.inAppButton.text = athlete?.let { "Send to ${it.name} in CatPack" } ?: "Send to the whole team in CatPack"
     }
 
     b.athleteSpinner.onItemSelected { position ->
@@ -83,6 +87,11 @@ fun showSendWorkoutDialog(
         }
     }
 
+    b.inAppButton.isVisible = onSendInApp != null
+    b.inAppButton.setOnClickListener {
+        onSendInApp?.invoke(athlete)
+        dialog.dismiss()
+    }
     b.textButton.setOnClickListener {
         rememberContact()
         val number = phone().orNullIfBlank()?.let(::dialablePhone).orEmpty()
