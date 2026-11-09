@@ -1,0 +1,176 @@
+rules_version = '2';
+
+// Cloud Firestore security rules for CatPack (MSU Lift Tracker), version 0.11.
+// The data layout is described in App-0.11.0/app/src/main/java/com/CatPack/liftingapp/data/CloudPaths.kt.
+//
+// Deploy: Firebase console → Firestore Database → Rules → paste this file → Publish,
+// or `firebase deploy --only firestore:rules` from the repo root (uses firebase.json).
+//
+// What these rules enforce (the app checks the same things, but only the rules can't be bypassed):
+//  - Coach accounts are set by hand: users/{uid}.role == "coach" in the Firebase console.
+//    Nobody can make themselves a coach.
+//  - Only coaches can create teams.
+//  - Athlete (non-coach) accounts can add exactly one athlete per team, and one in General:
+//    their own profile, whose document id must be their uid.
+//  - You can join a team only with its current join code. Only the team's creator can read the code.
+//  - Team data is readable only by the team's members. General-use data is private to its owner;
+//    only the rows they publish to generalBoard are public (to signed-in users).
+//  - Only coaches, and each athlete for themselves, can log sets and workouts.
+//  - "Teammates can see my progress" off: other athletes can't read your sets or workout log.
+//  - Profile pictures are readable by others only while "Show my profile picture" is on.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function me() { return request.auth.uid; }
+
+    function userDoc(uid) { return /databases/$(database)/documents/users/$(uid); }
+    function teamDoc(teamId) { return /databases/$(database)/documents/teams/$(teamId); }
+    function memberDoc(teamId) { return /databases/$(database)/documents/teams/$(teamId)/members/$(me()); }
+    function secretDoc(teamId) { return /databases/$(database)/documents/teamSecrets/$(teamId); }
+
+    function isCoach() {
+      return signedIn() && exists(userDoc(me())) && get(userDoc(me())).data.get('role', 'athlete') == 'coach';
+    }
+    function isMember(teamId) { return signedIn() && exists(memberDoc(teamId)); }
+
+    // True while creating a team in one batch: the team (as it will be after the batch) is mine.
+    function creatingOwnTeam(teamId) {
+      return existsAfter(teamDoc(teamId)) && getAfter(teamDoc(teamId)).data.ownerUid == me();
+    }
+
+    // --- People ---
+
+    match /users/{userId} {
+      allow read, delete: if signedIn() && userId == me();
+      // New profiles are always athletes; the role can't be changed from the app. Someone who signs
+      // up as a coach gets requestedRole: "coach"; an admin approves it by setting role to "coach"
+      // here in the console (filter users by requestedRole == coach to find requests).
+      allow create: if signedIn() && userId == me()
+        && request.resource.data.get('role', 'athlete') == 'athlete';
+      allow update: if signedIn() && userId == me()
+        && request.resource.data.get('role', 'athlete') == resource.data.get('role', 'athlete');
+
+      // This person's list of teams (just an index for the team select screen; it grants nothing).
+      match /teams/{teamId} {
+        allow read, write: if signedIn() && userId == me();
+      }
+    }
+
+    match /avatars/{userId} {
+      allow get: if signedIn()
+        && (userId == me() || resource == null || resource.data.get('visible', false) == true);
+      allow list: if false;
+      allow create, update: if signedIn() && userId == me()
+        && request.resource.data.data is string
+        && request.resource.data.data.size() < 400000;
+      allow delete: if signedIn() && userId == me();
+    }
+
+    // --- Teams ---
+
+    match /teams/{teamId} {
+      allow read: if isMember(teamId);
+      allow create: if isCoach() && request.resource.data.ownerUid == me();
+      allow update: if signedIn() && resource.data.ownerUid == me() && request.resource.data.ownerUid == me();
+      allow delete: if false;
+
+      match /members/{memberId} {
+        allow read: if signedIn() && (memberId == me() || (isMember(teamId) && isCoach()));
+        // Joining: with the team's current code (as a regular member), or as the creator while
+        // the team is being made.
+        // The "role" shown in the member list can only say coach for real coach accounts.
+        allow create: if signedIn() && memberId == me()
+          && (request.resource.data.get('role', 'athlete') == 'athlete' || isCoach())
+          && (
+            (exists(secretDoc(teamId))
+              && request.resource.data.get('code', '') == get(secretDoc(teamId)).data.code
+              && request.resource.data.get('owner', false) == false)
+            || creatingOwnTeam(teamId)
+          );
+        allow update: if signedIn() && memberId == me()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'role'])
+          && (request.resource.data.get('role', 'athlete') == 'athlete' || isCoach());
+        // Leave the team, or (coaches) remove someone.
+        allow delete: if signedIn() && (memberId == me() || (isMember(teamId) && isCoach()));
+      }
+
+      // Workouts anyone on the team made, shared with everyone on it. Its maker or a coach can
+      // change or delete it, and the maker never changes.
+      match /workouts/{workoutId} {
+        allow read: if isMember(teamId);
+        allow create: if isMember(teamId) && request.resource.data.createdBy == me();
+        allow update: if isMember(teamId) && (resource.data.createdBy == me() || isCoach())
+          && request.resource.data.createdBy == resource.data.createdBy;
+        allow delete: if isMember(teamId) && (resource.data.createdBy == me() || isCoach());
+      }
+
+      // Workouts sent in the app (to the whole team, or to one teammate's account).
+      match /sent/{sentId} {
+        allow read: if isMember(teamId);
+        allow create: if isMember(teamId) && request.resource.data.fromUid == me();
+        allow delete: if isMember(teamId) && (resource.data.fromUid == me() || isCoach());
+      }
+
+      match /athletes/{athleteId} {
+        allow read: if isMember(teamId);
+        // Coaches add anyone; athlete accounts only themselves (id == their uid), so at most one.
+        allow create: if isMember(teamId) && (isCoach() || athleteId == me())
+          && request.resource.data.ownerUid == me();
+        allow update, delete: if isMember(teamId) && (isCoach() || athleteId == me());
+
+        // lifts/{id} and sessions/{id}
+        match /{child}/{docId} {
+          allow read: if isMember(teamId) && (child == 'lifts' || child == 'sessions') && (
+            isCoach() || athleteId == me()
+            || get(/databases/$(database)/documents/teams/$(teamId)/athletes/$(athleteId)).data.get('hideProgress', false) == false
+          );
+          allow write: if isMember(teamId) && (child == 'lifts' || child == 'sessions')
+            && (isCoach() || athleteId == me());
+        }
+      }
+    }
+
+    // The join code. Only the team's creator can read or change it.
+    match /teamSecrets/{teamId} {
+      allow read: if signedIn() && resource.data.ownerUid == me();
+      allow create: if signedIn() && request.resource.data.ownerUid == me() && creatingOwnTeam(teamId);
+      allow update: if signedIn() && resource.data.ownerUid == me() && request.resource.data.ownerUid == me();
+      allow delete: if false;
+    }
+
+    // Code -> team, for joining. Looked up one exact code at a time; never listable, so codes can't be browsed.
+    match /joinCodes/{code} {
+      allow get: if signedIn();
+      allow list: if false;
+      allow create: if signedIn() && request.resource.data.ownerUid == me()
+        && existsAfter(teamDoc(request.resource.data.teamId))
+        && getAfter(teamDoc(request.resource.data.teamId)).data.ownerUid == me();
+      allow update: if false;
+      allow delete: if signedIn() && resource.data.ownerUid == me();
+    }
+
+    // --- General use ---
+
+    // Private to its owner. Athlete accounts get one athlete here too: themselves.
+    match /general/{ownerId}/athletes/{athleteId} {
+      allow read, update, delete: if signedIn() && ownerId == me();
+      allow create: if signedIn() && ownerId == me() && (isCoach() || athleteId == me());
+
+      match /{child}/{docId} {
+        allow read, write: if signedIn() && ownerId == me();
+      }
+    }
+
+    // The General leaderboard: public rows each person publishes about their own General athletes.
+    match /generalBoard/{entryId} {
+      allow read: if signedIn();
+      allow create, update: if signedIn()
+        && request.resource.data.ownerUid == me()
+        && entryId == me() + '_' + request.resource.data.athleteId
+        && (isCoach() || request.resource.data.athleteId == me());
+      allow delete: if signedIn() && entryId.split('_')[0] == me();
+    }
+  }
+}

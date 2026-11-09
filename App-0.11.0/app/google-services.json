@@ -1,0 +1,114 @@
+{
+  "project_info": {
+    "project_number": "699950750126",
+    "project_id": "liftingapp-9c495",
+    "storage_bucket": "liftingapp-9c495.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:699950750126:android:2b33ca627c6a9e24b2d03f",
+        "android_client_info": {
+          "package_name": "com.CatPack.liftingapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "699950750126-j1m1cpoqgjnmr13pskekkd8t3l2dognu.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.CatPack.liftingapp",
+            "certificate_hash": "8588477e98194405875879caf59d8856de01d45f"
+          }
+        },
+        {
+          "client_id": "699950750126-p677i8fnjm1r38cg9fllk29rk8htjqbv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.CatPack.liftingapp",
+            "certificate_hash": "9c6e770e3e422d317e0ae49cf6d9282e685b3875"
+          }
+        },
+        {
+          "client_id": "699950750126-ajr7nknq7n3f7pj7m2kpcus396hgtv8m.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCK11BYTJHtqMtBp245c2CFcWOhs45HvlE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "699950750126-ajr7nknq7n3f7pj7m2kpcus396hgtv8m.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "699950750126-5eqo4169e4vrnut39tb6lp60pi799vjm.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.CatPack.liftingapp"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:699950750126:android:8b8fe43ca8791f26b2d03f",
+        "android_client_info": {
+          "package_name": "com.example.liftingapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "699950750126-18qj6qm7h58nglmdbhlp82hceken6b5d.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.liftingapp",
+            "certificate_hash": "37c7b65a5da5ee4f68eea6e4ed7afe7431e209d2"
+          }
+        },
+        {
+          "client_id": "699950750126-fkjdvcadgnb14j937993ddhb5vs8lc0h.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.liftingapp",
+            "certificate_hash": "8588477e98194405875879caf59d8856de01d45f"
+          }
+        },
+        {
+          "client_id": "699950750126-ajr7nknq7n3f7pj7m2kpcus396hgtv8m.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCK11BYTJHtqMtBp245c2CFcWOhs45HvlE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "699950750126-ajr7nknq7n3f7pj7m2kpcus396hgtv8m.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "699950750126-5eqo4169e4vrnut39tb6lp60pi799vjm.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.CatPack.liftingapp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

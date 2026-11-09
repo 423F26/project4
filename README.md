@@ -10,7 +10,7 @@ MSU Lift Tracker is an Android app that helps MSU sports teams track strength tr
 
 The goal is to show who is strongest, who needs more work, and how each athlete is progressing.
 
-**Status:** Beta (Beta Demo build, October 2026). The Android project lives in [`App-0.8.0/`](App-0.8.0/).
+**Status:** Beta (Beta Demo build, October 2026). The Android project lives in [`App-0.11.0/`](App-0.11.0/).
 
 ## Who it's for
 
@@ -43,10 +43,10 @@ This is a 16-week, two-person capstone project. Sprint records are in [`docs & a
 There's **no packaged build** yet: no Play Store listing and no release APK. You build the app from source and install it on an emulator or an Android phone (Android 7.0 or newer).
 
 1. **Install the tools:** Android Studio (a release that supports Android Gradle Plugin 9.4.1), Android SDK Platform 37, and Git. Gradle downloads JDK 25 and every library on the first sync.
-2. **Clone and open:** clone this repo, then in Android Studio choose **File → Open** and select the **`App-0.8.0`** folder. Don't select the repo root.
+2. **Clone and open:** clone this repo, then in Android Studio choose **File → Open** and select the **`App-0.11.0`** folder. Don't select the repo root.
 3. **Run:** pick the **app** run configuration and a device, then click **Run**.
 
-From the command line, run this inside `App-0.8.0`:
+From the command line, run this inside `App-0.11.0`:
 
 ```powershell
 .\gradlew.bat installDebug
@@ -86,7 +86,7 @@ Label the issue `bug` or `enhancement`. Items we plan to do also go into the spr
    ```
 
 2. **Commit in small steps** with messages that say what changed, for example `Fix chart line color in Daylight theme`. Never commit `local.properties`, keystores, passwords, or Gradle output folders (`build/`, `.gradle/`, `caches/`, `daemon/`).
-3. **Run the required checks** from `App-0.8.0`:
+3. **Run the required checks** from `App-0.11.0`:
 
    ```powershell
    .\gradlew.bat assembleDebug
@@ -117,9 +117,24 @@ Label the issue `bug` or `enhancement`. Items we plan to do also go into the spr
 ## Repository layout
 
 ```text
-App-0.8.0/       Android project (open this in Android Studio)
+App-0.11.0/       Android project (open this in Android Studio)
 docs/            developer.md and user.html
 docs & agile/    sprint records and earlier documentation
 Agents/          prompts for the team's AI review agents
 index.html       GitHub Pages homepage
 ```
+
+## Setup notes (Google sign-in, coaches, team workouts)
+
+- **Google sign-in (Android):** debug builds are signed with the shared key `keys/catpack-debug.keystore`
+  (password `android`), so everyone on the project has the same fingerprint. Its SHA-1,
+  `9C:6E:77:0E:3E:42:2D:31:7E:0A:E4:9C:F6:D9:28:2E:68:5B:38:75`, must be added in the Firebase console →
+  Project settings → Your apps → **com.CatPack.liftingapp** → Add fingerprint. Then download the new
+  `google-services.json` into `App-x.y.z/app/`. The Play Store build also needs the upload key's and Google
+  Play's app-signing SHA-1s added the same way.
+- **Coaches:** at sign-up people pick Athlete or Coach (accounts made earlier, and Google/Apple sign-ins, are
+  asked once). Coach is a request: their profile gets `requestedRole: "coach"` but `role` stays `"athlete"`.
+  To approve, open Firestore → `users`, find them (filter `requestedRole == coach`), and set `role` to `coach`.
+- **Team workouts and in-app sending** live in `teams/{teamId}/workouts` and `teams/{teamId}/sent` (rules in
+  `firestore.rules`; publish them after pulling). Anyone on a team can make or send one; the maker or a coach
+  can edit or delete it.
