@@ -15,7 +15,7 @@ import com.example.liftingapp.LiftViewModel
 import com.example.liftingapp.R
 import com.example.liftingapp.WorkoutEditorActivity
 import com.example.liftingapp.data.Athlete
-import com.example.liftingapp.data.Scope
+import com.example.liftingapp.data.LibraryWorkout
 import com.example.liftingapp.data.WorkoutFilter
 import com.example.liftingapp.data.WorkoutShare
 import com.example.liftingapp.data.WorkoutWithExercises
@@ -24,10 +24,11 @@ import com.example.liftingapp.databinding.TabWorkoutsBinding
 import com.google.android.material.snackbar.Snackbar
 
 /**
- * The coach's workout library: premade workouts plus the ones they made, filtered by the
- * All / Premade / Mine toggle. Each card can be sent (text, email or another app), logged to the
- * Log tab's workout log, edited or deleted (with Undo). New workout and Edit open
- * WorkoutEditorActivity. The library is kept on this phone.
+ * The workout library: the account's own workouts plus the premade ones, filtered by the
+ * All / Premade / Mine toggle. Each card can be sent (text, email, another app or in CatPack),
+ * logged to the Log tab's workout log, edited or deleted (with Undo). New workout and Edit open
+ * WorkoutEditorActivity. Your workouts are kept on the account (AccountWorkouts.kt), so they're
+ * the same on every team, in General use and on every phone; premade ones are on this phone.
  */
 class WorkoutsTab(
     private val activity: AppCompatActivity,
@@ -38,9 +39,9 @@ class WorkoutsTab(
     private var athletes: List<Athlete> = emptyList()
 
     private val adapter = WorkoutAdapter(
-        onEdit = { openEditor(it.workout.id) },
-        onSend = ::send,
-        onLog = { logger.log(it, if (it.workout.isPremade) "Premade" else "Your workout") },
+        onEdit = ::edit,
+        onSend = { send(it.item) },
+        onLog = { logger.log(it.item, if (it.isMine) "Your workout" else "Premade") },
         onDelete = ::delete
     )
 
@@ -59,22 +60,27 @@ class WorkoutsTab(
         val data = result.data
         if (result.resultCode != Activity.RESULT_OK || data == null) return@registerForActivityResult
         val id = data.getLongExtra(WorkoutEditorActivity.EXTRA_SAVED_ID, 0L)
+        val accountId = data.getStringExtra(WorkoutEditorActivity.EXTRA_ACCOUNT_SAVED_ID)
         val name = data.getStringExtra(WorkoutEditorActivity.EXTRA_SAVED_NAME).orEmpty()
         val wasNew = data.getBooleanExtra(WorkoutEditorActivity.EXTRA_WAS_NEW, false)
         // A new workout is never premade, so don't leave the coach looking at a list it isn't in.
         if (wasNew && viewModel.currentWorkoutFilter == WorkoutFilter.PREMADE) binding.filterToggle.check(R.id.filterAll)
         Snackbar.make(binding.root, "Saved “$name”", Snackbar.LENGTH_LONG)
             .setAnchorView(binding.newWorkoutFab)
-            .setAction("Send") { viewModel.loadWorkout(id) { item -> if (!activity.isDestroyed) send(item) } }
+            .setAction("Send") {
+                if (accountId != null) viewModel.myWorkout(accountId)?.let { send(it.asItem()) }
+                else viewModel.loadWorkout(id) { item -> if (!activity.isDestroyed) send(item) }
+            }
             .show()
     }
 
     init {
         binding.workoutList.adapter = adapter
         setupFilter()
-        binding.newWorkoutFab.setOnClickListener { openEditor(null) }
+        binding.newWorkoutFab.setOnClickListener { newWorkout() }
 
         viewModel.athletes.observe(activity) { athletes = it }
+        viewModel.teamPeople.observe(activity) { /* kept loaded for Send in CatPack */ }
         viewModel.workouts.observe(activity) { state ->
             adapter.submitList(state.workouts)
             binding.workoutsEmptyText.text = when (state.filter) {
@@ -95,31 +101,27 @@ class WorkoutsTab(
         }
     }
 
-    /** The New workout button (SportSections routes it here for the general library). */
-    fun newWorkout() = openEditor(null)
-
-    /** [workoutId] null = new workout. */
-    private fun openEditor(workoutId: Long?) {
-        editor.launch(WorkoutEditorActivity.intent(activity, workoutId))
+    /** The New workout button (SportSections routes it here for the general library). New ones go to the account. */
+    fun newWorkout() {
+        editor.launch(WorkoutEditorActivity.accountIntent(activity, null))
     }
 
-    private fun send(item: WorkoutWithExercises) {
-        showSendWorkoutDialog(
-            context = activity,
-            item = item,
-            athletes = athletes,
-            canSaveContact = viewModel::canEdit,
-            onAthleteChanged = viewModel::updateAthlete,
-            onProblem = ::showMessage,
-            onSendInApp = if (viewModel.scope is Scope.Team) { athlete -> viewModel.sendInApp(item, athlete, ::showMessage) } else null
+    private fun edit(entry: LibraryWorkout) {
+        val cloud = entry.cloud
+        editor.launch(
+            if (cloud != null) WorkoutEditorActivity.accountIntent(activity, cloud.id)
+            else WorkoutEditorActivity.intent(activity, entry.item.workout.id)
         )
     }
 
-    private fun delete(item: WorkoutWithExercises) {
-        viewModel.deleteWorkout(item)
-        Snackbar.make(binding.root, "Deleted “${item.workout.name}”", Snackbar.LENGTH_LONG)
+    private fun send(item: WorkoutWithExercises) = activity.sendWorkout(viewModel, item, athletes, ::showMessage)
+
+    private fun delete(entry: LibraryWorkout) {
+        viewModel.deleteWorkout(entry)
+        val where = if (entry.isMine) " from your account" else ""
+        Snackbar.make(binding.root, "Deleted “${entry.item.workout.name}”$where", Snackbar.LENGTH_LONG)
             .setAnchorView(binding.newWorkoutFab)   // keeps the snackbar above the New workout button
-            .setAction("Undo") { viewModel.restoreWorkout(item) }
+            .setAction("Undo") { viewModel.restoreWorkout(entry) }
             .show()
     }
 
@@ -134,20 +136,18 @@ class WorkoutsTab(
 private const val PREVIEW_LINES = 5
 
 /** Same workout = same id; redraw the card when anything in it changed. Lets deletes and Undo animate. */
-private object WorkoutDiff : DiffUtil.ItemCallback<WorkoutWithExercises>() {
-    override fun areItemsTheSame(oldItem: WorkoutWithExercises, newItem: WorkoutWithExercises) =
-        oldItem.workout.id == newItem.workout.id
+private object WorkoutDiff : DiffUtil.ItemCallback<LibraryWorkout>() {
+    override fun areItemsTheSame(oldItem: LibraryWorkout, newItem: LibraryWorkout) = oldItem.key == newItem.key
 
-    override fun areContentsTheSame(oldItem: WorkoutWithExercises, newItem: WorkoutWithExercises) =
-        oldItem == newItem
+    override fun areContentsTheSame(oldItem: LibraryWorkout, newItem: LibraryWorkout) = oldItem == newItem
 }
 
 private class WorkoutAdapter(
-    private val onEdit: (WorkoutWithExercises) -> Unit,
-    private val onSend: (WorkoutWithExercises) -> Unit,
-    private val onLog: (WorkoutWithExercises) -> Unit,
-    private val onDelete: (WorkoutWithExercises) -> Unit
-) : ListAdapter<WorkoutWithExercises, WorkoutAdapter.Holder>(WorkoutDiff) {
+    private val onEdit: (LibraryWorkout) -> Unit,
+    private val onSend: (LibraryWorkout) -> Unit,
+    private val onLog: (LibraryWorkout) -> Unit,
+    private val onDelete: (LibraryWorkout) -> Unit
+) : ListAdapter<LibraryWorkout, WorkoutAdapter.Holder>(WorkoutDiff) {
 
     class Holder(val binding: ItemWorkoutBinding) : RecyclerView.ViewHolder(binding.root)
 
@@ -157,7 +157,7 @@ private class WorkoutAdapter(
         TooltipCompat.setTooltipText(b.editButton, b.editButton.contentDescription)
         TooltipCompat.setTooltipText(b.deleteButton, b.deleteButton.contentDescription)
 
-        fun View.onItemClick(action: (WorkoutWithExercises) -> Unit) = setOnClickListener {
+        fun View.onItemClick(action: (LibraryWorkout) -> Unit) = setOnClickListener {
             val position = holder.bindingAdapterPosition
             if (position != RecyclerView.NO_POSITION) action(getItem(position))
         }
@@ -170,13 +170,17 @@ private class WorkoutAdapter(
     }
 
     override fun onBindViewHolder(holder: Holder, position: Int) {
-        val item = getItem(position)
+        val entry = getItem(position)
+        val item = entry.item
         val workout = item.workout
         val exercises = item.exercises
         val b = holder.binding
 
         b.name.text = workout.name
-        b.premadeBadge.isVisible = workout.isPremade
+        // Premade badge, or "From a team" for a copy of a team workout this account made.
+        val fromTeam = entry.cloud?.fromTeamId != null
+        b.premadeBadge.isVisible = workout.isPremade || fromTeam
+        b.premadeBadge.text = if (fromTeam) "From a team" else "Premade"
 
         val count = if (exercises.size == 1) "1 exercise" else "${exercises.size} exercises"
         b.meta.text = if (workout.isPremade) count else "$count · Updated ${workout.updatedAt.monthDay()}"

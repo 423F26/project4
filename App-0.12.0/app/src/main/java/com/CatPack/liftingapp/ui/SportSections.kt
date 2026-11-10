@@ -81,12 +81,12 @@ class SportSections(
     /** This team's sport plan, or null (General use, or a sport with no plan yet). */
     private val sport: SportSection? = sportSectionFor(viewModel.scope)
 
-    /** What the Workouts tab is showing. */
-    private enum class Mode { PLAN, TEAM, GENERAL }
+    /** What the Workouts tab is showing. SENT is General use's "Sent to you" (workouts friends sent). */
+    private enum class Mode { PLAN, TEAM, GENERAL, SENT }
 
-    /** The dropdown's choices: on a team, its plan (if any), Team workouts, General workouts. */
+    /** The dropdown's choices: on a team, its plan (if any), Team workouts, Your workouts; in General, Your workouts and Sent to you. */
     private val modes: List<Mode> = when {
-        viewModel.scope !is Scope.Team -> listOf(Mode.GENERAL)
+        viewModel.scope !is Scope.Team -> listOf(Mode.GENERAL, Mode.SENT)
         sport != null -> listOf(Mode.PLAN, Mode.TEAM, Mode.GENERAL)
         else -> listOf(Mode.TEAM, Mode.GENERAL)
     }
@@ -110,7 +110,8 @@ class SportSections(
             when (m) {
                 Mode.PLAN -> "${sport?.sport} plan"
                 Mode.TEAM -> "Team workouts"
-                Mode.GENERAL -> "General workouts"
+                Mode.GENERAL -> "Your workouts"
+                Mode.SENT -> "Sent to you"
             }
         })
         binding.sportSpinner.setSelection(modes.indexOf(mode), false)
@@ -148,10 +149,10 @@ class SportSections(
         val current = mode
         val library = current == Mode.GENERAL
         binding.sportSection.isVisible = current == Mode.PLAN
-        team.setVisible(current == Mode.TEAM)
+        team.setVisible(current == Mode.TEAM || current == Mode.SENT)
         binding.filterToggle.isVisible = library
         binding.workoutList.isVisible = library
-        binding.newWorkoutFab.isVisible = current != Mode.PLAN
+        binding.newWorkoutFab.isVisible = current == Mode.TEAM || current == Mode.GENERAL
         binding.newWorkoutFab.text = if (current == Mode.TEAM) "New team workout" else "New workout"
         binding.workoutsEmptyText.isVisible = library && (binding.workoutList.adapter?.itemCount ?: 0) == 0
         val s = sport
@@ -180,19 +181,8 @@ class SportSections(
         adapter.submit(season, week)
     }
 
-    fun send(item: WorkoutWithExercises) {
-        showSendWorkoutDialog(
-            context = activity,
-            item = item,
-            athletes = athletes,
-            canSaveContact = viewModel::canEdit,
-            onAthleteChanged = viewModel::updateAthlete,
-            onProblem = { message -> Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show() },
-            onSendInApp = if (viewModel.scope is Scope.Team) { athlete ->
-                viewModel.sendInApp(item, athlete) { message -> Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show() }
-            } else null
-        )
-    }
+    fun send(item: WorkoutWithExercises) =
+        activity.sendWorkout(viewModel, item, athletes) { message -> Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show() }
 
     /** Logs a plan day; the source says which plan and week it came from. */
     private fun log(item: WorkoutWithExercises) {

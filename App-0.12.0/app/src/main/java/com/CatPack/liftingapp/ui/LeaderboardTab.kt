@@ -28,7 +28,7 @@ import com.google.android.material.R as MaterialR
  */
 class LeaderboardTab(private val owner: LifecycleOwner, binding: TabLeaderboardBinding, private val viewModel: LiftViewModel) {
 
-    private val adapter = LeaderboardAdapter(owner) { targetUid, follow -> viewModel.setFollowing(targetUid, follow) }
+    private val adapter = LeaderboardAdapter(owner) { targetUid, name, follow -> viewModel.setFollowing(targetUid, name, follow) }
 
     init {
         val context = binding.root.context
@@ -98,7 +98,7 @@ class LeaderboardTab(private val owner: LifecycleOwner, binding: TabLeaderboardB
 
 private class LeaderboardAdapter(
     private val owner: LifecycleOwner,
-    private val onFollow: (targetUid: String, follow: Boolean) -> Unit
+    private val onFollow: (targetUid: String, name: String, follow: Boolean) -> Unit
 ) : RecyclerView.Adapter<LeaderboardAdapter.Holder>() {
 
     /** Accounts the signed-in person follows. */
@@ -169,7 +169,7 @@ private class LeaderboardAdapter(
             val isFollowing = target in following
             b.followButton.text = if (isFollowing) "Following" else "Follow"
             b.followButton.contentDescription = if (isFollowing) "Unfollow ${row.name}" else "Follow ${row.name}"
-            b.followButton.setOnClickListener { onFollow(target, !isFollowing) }
+            b.followButton.setOnClickListener { onFollow(target, row.name, !isFollowing) }
         } else {
             b.followButton.setOnClickListener(null)
         }

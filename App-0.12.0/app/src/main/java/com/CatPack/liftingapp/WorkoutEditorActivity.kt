@@ -52,9 +52,13 @@ class WorkoutEditorActivity : AppCompatActivity() {
         val workoutId = intent.getLongExtra(EXTRA_WORKOUT_ID, NO_ID).takeIf { it != NO_ID }
         val teamMode = intent.getBooleanExtra(EXTRA_TEAM, false)
         val teamWorkoutId = intent.getStringExtra(EXTRA_TEAM_WORKOUT_ID)
-        viewModel.start(workoutId, teamMode, teamWorkoutId)
+        val accountMode = intent.getBooleanExtra(EXTRA_ACCOUNT, false)
+        val accountWorkoutId = intent.getStringExtra(EXTRA_ACCOUNT_WORKOUT_ID)
+        viewModel.start(workoutId, teamMode, teamWorkoutId, accountMode, accountWorkoutId)
 
         binding.screenTitle.text = when {
+            accountMode && accountWorkoutId == null -> "New workout"
+            accountMode -> "Edit workout"
             teamMode && teamWorkoutId == null -> "New team workout"
             teamMode -> "Edit team workout"
             workoutId == null -> "New workout"
@@ -85,6 +89,7 @@ class WorkoutEditorActivity : AppCompatActivity() {
                     .putExtra(EXTRA_SAVED_NAME, saved.name)
                     .putExtra(EXTRA_WAS_NEW, saved.wasNew)
                     .putExtra(EXTRA_TEAM_SAVED_ID, saved.teamWorkoutId)
+                    .putExtra(EXTRA_ACCOUNT_SAVED_ID, saved.accountWorkoutId)
             )
             finish()
         }
@@ -214,13 +219,23 @@ class WorkoutEditorActivity : AppCompatActivity() {
         const val EXTRA_TEAM_SAVED_ID = "team_saved_id"
         private const val EXTRA_TEAM = "team"
         private const val EXTRA_TEAM_WORKOUT_ID = "team_workout_id"
+        const val EXTRA_ACCOUNT_SAVED_ID = "account_saved_id"
+        private const val EXTRA_ACCOUNT = "account"
+        private const val EXTRA_ACCOUNT_WORKOUT_ID = "account_workout_id"
 
         private const val MENU_EDIT = 1
         private const val MENU_UP = 2
         private const val MENU_DOWN = 3
         private const val MENU_REMOVE = 4
 
-        /** [workoutId] null = new workout. */
+        /** One of the account's own workouts (on every team and phone). [accountWorkoutId] null = new. */
+        fun accountIntent(context: Context, accountWorkoutId: String?): Intent =
+            Intent(context, WorkoutEditorActivity::class.java).apply {
+                putExtra(EXTRA_ACCOUNT, true)
+                if (accountWorkoutId != null) putExtra(EXTRA_ACCOUNT_WORKOUT_ID, accountWorkoutId)
+            }
+
+        /** A premade workout kept on this phone. [workoutId] null = new (not used: new ones go to the account). */
         fun intent(context: Context, workoutId: Long?): Intent =
             Intent(context, WorkoutEditorActivity::class.java).apply {
                 if (workoutId != null) putExtra(EXTRA_WORKOUT_ID, workoutId)

@@ -47,6 +47,7 @@ object AdminAccounts {
             if (runCatching { own.get().awaitResult().exists() }.getOrDefault(false)) {
                 LiftRepository(team, uid).deleteAthlete(uid)
             }
+            runCatching { TeamPeople.remove(team.id, uid) }
             runCatching { CloudPaths.members(team.id).document(uid).delete().awaitResult() }
             teamDoc.reference.delete().awaitResult()
         }
@@ -54,6 +55,8 @@ object AdminAccounts {
         // Who they followed. The counts of the people they followed stay as they are (the rules only let
         // a follower change a count together with their own follow), which is at most off by one each.
         CloudPaths.following(uid).get().awaitResult().documents.forEach { it.reference.delete().awaitResult() }
+        AccountWorkouts.deleteAll(uid)
+        FriendInbox.deleteAll(uid)
         runCatching { CloudPaths.followerCount(uid).delete().awaitResult() }
         runCatching { CloudPaths.avatar(uid).delete().awaitResult() }
         CloudPaths.user(uid).delete().awaitResult()

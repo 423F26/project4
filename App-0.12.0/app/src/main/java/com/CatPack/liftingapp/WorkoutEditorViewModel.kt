@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.example.liftingapp.data.AccountWorkouts
 import com.example.liftingapp.data.LiftDatabase
 import com.example.liftingapp.data.Workout
 import com.example.liftingapp.data.WorkoutExercise
@@ -17,7 +18,11 @@ import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 
 /** What the editor reports back when it saves, so the Workouts tab can say "Saved" and offer Send. */
-data class SavedWorkout(val id: Long, val name: String, val wasNew: Boolean, val teamWorkoutId: String? = null)
+data class SavedWorkout(
+    val id: Long, val name: String, val wasNew: Boolean,
+    val teamWorkoutId: String? = null,
+    val accountWorkoutId: String? = null
+)
 
 /**
  * The workout being edited in WorkoutEditorActivity. Holding the draft here (not in the views)
@@ -58,10 +63,41 @@ class WorkoutEditorViewModel(application: Application) : AndroidViewModel(applic
     /** Set once the save has finished; the activity then closes. */
     val saved: LiveData<SavedWorkout?> = _saved
 
+    /** Set for one of the account's own workouts (users/{uid}/workouts), which go with the account everywhere. */
+    private var accountMode = false
+    private var accountWorkoutId: String? = null
+
     /** Loads [workoutId] (null = new workout). Only the first call does anything, so rotation doesn't reload. */
-    fun start(workoutId: Long?, teamMode: Boolean = false, teamWorkoutId: String? = null) {
+    fun start(
+        workoutId: Long?, teamMode: Boolean = false, teamWorkoutId: String? = null,
+        accountMode: Boolean = false, accountWorkoutId: String? = null
+    ) {
         if (started) return
         started = true
+        if (accountMode) {
+            this.accountMode = true
+            this.accountWorkoutId = accountWorkoutId
+            val uid = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
+            if (accountWorkoutId == null) {
+                originalDraft = draft()
+                _ready.value = true
+                return
+            }
+            viewModelScope.launch {
+                val item = runCatching { AccountWorkouts.get(uid, accountWorkoutId) }.getOrNull()
+                if (item == null) {
+                    notFound = true
+                } else {
+                    original = item.asItem().workout
+                    name = item.name
+                    notes = item.notes
+                    _exercises += item.exercises
+                }
+                originalDraft = draft()
+                _ready.value = true
+            }
+            return
+        }
         if (teamMode) {
             val uid = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
             teamId = (ScopeStore.load(getApplication(), uid) as? Scope.Team)?.id
@@ -133,6 +169,21 @@ class WorkoutEditorViewModel(application: Application) : AndroidViewModel(applic
         val workout = original?.copy(name = name.trim(), notes = notes.trim(), updatedAt = now)
             ?: Workout(name = name.trim(), notes = notes.trim(), createdAt = now, updatedAt = now)
         val exercisesToSave = _exercises.toList()
+        if (accountMode) {
+            val user = FirebaseAuth.getInstance().currentUser
+            val wasNew = accountWorkoutId == null
+            viewModelScope.launch {
+                try {
+                    val id = AccountWorkouts.save(user?.uid.orEmpty(), accountWorkoutId, workout.name, workout.notes,
+                                                  exercisesToSave, user?.displayName.orEmpty())
+                    _saved.value = SavedWorkout(0, workout.name, wasNew, accountWorkoutId = id)
+                } catch (e: Exception) {
+                    saving = false
+                    inBackground("save the workout") { throw e }   // shows the error message
+                }
+            }
+            return
+        }
         val team = teamId
         if (team != null) {
             val user = FirebaseAuth.getInstance().currentUser

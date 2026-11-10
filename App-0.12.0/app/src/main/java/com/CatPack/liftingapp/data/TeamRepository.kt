@@ -78,6 +78,7 @@ class TeamRepository(private val uid: String) {
     /** Leaves the team. The athlete profile and lifts stay with the team (a coach can delete them). */
     suspend fun leaveTeam(teamId: String) {
         val batch = db.batch()
+        batch.delete(CloudPaths.teamPeople(teamId).document(uid))   // off the in-app Send list
         batch.delete(CloudPaths.members(teamId).document(uid))
         batch.delete(CloudPaths.myTeams(uid).document(teamId))
         commit("leave the team") { batch.commit().awaitResult() }

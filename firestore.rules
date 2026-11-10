@@ -75,9 +75,19 @@ service cloud.firestore {
         allow read, delete: if staffRemoving(userId);
       }
 
+      // This account's own workouts: on every team, in General use and on every phone.
+      match /workouts/{workoutId} {
+        allow read, write: if signedIn() && userId == me();
+        allow read, delete: if staffRemoving(userId);
+      }
+
       // Who this person follows. Private to them (admins can clear it when deleting the account).
+      // One exception: you may check whether someone you follow follows you back (mutual friends,
+      // who can send each other workouts). That never reveals anyone you don't follow.
       match /following/{targetId} {
         allow read: if signedIn() && userId == me();
+        allow get: if signedIn() && targetId == me()
+          && exists(/databases/$(database)/documents/users/$(me())/following/$(userId));
         allow create: if signedIn() && userId == me() && targetId != me();
         allow delete: if signedIn() && userId == me();
         allow read, delete: if staffRemoving(userId);
@@ -100,6 +110,18 @@ service cloud.firestore {
         || (request.resource.data.count == resource.data.get('count', 0) - 1
           && exists(followingDoc()) && !existsAfter(followingDoc()))
       );
+      allow delete: if signedIn() && (userId == me() || staffRemoving(userId));
+    }
+
+    // Workouts a mutual friend sent to {userId} in the app. Only friends (who follow each other) can
+    // send; the owner reads and removes them; a sender can't read anyone's inbox.
+    match /inbox/{userId}/items/{itemId} {
+      function follows(a, b) { return exists(/databases/$(database)/documents/users/$(a)/following/$(b)); }
+      allow read: if signedIn() && userId == me();
+      allow create: if signedIn() && userId != me()
+        && request.resource.data.fromUid == me()
+        && follows(me(), userId) && follows(userId, me());
+      allow update: if false;
       allow delete: if signedIn() && (userId == me() || staffRemoving(userId));
     }
 
@@ -157,6 +179,15 @@ service cloud.firestore {
         allow update: if isMember(teamId) && (resource.data.createdBy == me() || isCoach())
           && request.resource.data.createdBy == resource.data.createdBy;
         allow delete: if isMember(teamId) && (resource.data.createdBy == me() || isCoach());
+      }
+
+      // Who's on the team, for sending in the app: every member writes their own row (name, coach)
+      // and every member can read the list. Kept apart from members/, whose docs hold the join code.
+      match /people/{personId} {
+        allow read: if isMember(teamId);
+        allow create, update: if isMember(teamId) && personId == me()
+          && request.resource.data.get('coach', false) == isCoach();
+        allow delete: if signedIn() && (personId == me() || (isMember(teamId) && isCoach()) || staffRemoving(personId));
       }
 
       // Workouts sent in the app (to the whole team, or to one teammate's account).

@@ -15,6 +15,13 @@ import com.example.liftingapp.data.CloudErrors
 import com.example.liftingapp.data.EXERCISES
 import com.example.liftingapp.data.ExerciseCatalog
 import com.example.liftingapp.data.Follows
+import com.example.liftingapp.data.AccountWorkouts
+import com.example.liftingapp.data.FriendInbox
+import com.example.liftingapp.data.Friends
+import com.example.liftingapp.data.LibraryWorkout
+import com.example.liftingapp.data.Recipient
+import com.example.liftingapp.data.TeamPeople
+import com.example.liftingapp.data.accountLibrary
 import com.example.liftingapp.data.GeneralBoard
 import com.example.liftingapp.data.LeaderboardRow
 import com.example.liftingapp.data.LegacyImport
@@ -44,7 +51,6 @@ import com.example.liftingapp.data.generalLeaderboard
 import com.example.liftingapp.data.inBackground
 import com.example.liftingapp.data.sessionFrom
 import com.example.liftingapp.data.teamLeaderboard
-import com.example.liftingapp.data.workoutLibrary
 import com.example.liftingapp.data.workoutLog
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -68,7 +74,7 @@ import kotlinx.coroutines.launch
 data class LeaderboardState(val exercise: String, val rankBy: RankBy, val rows: List<LeaderboardRow>)
 
 /** The Workouts tab's list for the selected filter, plus the filter itself (for the empty message). */
-data class WorkoutListState(val filter: WorkoutFilter, val workouts: List<WorkoutWithExercises>)
+data class WorkoutListState(val filter: WorkoutFilter, val workouts: List<LibraryWorkout>)
 
 /** The Log tab's workout log for the selected athlete, already sorted, filtered and grouped. */
 data class WorkoutLogState(val sort: LogSort, val filter: LogFilter, val items: List<LogItem>, val total: Int)
@@ -108,6 +114,15 @@ class LiftViewModel(application: Application) : AndroidViewModel(application) {
     val currentProfile: UserProfile? get() = profileState.value
     val isCoach: Boolean get() = currentProfile?.isCoach == true
 
+    /** This person's name for things others see (sent workouts, the team's Send list). */
+    val myName: String get() = currentProfile?.name?.takeIf { it.isNotBlank() }
+        ?: FirebaseAuth.getInstance().currentUser?.displayName.orEmpty().ifBlank { "A teammate" }
+
+    /** The account's own workouts (AccountWorkouts.kt): the same on every team, in General use and on every phone. */
+    private val myWorkoutsState: StateFlow<List<TeamWorkout>> = AccountWorkouts.list(uid)
+        .catch { report("load your workouts", it); emit(emptyList()) }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
     // --- Roster ---
 
     /** Null until the first result arrives, so screens can tell "loading" from "no athletes". */
@@ -134,6 +149,16 @@ class LiftViewModel(application: Application) : AndroidViewModel(application) {
             if (scope == Scope.General || !profile.isCoach) {
                 runCatching { repository.ensureOwnAthlete(profile) }   // offline: tried again next time
             }
+            val name = myName
+            // On the team's in-app Send list, so anyone on the team can send to this person.
+            (scope as? Scope.Team)?.let { team ->
+                runCatching { TeamPeople.announce(team.id, uid, name, profile.isCoach) }
+            }
+            // Workouts follow the account: ones made on this phone before, and team workouts made on any team.
+            runCatching {
+                AccountWorkouts.importFromPhone(uid, name, workoutRepository, workoutRepository.workouts.first())
+            }.onFailure { report("move your workouts to your account", it) }
+            runCatching { AccountWorkouts.carryFromTeams(uid, name) }   // offline: tried again next time
         }
     }
 
@@ -201,8 +226,8 @@ class LiftViewModel(application: Application) : AndroidViewModel(application) {
     // --- Exercise list (Log tab, Leaderboard, workout editor) ---
 
     private val catalogState: StateFlow<List<String>> =
-        combine(profileState, workoutRepository.workouts, athleteState) { profile, workouts, athletes ->
-            val fromWorkouts = workouts.flatMap { item -> item.exercises.map { it.name } }
+        combine(profileState, workoutRepository.workouts, myWorkoutsState, athleteState) { profile, workouts, mine, athletes ->
+            val fromWorkouts = (workouts.flatMap { it.exercises } + mine.flatMap { it.exercises }).map { it.name }
             val logged = athletes.orEmpty().flatMap { it.bests.keys }
             ExerciseCatalog.build(profile?.customExercises.orEmpty(), fromWorkouts + logged)
         }.stateIn(viewModelScope, SharingStarted.Eagerly, ExerciseCatalog.build(emptyList()))
@@ -233,16 +258,20 @@ class LiftViewModel(application: Application) : AndroidViewModel(application) {
 
     /** Re-sorts when the workouts change, re-filters when the All / Premade / Mine toggle changes. */
     val workouts: LiveData<WorkoutListState> =
-        workoutRepository.workouts
-            .combine(workoutFilter) { all, filter -> WorkoutListState(filter, workoutLibrary(all, filter)) }
-            .asLiveData()
+        combine(myWorkoutsState, workoutRepository.workouts, workoutFilter) { mine, phone, filter ->
+            WorkoutListState(filter, accountLibrary(mine, phone, filter))
+        }.asLiveData()
 
-    /** The phone's whole workout library (for "Log workout"), in the Workouts tab's order. */
-    private val libraryState: StateFlow<List<WorkoutWithExercises>> = workoutRepository.workouts
-        .map { workoutLibrary(it, WorkoutFilter.ALL) }
-        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+    /** The whole library (for "Log workout"), in the Workouts tab's order. */
+    private val libraryState: StateFlow<List<WorkoutWithExercises>> =
+        combine(myWorkoutsState, workoutRepository.workouts) { mine, phone ->
+            accountLibrary(mine, phone, WorkoutFilter.ALL).map { it.item }
+        }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     val workoutLibraryAll: List<WorkoutWithExercises> get() = libraryState.value
+
+    /** One of the account's workouts by id, if it's loaded (e.g. right after the editor saved it). */
+    fun myWorkout(id: String): TeamWorkout? = myWorkoutsState.value.firstOrNull { it.id == id }
 
     // --- Leaderboard tab ---
 
@@ -288,10 +317,10 @@ class LiftViewModel(application: Application) : AndroidViewModel(application) {
         .catch { report("load your followers", it); emit(0) }
         .asLiveData()
 
-    fun setFollowing(targetUid: String, follow: Boolean) {
+    fun setFollowing(targetUid: String, name: String, follow: Boolean) {
         if (targetUid == uid) return
         inBackground(if (follow) "follow" else "unfollow") {
-            if (follow) Follows.follow(uid, targetUid) else Follows.unfollow(uid, targetUid)
+            if (follow) Follows.follow(uid, targetUid, name) else Follows.unfollow(uid, targetUid)
         }
     }
 
@@ -383,19 +412,26 @@ class LiftViewModel(application: Application) : AndroidViewModel(application) {
 
     // --- Workouts library (on the phone) ---
 
-    /** Looks up one workout (e.g. the one just saved) and hands it to [onLoaded]; skipped if it's gone. */
+    /** Looks up a premade workout on this phone and hands it to [onLoaded]; skipped if it's gone. */
     fun loadWorkout(id: Long, onLoaded: (WorkoutWithExercises) -> Unit) {
         viewModelScope.launch { workoutRepository.workout(id)?.let(onLoaded) }
     }
 
-    /** Deletes a workout and its exercises. Keep [item] to undo with restoreWorkout(). */
-    fun deleteWorkout(item: WorkoutWithExercises) {
-        viewModelScope.launch { workoutRepository.delete(item.workout) }
+    /**
+     * Deletes one of your workouts from the account (everywhere), or a premade one from this phone.
+     * Keep [entry] to undo with restoreWorkout(). Team workouts made from it stay with their teams.
+     */
+    fun deleteWorkout(entry: LibraryWorkout) {
+        val cloud = entry.cloud
+        if (cloud != null) inBackground("delete ${cloud.name}") { AccountWorkouts.delete(uid, cloud.id) }
+        else viewModelScope.launch { workoutRepository.delete(entry.item.workout) }
     }
 
     /** Puts a deleted workout back exactly as it was (same ids). Used by the Undo snackbar. */
-    fun restoreWorkout(item: WorkoutWithExercises) {
-        viewModelScope.launch { workoutRepository.restore(item) }
+    fun restoreWorkout(entry: LibraryWorkout) {
+        val cloud = entry.cloud
+        if (cloud != null) inBackground("restore ${cloud.name}") { AccountWorkouts.restore(uid, cloud) }
+        else viewModelScope.launch { workoutRepository.restore(entry.item) }
     }
 
     // --- Team workouts and in-app sending (teams only; see data/TeamWorkouts.kt) ---
@@ -429,23 +465,47 @@ class LiftViewModel(application: Application) : AndroidViewModel(application) {
         inBackground("remove ${sent.name}") { TeamInbox.delete(team.id, sent.id) }
     }
 
-    /**
-     * Sends [item] in the app: to [athlete]'s account, or to everyone on the team when null.
-     * Athletes a coach added without an account can't get it in the app ([onDone] says so).
-     */
-    fun sendInApp(item: WorkoutWithExercises, athlete: Athlete?, onDone: (String) -> Unit) {
-        val team = scope as? Scope.Team ?: return
-        val firstName = athlete?.name?.trim()?.split(Regex("\\s+"))?.firstOrNull().orEmpty()
-        val toUid = athlete?.linkedUid
-        if (athlete != null && toUid == null) {
-            onDone("$firstName doesn't have the app yet. Use Text or Email instead.")
-            return
+    /** Everyone else on the open team (athletes and coaches), for "Send in CatPack". Empty in General use. */
+    val teamPeople: LiveData<List<Recipient>> = when (scope) {
+        is Scope.Team -> TeamPeople.list(scope.id, uid)
+            .catch { report("load your teammates", it); emit(emptyList()) }
+            .asLiveData()
+        Scope.General -> flowOf(emptyList<Recipient>()).asLiveData()
+    }
+
+    /** Workouts friends sent this account. Shown on every team and in General use. */
+    val friendInbox: LiveData<List<SentWorkout>> = FriendInbox.list(uid)
+        .catch { report("load workouts friends sent you", it); emit(emptyList()) }
+        .asLiveData()
+
+    fun deleteFriendSent(sent: SentWorkout) {
+        inBackground("remove ${sent.name}") { FriendInbox.delete(uid, sent.id) }
+    }
+
+    /** People who follow each other with this account (Friends in InAppSending.kt). */
+    fun loadFriends(onLoaded: (List<Recipient>) -> Unit) {
+        viewModelScope.launch {
+            val friends = try { Friends.mutual(uid) } catch (e: Exception) { report("load your friends", e); emptyList() }
+            onLoaded(friends)
         }
-        val myName = currentProfile?.name?.takeIf { it.isNotBlank() }
-            ?: FirebaseAuth.getInstance().currentUser?.displayName.orEmpty().ifBlank { "A teammate" }
+    }
+
+    /** Sends [item] in the app to someone on the open team, or to everyone on it when [to] is null. */
+    fun sendToTeam(item: WorkoutWithExercises, to: Recipient?, onDone: (String) -> Unit) {
+        val team = scope as? Scope.Team ?: return
+        val name = myName
         inBackground("send the workout") {
-            TeamInbox.send(team.id, item, uid, myName, toUid, athlete?.name ?: "Everyone on ${team.name}")
-            onDone(if (athlete == null) "Sent to everyone on ${team.name}" else "Sent to ${athlete.name}")
+            TeamInbox.send(team.id, item, uid, name, to?.uid, to?.name ?: "Everyone on ${team.name}")
+            onDone(if (to == null) "Sent to everyone on ${team.name}" else "Sent to ${to.name}")
+        }
+    }
+
+    /** Sends [item] to a mutual friend's account; it shows under "Sent to you" wherever they are. */
+    fun sendToFriend(item: WorkoutWithExercises, to: Recipient, onDone: (String) -> Unit) {
+        val name = myName
+        inBackground("send the workout") {
+            FriendInbox.send(item, uid, name, to)
+            onDone("Sent to ${to.name}")
         }
     }
 

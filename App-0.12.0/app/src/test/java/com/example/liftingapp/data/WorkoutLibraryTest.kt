@@ -19,6 +19,18 @@ class WorkoutLibraryTest {
 
     private fun List<WorkoutWithExercises>.ids() = map { it.workout.id }
 
+    private fun cloud(id: String, updatedAt: Long) = TeamWorkout(id, "C$id", "", emptyList(), "me", "Me", updatedAt)
+
+    @Test
+    fun accountWorkoutsComeFirstAndPhoneOnlyKeepsPremade() {
+        val mine = listOf(cloud("a", 100), cloud("b", 300))
+        val all = accountLibrary(mine, library, WorkoutFilter.ALL)
+        // Account workouts newest first, then premade by id; non-premade phone rows aren't shown (they move to the account).
+        assertEquals(listOf("cloud:b", "cloud:a", "phone:1", "phone:3"), all.map { it.key })
+        assertEquals(listOf("cloud:b", "cloud:a"), accountLibrary(mine, library, WorkoutFilter.MINE).map { it.key })
+        assertEquals(listOf("phone:1", "phone:3"), accountLibrary(mine, library, WorkoutFilter.PREMADE).map { it.key })
+    }
+
     @Test
     fun allShowsMineNewestFirstThenPremadeInShippedOrder() {
         assertEquals(listOf(11L, 12L, 10L, 1L, 3L), workoutLibrary(library, WorkoutFilter.ALL).ids())

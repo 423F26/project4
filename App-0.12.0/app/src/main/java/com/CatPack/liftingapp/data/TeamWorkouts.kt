@@ -25,7 +25,9 @@ data class TeamWorkout(
     val exercises: List<WorkoutExercise>,
     val createdBy: String,
     val createdByName: String,
-    val updatedAt: Long
+    val updatedAt: Long,
+    /** Account workouts only: the team it was first made on, if it's a copy of a team workout. */
+    val fromTeamId: String? = null
 ) {
     /** As the Workouts tab's cards, the Send dialog and the workout log expect it. */
     fun asItem(): WorkoutWithExercises =
@@ -51,7 +53,7 @@ data class SentWorkout(
     fun isFor(uid: String): Boolean = to.isEmpty() || uid in to || fromUid == uid
 }
 
-private fun exercisesToMaps(exercises: List<WorkoutExercise>): List<Map<String, Any>> =
+internal fun exercisesToMaps(exercises: List<WorkoutExercise>): List<Map<String, Any>> =
     exercises.mapIndexed { i, e ->
         mapOf("name" to e.name.trim(), "sets" to e.sets.toLong(), "reps" to e.reps.trim(),
               "load" to e.load.trim(), "notes" to e.notes.trim(), "position" to i.toLong())
@@ -77,7 +79,8 @@ fun DocumentSnapshot.toTeamWorkout() = TeamWorkout(
     exercises = exercises(),
     createdBy = getString("createdBy").orEmpty(),
     createdByName = getString("createdByName").orEmpty(),
-    updatedAt = get("updatedAt").asLong()
+    updatedAt = get("updatedAt").asLong(),
+    fromTeamId = getString("fromTeamId")
 )
 
 fun DocumentSnapshot.toSentWorkout() = SentWorkout(
@@ -92,6 +95,27 @@ fun DocumentSnapshot.toSentWorkout() = SentWorkout(
     sentAt = get("sentAt").asLong()
 )
 
+/** Writes a workout doc (team or account): set with the maker when new, update otherwise. */
+internal suspend fun saveWorkoutDoc(
+    ref: com.google.firebase.firestore.DocumentReference, isNew: Boolean,
+    name: String, notes: String, exercises: List<WorkoutExercise>, uid: String, userName: String,
+    extra: Map<String, Any> = emptyMap()
+) {
+    val now = System.currentTimeMillis()
+    val data = mutableMapOf<String, Any>(
+        "name" to name.trim(),
+        "notes" to notes.trim(),
+        "exercises" to exercisesToMaps(exercises),
+        "updatedAt" to now,
+        "updatedBy" to uid
+    ) + extra
+    if (isNew) {
+        ref.set(data + mapOf("createdBy" to uid, "createdByName" to userName, "createdAt" to now)).awaitResult()
+    } else {
+        ref.update(data).awaitResult()
+    }
+}
+
 object TeamWorkouts {
     /** The team's shared workouts, most recently saved first. */
     fun list(teamId: String): Flow<List<TeamWorkout>> =
@@ -104,27 +128,21 @@ object TeamWorkouts {
         return if (doc.exists()) doc.toTeamWorkout() else null
     }
 
-    /** Saves a new ([id] null) or edited workout; returns its id. The maker stays the maker on edits. */
+    /**
+     * Saves a new ([id] null) or edited workout; returns its id. The maker stays the maker on edits.
+     * A workout this account made also goes into the account's own workouts (same id), so it comes
+     * along to every other team and General use, and stays after leaving this team.
+     */
     suspend fun save(
         teamId: String, id: String?, name: String, notes: String, exercises: List<WorkoutExercise>,
         uid: String, userName: String
     ): String {
-        val now = System.currentTimeMillis()
         val ref = if (id == null) CloudPaths.teamWorkouts(teamId).document() else CloudPaths.teamWorkouts(teamId).document(id)
-        val data = mutableMapOf<String, Any>(
-            "name" to name.trim(),
-            "notes" to notes.trim(),
-            "exercises" to exercisesToMaps(exercises),
-            "updatedAt" to now,
-            "updatedBy" to uid
-        )
-        if (id == null) {
-            data["createdBy"] = uid
-            data["createdByName"] = userName
-            data["createdAt"] = now
-            ref.set(data).awaitResult()
-        } else {
-            ref.update(data).awaitResult()
+        saveWorkoutDoc(ref, isNew = id == null, name, notes, exercises, uid, userName)
+        val createdBy = if (id == null) uid else get(teamId, ref.id)?.createdBy
+        if (createdBy == uid) {
+            runCatching { AccountWorkouts.saveCopy(uid, ref.id, name, notes, exercises, userName, fromTeamId = teamId) }
+                .onFailure { CloudErrors.report("add it to your workouts", it) }
         }
         return ref.id
     }

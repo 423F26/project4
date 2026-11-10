@@ -9,6 +9,7 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.example.liftingapp.LiftViewModel
 import com.example.liftingapp.WorkoutEditorActivity
+import com.example.liftingapp.data.Scope
 import com.example.liftingapp.data.SentWorkout
 import com.example.liftingapp.data.TeamWorkout
 import com.example.liftingapp.data.WorkoutShare
@@ -19,8 +20,9 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 
 /**
- * The Workouts tab's "Team workouts" view (teams only): workouts sent in the app to you or the
- * whole team, then workouts anyone on the team made (shared through Firestore, so every phone on
+ * The Workouts tab's "Team workouts" view (and General use's "Sent to you"): workouts sent in the
+ * app to you or the whole team, and by friends to your account (those show everywhere), then
+ * workouts anyone on the team made (shared through Firestore, so every phone on
  * the team sees them, iPhone too). Anyone can make one; its maker or a coach can edit or delete it.
  * Cards use the library's item_workout layout with Send and Log. Wired up by SportSections.
  */
@@ -32,6 +34,7 @@ class TeamWorkoutsSection(
     private val send: (WorkoutWithExercises) -> Unit
 ) {
     private var sent: List<SentWorkout> = emptyList()
+    private var fromFriends: List<SentWorkout> = emptyList()
     private var shared: List<TeamWorkout> = emptyList()
     private val adapter = TeamCardAdapter()
 
@@ -51,6 +54,10 @@ class TeamWorkoutsSection(
         binding.teamWorkoutList.adapter = adapter
         viewModel.teamWorkouts.observe(activity) { shared = it; refresh() }
         viewModel.inbox.observe(activity) { sent = it; refresh() }
+        viewModel.friendInbox.observe(activity) { fromFriends = it; refresh() }
+        binding.teamEmptyText.text =
+            if (viewModel.scope is Scope.Team) binding.teamEmptyText.text
+            else "Nothing sent to you yet. Friends (people you follow on the leaderboard who follow you back) can send you workouts in CatPack."
     }
 
     fun setVisible(visible: Boolean) {
@@ -62,7 +69,8 @@ class TeamWorkoutsSection(
     }
 
     private fun refresh() {
-        adapter.cards = sent.map { Card.Sent(it) } + shared.map { Card.Shared(it) }
+        val received = (sent.map { Card.Sent(it) } + fromFriends.map { Card.FromFriend(it) }).sortedByDescending { it.sentAt }
+        adapter.cards = received + shared.map { Card.Shared(it) }
         binding.teamEmptyText.isVisible = adapter.cards.isEmpty()
     }
 
@@ -75,13 +83,17 @@ class TeamWorkoutsSection(
                     message("Only ${card.workout.createdByName.ifBlank { "its maker" }} or a coach can edit this workout.")
                 }
             is Card.Sent -> send(card.sent.asItem())
+            is Card.FromFriend -> send(card.sent.asItem())
         }
     }
 
     private fun delete(card: Card) {
         val (title, action) = when (card) {
-            is Card.Shared -> "Delete “${card.workout.name}” for everyone on the team?" to { viewModel.deleteTeamWorkout(card.workout) }
+            is Card.Shared -> "Delete “${card.workout.name}” for everyone on the team?" +
+                (if (card.workout.createdBy == viewModel.uid) " Your copy stays in Your workouts." else "") to
+                { viewModel.deleteTeamWorkout(card.workout) }
             is Card.Sent -> "Remove “${card.sent.name}” from the sent list for everyone?" to { viewModel.deleteSent(card.sent) }
+            is Card.FromFriend -> "Remove “${card.sent.name}” from what friends sent you?" to { viewModel.deleteFriendSent(card.sent) }
         }
         MaterialAlertDialogBuilder(activity)
             .setTitle(title)
@@ -96,7 +108,16 @@ class TeamWorkoutsSection(
 
     private sealed interface Card {
         val item: WorkoutWithExercises
-        data class Sent(val sent: SentWorkout) : Card { override val item get() = sent.asItem() }
+        val sentAt: Long get() = 0L
+        data class Sent(val sent: SentWorkout) : Card {
+            override val item get() = sent.asItem()
+            override val sentAt get() = sent.sentAt
+        }
+        /** Sent by a mutual friend to this account (shows on every team and in General use). */
+        data class FromFriend(val sent: SentWorkout) : Card {
+            override val item get() = sent.asItem()
+            override val sentAt get() = sent.sentAt
+        }
         data class Shared(val workout: TeamWorkout) : Card { override val item get() = workout.asItem() }
     }
 
@@ -122,6 +143,7 @@ class TeamWorkoutsSection(
             b.logButton.onCard { card ->
                 val source = when (card) {
                     is Card.Sent -> "Sent by ${card.sent.fromName.ifBlank { "a teammate" }}"
+                    is Card.FromFriend -> "Sent by ${card.sent.fromName.ifBlank { "a friend" }}"
                     is Card.Shared -> "Team workout"
                 }
                 logger.log(card.item, source)
@@ -150,6 +172,13 @@ class TeamWorkoutsSection(
                                   else "$count · From ${s.fromName.ifBlank { "a teammate" }} · ${s.sentAt.monthDay()}"
                     b.editButton.isVisible = false
                     b.deleteButton.isVisible = s.fromUid == viewModel.uid || viewModel.isCoach
+                }
+                is Card.FromFriend -> {
+                    val s = card.sent
+                    b.premadeBadge.text = "From a friend"
+                    b.meta.text = "$count · From ${s.fromName.ifBlank { "a friend" }} · ${s.sentAt.monthDay()}"
+                    b.editButton.isVisible = false
+                    b.deleteButton.isVisible = true
                 }
                 is Card.Shared -> {
                     val w = card.workout

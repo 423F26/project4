@@ -23,6 +23,9 @@ import com.google.firebase.firestore.FirebaseFirestore
  *   users/{uid}/following/{targetUid}             who this person follows (private to them)
  *   followerCounts/{uid}                          how many people follow uid (only uid can read it)
  *   removedAccounts/{uid}                         an admin deleted this account; the app finishes it at next sign-in
+ *   users/{uid}/workouts/{id}                     the account's own workouts ("Your workouts"), on every team and phone
+ *   teams/{teamId}/people/{uid}                   who's on the team, for sending in the app (name, coach); any member reads it
+ *   inbox/{uid}/items/{id}                        workouts mutual friends sent to uid in the app
  */
 object CloudPaths {
     val db: FirebaseFirestore get() = FirebaseFirestore.getInstance()
@@ -35,6 +38,10 @@ object CloudPaths {
     fun following(uid: String): CollectionReference = user(uid).collection("following")
     fun followerCount(uid: String): DocumentReference = db.collection("followerCounts").document(uid)
     fun removedAccount(uid: String): DocumentReference = db.collection("removedAccounts").document(uid)
+
+    fun accountWorkouts(uid: String): CollectionReference = user(uid).collection("workouts")
+    fun teamPeople(teamId: String): CollectionReference = team(teamId).collection("people")
+    fun inbox(uid: String): CollectionReference = db.collection("inbox").document(uid).collection("items")
 
     fun teams(): CollectionReference = db.collection("teams")
     fun team(teamId: String): DocumentReference = teams().document(teamId)

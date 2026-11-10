@@ -10,6 +10,8 @@ import kotlinx.coroutines.flow.map
  *  - users/{me}/following/{target}  who I follow; only I can read it.
  *  - followerCounts/{target}        { count }; only the target can read it, so each person sees how
  *                                   many follow them, and nobody else sees anyone's count.
+ * People who follow each other are friends and can send each other workouts (Friends in
+ * InAppSending.kt); that's the one place a follow-back is visible, and only to someone you follow.
  * A follow and its +1 are written in one batch, and the security rules only accept a count change
  * that matches a follow being added or removed in the same batch, so the count can't be pumped up.
  */
@@ -23,10 +25,11 @@ object Follows {
     fun followerCount(uid: String): Flow<Int> =
         CloudPaths.followerCount(uid).changes().map { maxOf(0, it.get("count").asInt()) }
 
-    suspend fun follow(me: String, target: String) {
+    /** [name] is how they appear on the leaderboard; it labels them in your friends list when sending. */
+    suspend fun follow(me: String, target: String, name: String) {
         if (me == target) return
         val batch = CloudPaths.db.batch()
-        batch.set(CloudPaths.following(me).document(target), mapOf("followedAt" to FieldValue.serverTimestamp()))
+        batch.set(CloudPaths.following(me).document(target), mapOf("followedAt" to FieldValue.serverTimestamp(), "name" to name))
         batch.set(CloudPaths.followerCount(target), mapOf("count" to FieldValue.increment(1)), SetOptions.merge())
         batch.commit().awaitResult()
     }
