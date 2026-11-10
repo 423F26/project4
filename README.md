@@ -138,3 +138,13 @@ index.html       GitHub Pages homepage
 - **Team workouts and in-app sending** live in `teams/{teamId}/workouts` and `teams/{teamId}/sent` (rules in
   `firestore.rules`; publish them after pulling). Anyone on a team can make or send one; the maker or a coach
   can edit or delete it.
+- **Admin and developer accounts:** in Firestore → `users/{uid}`, add a string field `staffRole` set to
+  `admin` or `developer` (the app can't set it). Those accounts get an **Admin → Manage accounts** section in
+  Account & settings to search all accounts and delete one. The deleting phone removes the person's data and
+  writes `removedAccounts/{uid}`; the next time that person opens the app it removes their sign-in and signs
+  them out (the app can't delete someone else's Firebase sign-in directly). Staff accounts can't be deleted
+  there: remove `staffRole` first. Publish `firestore.rules` after pulling.
+- **Following:** the Follow button on leaderboard rows. Each person sees only their own follower count
+  (`followerCounts/{uid}`, readable by them alone); who follows whom is never shown.
+- **Projected best (Log tab chart):** a set appears on the chart only when its estimated max beats every
+  earlier set of that exercise; the line steps up there. Logging such a set in a workout says so.

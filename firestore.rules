@@ -18,6 +18,9 @@ rules_version = '2';
 //  - Only coaches, and each athlete for themselves, can log sets and workouts.
 //  - "Teammates can see my progress" off: other athletes can't read your sets or workout log.
 //  - Profile pictures are readable by others only while "Show my profile picture" is on.
+//  - Staff accounts (users/{uid}.staffRole == "admin" or "developer", set by hand in the console)
+//    can list accounts and delete other, non-staff accounts' data.
+//  - Follower counts are readable only by the person followed; who follows whom is private.
 
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -35,6 +38,16 @@ service cloud.firestore {
     }
     function isMember(teamId) { return signedIn() && exists(memberDoc(teamId)); }
 
+    // Staff (admin or developer) accounts are set by hand in the console: users/{uid}.staffRole.
+    // They can list accounts and delete non-staff accounts' data. Nobody can make themselves staff.
+    function staffRoleOf(uid) {
+      return exists(userDoc(uid)) ? get(userDoc(uid)).data.get('staffRole', '') : '';
+    }
+    function isStaff() { return signedIn() && staffRoleOf(me()) in ['admin', 'developer']; }
+    function isStaffUid(uid) { return staffRoleOf(uid) in ['admin', 'developer']; }
+    // An admin removing someone else's (non-staff) data.
+    function staffRemoving(uid) { return isStaff() && uid != me() && !isStaffUid(uid); }
+
     // True while creating a team in one batch: the team (as it will be after the batch) is mine.
     function creatingOwnTeam(teamId) {
       return existsAfter(teamDoc(teamId)) && getAfter(teamDoc(teamId)).data.ownerUid == me();
@@ -43,19 +56,59 @@ service cloud.firestore {
     // --- People ---
 
     match /users/{userId} {
-      allow read, delete: if signedIn() && userId == me();
+      allow read: if signedIn() && (userId == me() || isStaff());
+      allow delete: if signedIn() && (userId == me() || staffRemoving(userId));
       // New profiles are always athletes; the role can't be changed from the app. Someone who signs
       // up as a coach gets requestedRole: "coach"; an admin approves it by setting role to "coach"
       // here in the console (filter users by requestedRole == coach to find requests).
+      // staffRole (admin / developer) is likewise console-only.
       allow create: if signedIn() && userId == me()
-        && request.resource.data.get('role', 'athlete') == 'athlete';
+        && request.resource.data.get('role', 'athlete') == 'athlete'
+        && request.resource.data.get('staffRole', '') == '';
       allow update: if signedIn() && userId == me()
-        && request.resource.data.get('role', 'athlete') == resource.data.get('role', 'athlete');
+        && request.resource.data.get('role', 'athlete') == resource.data.get('role', 'athlete')
+        && request.resource.data.get('staffRole', '') == resource.data.get('staffRole', '');
 
       // This person's list of teams (just an index for the team select screen; it grants nothing).
       match /teams/{teamId} {
         allow read, write: if signedIn() && userId == me();
+        allow read, delete: if staffRemoving(userId);
       }
+
+      // Who this person follows. Private to them (admins can clear it when deleting the account).
+      match /following/{targetId} {
+        allow read: if signedIn() && userId == me();
+        allow create: if signedIn() && userId == me() && targetId != me();
+        allow delete: if signedIn() && userId == me();
+        allow read, delete: if staffRemoving(userId);
+      }
+    }
+
+    // How many people follow {userId}. Only they can read it, so nobody else sees anyone's count,
+    // and nobody can see who follows whom. A count only moves by one, in the same batch as the
+    // follower adding or removing their own users/{me}/following/{userId} doc.
+    match /followerCounts/{userId} {
+      function followingDoc() { return /databases/$(database)/documents/users/$(me())/following/$(userId); }
+      function onlyCount() { return request.resource.data.keys().hasOnly(['count']); }
+      allow read: if signedIn() && userId == me();
+      allow create: if signedIn() && userId != me() && onlyCount()
+        && request.resource.data.count == 1
+        && !exists(followingDoc()) && existsAfter(followingDoc());
+      allow update: if signedIn() && userId != me() && onlyCount() && (
+        (request.resource.data.count == resource.data.get('count', 0) + 1
+          && !exists(followingDoc()) && existsAfter(followingDoc()))
+        || (request.resource.data.count == resource.data.get('count', 0) - 1
+          && exists(followingDoc()) && !existsAfter(followingDoc()))
+      );
+      allow delete: if signedIn() && (userId == me() || staffRemoving(userId));
+    }
+
+    // An admin deleted this account. The person's app reads it at next sign-in, removes the sign-in
+    // and signs out. Never changed or removed from the app.
+    match /removedAccounts/{userId} {
+      allow read: if signedIn() && (userId == me() || isStaff());
+      allow create: if staffRemoving(userId) && request.resource.data.removedBy == me();
+      allow update, delete: if false;
     }
 
     match /avatars/{userId} {
@@ -65,7 +118,7 @@ service cloud.firestore {
       allow create, update: if signedIn() && userId == me()
         && request.resource.data.data is string
         && request.resource.data.data.size() < 400000;
-      allow delete: if signedIn() && userId == me();
+      allow delete: if signedIn() && (userId == me() || staffRemoving(userId));
     }
 
     // --- Teams ---
@@ -92,8 +145,8 @@ service cloud.firestore {
         allow update: if signedIn() && memberId == me()
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'role'])
           && (request.resource.data.get('role', 'athlete') == 'athlete' || isCoach());
-        // Leave the team, or (coaches) remove someone.
-        allow delete: if signedIn() && (memberId == me() || (isMember(teamId) && isCoach()));
+        // Leave the team, or (coaches) remove someone, or (admins) deleting the account.
+        allow delete: if signedIn() && (memberId == me() || (isMember(teamId) && isCoach()) || staffRemoving(memberId));
       }
 
       // Workouts anyone on the team made, shared with everyone on it. Its maker or a coach can
@@ -119,6 +172,8 @@ service cloud.firestore {
         allow create: if isMember(teamId) && (isCoach() || athleteId == me())
           && request.resource.data.ownerUid == me();
         allow update, delete: if isMember(teamId) && (isCoach() || athleteId == me());
+        // Admins deleting an account remove that person's own athlete profile (its id is their uid).
+        allow read, delete: if staffRemoving(athleteId);
 
         // lifts/{id} and sessions/{id}
         match /{child}/{docId} {
@@ -128,6 +183,7 @@ service cloud.firestore {
           );
           allow write: if isMember(teamId) && (child == 'lifts' || child == 'sessions')
             && (isCoach() || athleteId == me());
+          allow read, delete: if staffRemoving(athleteId);
         }
       }
     }
@@ -157,9 +213,11 @@ service cloud.firestore {
     match /general/{ownerId}/athletes/{athleteId} {
       allow read, update, delete: if signedIn() && ownerId == me();
       allow create: if signedIn() && ownerId == me() && (isCoach() || athleteId == me());
+      allow read, delete: if staffRemoving(ownerId);
 
       match /{child}/{docId} {
         allow read, write: if signedIn() && ownerId == me();
+        allow read, delete: if staffRemoving(ownerId);
       }
     }
 
@@ -170,7 +228,7 @@ service cloud.firestore {
         && request.resource.data.ownerUid == me()
         && entryId == me() + '_' + request.resource.data.athleteId
         && (isCoach() || request.resource.data.athleteId == me());
-      allow delete: if signedIn() && entryId.split('_')[0] == me();
+      allow delete: if signedIn() && (entryId.split('_')[0] == me() || staffRemoving(entryId.split('_')[0]));
     }
   }
 }
