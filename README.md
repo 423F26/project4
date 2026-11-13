@@ -138,3 +138,22 @@ index.html       GitHub Pages homepage
 - **Team workouts and in-app sending** live in `teams/{teamId}/workouts` and `teams/{teamId}/sent` (rules in
   `firestore.rules`; publish them after pulling). Anyone on a team can make or send one; the maker or a coach
   can edit or delete it.
+- **Admin and developer accounts:** in Firestore → `users/{uid}`, add a string field `staffRole` set to
+  `admin` or `developer` (the app can't set it). Those accounts get an **Admin → Manage accounts** section in
+  Account & settings to search all accounts and delete one. The deleting phone removes the person's data and
+  writes `removedAccounts/{uid}`; the next time that person opens the app it removes their sign-in and signs
+  them out (the app can't delete someone else's Firebase sign-in directly). Staff accounts can't be deleted
+  there: remove `staffRole` first. Publish `firestore.rules` after pulling.
+- **Following:** the Follow button on leaderboard rows. Each person sees only their own follower count
+  (`followerCounts/{uid}`, readable by them alone); who follows whom is never shown.
+- **Your workouts follow the account:** workouts you make are stored at `users/{uid}/workouts`, so they're
+  on every team, in General use and on every phone until you delete them. Team workouts you make are copied
+  there too (same id, badge "From a team"), so they come along to your other teams and stay after you leave.
+  Workouts made on a phone before this move into the first account that opens the app there. Premade
+  workouts stay on the phone.
+- **Sending in CatPack:** the Send dialog's **Send in CatPack…** lists everyone on the team (athletes and
+  coaches, from `teams/{teamId}/people`) plus the whole team, and your **friends**: people you follow on a
+  leaderboard who follow you back. Friend sends go to `inbox/{uid}/items` and show under Team workouts on a
+  team, or **Sent to you** in General use.
+- **Projected best (Log tab chart):** a set appears on the chart only when its estimated max beats every
+  earlier set of that exercise; the line steps up there. Logging such a set in a workout says so.
