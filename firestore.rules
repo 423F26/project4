@@ -1,7 +1,7 @@
 rules_version = '2';
 
-// Cloud Firestore security rules for CatPack (MSU Lift Tracker), version 0.11.
-// The data layout is described in App-0.11.0/app/src/main/java/com/CatPack/liftingapp/data/CloudPaths.kt.
+// Cloud Firestore security rules for CatPack (MSU Lift Tracker), version 0.13.
+// The data layout is described in App-0.13.0/app/src/main/java/com/CatPack/liftingapp/data/CloudPaths.kt.
 //
 // Deploy: Firebase console → Firestore Database → Rules → paste this file → Publish,
 // or `firebase deploy --only firestore:rules` from the repo root (uses firebase.json).
@@ -20,7 +20,9 @@ rules_version = '2';
 //  - Profile pictures are readable by others only while "Show my profile picture" is on.
 //  - Staff accounts (users/{uid}.staffRole == "admin" or "developer", set by hand in the console)
 //    can list accounts and delete other, non-staff accounts' data.
-//  - Follower counts are readable only by the person followed; who follows whom is private.
+//  - Followers are public to signed-in users: anyone signed in can see how many people follow someone
+//    and who they are (followers/{uid}/people). Only the follower can add or change their own entry,
+//    and only together with their own following doc. Who you follow (users/{uid}/following) stays private.
 
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -94,13 +96,27 @@ service cloud.firestore {
       }
     }
 
-    // How many people follow {userId}. Only they can read it, so nobody else sees anyone's count,
-    // and nobody can see who follows whom. A count only moves by one, in the same batch as the
-    // follower adding or removing their own users/{me}/following/{userId} doc.
+    // Who follows {userId}: one doc per follower ({followerId} is their uid), holding the name they
+    // go by. Any signed-in user can read it. A follower writes only their own entry, and only while
+    // their users/{followerId}/following/{userId} doc exists (after the batch), so entries can't be
+    // made up. The follower, the person followed (deleting their account) or an admin can remove one.
+    match /followers/{userId}/people/{followerId} {
+      function followingDoc() { return /databases/$(database)/documents/users/$(followerId)/following/$(userId); }
+      allow read: if signedIn();
+      allow create, update: if signedIn() && followerId == me() && userId != me()
+        && request.resource.data.keys().hasOnly(['name', 'followedAt'])
+        && request.resource.data.name is string && request.resource.data.name.size() <= 100
+        && existsAfter(followingDoc());
+      allow delete: if signedIn()
+        && (followerId == me() || userId == me() || staffRemoving(followerId) || staffRemoving(userId));
+    }
+
+    // How many people follow {userId}. Any signed-in user can read it. A count only moves by one,
+    // in the same batch as the follower adding or removing their own users/{me}/following/{userId} doc.
     match /followerCounts/{userId} {
       function followingDoc() { return /databases/$(database)/documents/users/$(me())/following/$(userId); }
       function onlyCount() { return request.resource.data.keys().hasOnly(['count']); }
-      allow read: if signedIn() && userId == me();
+      allow read: if signedIn();
       allow create: if signedIn() && userId != me() && onlyCount()
         && request.resource.data.count == 1
         && !exists(followingDoc()) && existsAfter(followingDoc());
