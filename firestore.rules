@@ -223,6 +223,9 @@ service cloud.firestore {
         allow read, delete: if staffRemoving(athleteId);
 
         // lifts/{id} and sessions/{id}
+        // Set fields aren't validated here. A lift set is {exercise, weight, reps, date, loggedBy};
+        // a cardio set (0.14+) adds kind: "cardio", distanceMeters, durationSeconds, with weight 0
+        // and reps 0 so older app versions skip it.
         match /{child}/{docId} {
           allow read: if isMember(teamId) && (child == 'lifts' || child == 'sessions') && (
             isCoach() || athleteId == me()
