@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CatPack Privacy Policy</title>
+  <meta name="description" content="What the CatPack lift-tracking app collects, why, who can see it, and how to delete it.">
+  <style>
+    :root {
+      --paper: #ffffff;
+      --wash: #eef2f8;
+      --ink: #13213a;
+      --ink-soft: #4e5a70;
+      --navy: #1b3a6b;
+      --link: #1b3a6b;
+      --gold: #f2b535;
+      --rule: #d5dce8;
+      --focus: #b07d00;
+      color-scheme: light dark;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --paper: #0e2244;
+        --wash: #16305a;
+        --ink: #f2f4f8;
+        --ink-soft: #a9b7cf;
+        --navy: #f2f4f8;
+        --link: #f2b535;
+        --rule: #2b4673;
+        --focus: #f2b535;
+      }
+    }
+    * { box-sizing: border-box; }
+    html { scroll-padding-top: 1rem; }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font: 400 1.0625rem/1.7 "Poppins", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-text-size-adjust: 100%;
+    }
+    a { color: var(--link); text-underline-offset: 0.18em; }
+    :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: 2px; }
+    header { border-bottom: 1px solid var(--rule); }
+    header .inner, main, footer .inner { max-width: 46rem; margin: 0 auto; padding-left: 1.1rem; padding-right: 1.1rem; }
+    header .inner { padding-top: 0.9rem; padding-bottom: 0.9rem; }
+    .brand { font-weight: 600; color: var(--navy); text-decoration: none; }
+    main { padding-top: 2rem; padding-bottom: 3rem; }
+    h1 { font-size: 2.1rem; line-height: 1.2; margin: 0 0 0.4rem; color: var(--navy); }
+    h2 { font-size: 1.35rem; line-height: 1.3; margin: 2.4rem 0 0.5rem; color: var(--navy); padding-top: 0.6rem; border-top: 3px solid var(--gold); display: inline-block; }
+    h3 { font-size: 1.05rem; margin: 1.4rem 0 0.3rem; }
+    p, ul, ol { margin: 0.6rem 0; }
+    li { margin: 0.3rem 0; }
+    .dates { color: var(--ink-soft); font-size: 0.95rem; }
+    .summary { background: var(--wash); border-radius: 10px; padding: 1rem 1.2rem; margin: 1.5rem 0; }
+    .summary p:first-child { margin-top: 0; font-weight: 600; }
+    .summary ul { margin-bottom: 0; }
+    .table-wrap { overflow-x: auto; }
+    table { border-collapse: collapse; width: 100%; margin: 0.8rem 0; font-size: 0.97rem; }
+    th, td { text-align: left; vertical-align: top; padding: 0.55rem 0.7rem; border-bottom: 1px solid var(--rule); }
+    th { background: var(--wash); font-weight: 600; }
+    nav ol { padding-left: 1.3rem; }
+    footer { border-top: 1px solid var(--rule); }
+    footer .inner { padding-top: 1.2rem; padding-bottom: 2rem; color: var(--ink-soft); font-size: 0.92rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="inner"><a class="brand" href="index.html">CatPack</a></div>
+  </header>
+
+  <main>
+    <h1>CatPack Privacy Policy</h1>
+    <p class="dates">Effective November 16, 2026 · Applies to the CatPack app (package <code>com.CatPack.liftingapp</code>) on Android, and to the CatPack app for iPhone.</p>
+
+    <p>CatPack is a strength-training tracker for sports teams. Coaches and athletes log lifts, follow progress and compare results on leaderboards. The app is developed and operated by Garrett Miller and Gaige Bache ("the CatPack team", "we"). This policy explains what the app collects, why, who can see it, and how you can delete it.</p>
+
+    <div class="summary">
+      <p>In short</p>
+      <ul>
+        <li>We collect what you type into the app: your account details, your athlete profile, and the lifts and workouts you log.</li>
+        <li>Your teammates and coaches see your team data. Your best lifts from General use appear on a leaderboard other signed-in users can see, unless you turn that off.</li>
+        <li>The app has no ads, no analytics or tracking tools, and asks for no device permissions. We don't sell your data.</li>
+        <li>Data is stored with Google Firebase. You can delete your account and data from inside the app at any time.</li>
+      </ul>
+    </div>
+
+    <nav aria-label="Contents">
+      <ol>
+        <li><a href="#collect">What we collect</a></li>
+        <li><a href="#use">How we use it</a></li>
+        <li><a href="#see">Who can see your data</a></li>
+        <li><a href="#share">Who we share data with</a></li>
+        <li><a href="#choices">Your privacy settings</a></li>
+        <li><a href="#delete">Deleting your account and data</a></li>
+        <li><a href="#retention">How long we keep data</a></li>
+        <li><a href="#security">Security</a></li>
+        <li><a href="#children">Children</a></li>
+        <li><a href="#changes">Changes to this policy</a></li>
+        <li><a href="#contact">Contact us</a></li>
+      </ol>
+    </nav>
+
+    <h2 id="collect">1. What we collect</h2>
+
+    <h3>Information you give us</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th scope="col">Data</th><th scope="col">Details</th><th scope="col">Required?</th></tr></thead>
+        <tbody>
+          <tr><td>Account</td><td>Name, email address, and whether you signed up as an athlete or a coach. If you sign in with Google (or with Apple on iPhone), we receive your name, email address and an account identifier from that provider. Passwords are handled by Firebase Authentication; we never see or store them ourselves.</td><td>Yes</td></tr>
+          <tr><td>Athlete profile</td><td>Position group, body weight and phone number.</td><td>Optional</td></tr>
+          <tr><td>Profile picture</td><td>One photo you choose with your phone's photo picker. The app receives only that photo, shrinks it, and stores the small copy. It has no access to the rest of your photos.</td><td>Optional</td></tr>
+          <tr><td>Training data</td><td>The sets you log (exercise, weight, reps, date), workouts you complete and their check-offs and notes, your best lift and estimated one-rep max per exercise, and exercises you add.</td><td>Created as you use the app</td></tr>
+          <tr><td>Workouts</td><td>Workouts you build, share with a team, or send to teammates and friends in the app, along with your name as the sender.</td><td>Created as you use the app</td></tr>
+          <tr><td>Teams and connections</td><td>Teams you create or join, your role on each, team join codes, and which other users you follow.</td><td>Created as you use the app</td></tr>
+          <tr><td>Athletes added by a coach</td><td>A coach can add athletes to a roster: name, position group, body weight and, optionally, a phone number and email address used to send that athlete a workout. The coach is responsible for having the athlete's agreement to enter these details.</td><td>Entered by coaches</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Information collected automatically</h3>
+    <ul>
+      <li><strong>Sign-in and security data.</strong> Firebase Authentication, the Google service that signs you in, logs technical data such as your IP address, device type and sign-in times to protect accounts and prevent abuse. It may also run an automated check that the request comes from a genuine app and device.</li>
+      <li><strong>Data kept on your phone.</strong> The app saves your settings (such as theme and the last team you opened), some workouts, and a copy of recent data for offline use. If Android backup is switched on for your phone, Android may include this on-device data in the backup held in your own Google account.</li>
+    </ul>
+
+    <h3>What we don't collect</h3>
+    <p>CatPack doesn't collect your location, contacts, health-sensor data, microphone or camera input, or advertising ID. It contains no advertising, analytics or crash-reporting tools, and it requests no runtime permissions.</p>
+
+    <h2 id="use">2. How we use it</h2>
+    <ul>
+      <li>To create your account, sign you in, and let you reset your password.</li>
+      <li>To provide the app's features: saving your lifts and workouts, drawing your progress chart, ranking leaderboards (body weight is used for pound-for-pound rankings), running teams, and delivering workouts sent in the app.</li>
+      <li>To sync your data between your devices.</li>
+      <li>To approve coach requests and administer accounts.</li>
+      <li>To keep the service secure and to fix problems.</li>
+    </ul>
+    <p>We don't use your data for advertising or profiling, and we don't sell it.</p>
+
+    <h2 id="see">3. Who can see your data</h2>
+    <p>CatPack is a team app, so some of what you enter is shown to other people. Only signed-in users can see any of it.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th scope="col">Who</th><th scope="col">What they can see</th></tr></thead>
+        <tbody>
+          <tr><td>Members of a team you're on</td><td>Your athlete profile on that team (name, position group, body weight and any contact details saved on it), your best lifts on the team leaderboard, and workouts you share with or send to the team. They can also see your progress chart and workout log unless you turn that off (see <a href="#choices">Your privacy settings</a>). They can see your profile picture unless you hide it.</td></tr>
+          <tr><td>Coaches on a team you're on</td><td>Everything teammates can see, plus your progress chart and workout log at all times, and the list of people who have joined the team.</td></tr>
+          <tr><td>Everyone signed in to CatPack</td><td>The General leaderboard shows, for people using the app on their own: name or initials, position group, body weight, best lifts and profile picture. This is on by default; you can switch it off or show initials instead of your name. The rest of what you log in General use is private to you.</td></tr>
+          <tr><td>People you exchange workouts with</td><td>Your name, with any workout you send them.</td></tr>
+          <tr><td>CatPack administrators</td><td>A small number of staff accounts run by the CatPack team can see the list of accounts (name, email address and role) and can delete accounts. The CatPack team can also access stored data through the Firebase console when needed to operate the service, approve coaches or fix problems.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Who you follow is private to you. A person you follow can see how many followers they have, not who they are.</p>
+    <p><strong>Sending workouts by text or email.</strong> When you choose to text or email a workout, CatPack opens your phone's own messaging or email app with the message filled in. You send it yourself, and it travels through that app and your carrier or email provider, not through us.</p>
+
+    <h2 id="share">4. Who we share data with</h2>
+    <ul>
+      <li><strong>Google (service provider).</strong> CatPack runs on Google Firebase: Firebase Authentication for sign-in and Cloud Firestore for storage. Your data is stored on Google's servers, which may be located in the United States or other countries, and Google processes it on our behalf. See <a href="https://firebase.google.com/support/privacy">Privacy and Security in Firebase</a> and the <a href="https://policies.google.com/privacy">Google Privacy Policy</a>.</li>
+      <li><strong>Legal reasons.</strong> We may disclose data if the law requires it, or to protect the safety of users or the security of the service.</li>
+      <li><strong>If the project changes hands.</strong> If responsibility for CatPack passes to another team or organization, your data would move with it under this policy, and we would tell you in the app or on this page.</li>
+    </ul>
+    <p>We don't share your data with advertisers, data brokers or any other third parties.</p>
+
+    <h2 id="choices">5. Your privacy settings</h2>
+    <p>In the app, tap your profile picture to open <strong>Account &amp; settings</strong>. Under <strong>Privacy &amp; visibility</strong> you can:</p>
+    <ul>
+      <li>turn <strong>Show me on the General leaderboard</strong> off, which removes your rows from it;</li>
+      <li>turn <strong>Use my initials there</strong> on, to show "J. S." instead of your full name;</li>
+      <li>turn <strong>Show my profile picture to others</strong> off;</li>
+      <li>turn <strong>Teammates can see my progress</strong> off, so only you and your coaches can open your chart and workout log.</li>
+    </ul>
+    <p>On the same screen you can edit your name, position group, body weight and phone number, change or remove your profile picture, and leave a team. You can edit or delete individual sets from the Log tab.</p>
+
+    <h2 id="delete">6. Deleting your account and data</h2>
+    <p><strong>In the app:</strong> open <strong>Account &amp; settings</strong>, scroll to <strong>Account</strong>, and tap <strong>Delete account</strong>. If you signed in more than a few minutes ago, the app asks you to sign in again first.</p>
+    <p><strong>Without the app:</strong> <a href="#contact">contact us</a> from the email address on your account and ask us to delete it. We'll delete it within 30 days.</p>
+    <p>Deleting your account permanently removes:</p>
+    <ul>
+      <li>your sign-in, profile and profile picture;</li>
+      <li>everything you logged in General use, and your General leaderboard rows;</li>
+      <li>your own athlete profile on each team, with its sets and workout log, and your team memberships;</li>
+      <li>your own workouts, workouts friends sent you, and your follows.</li>
+    </ul>
+    <p>Some things stay because they belong to a team rather than to you:</p>
+    <ul>
+      <li>teams you created, so your teammates keep their data;</li>
+      <li>athletes you added to a team roster as a coach, and their lifts;</li>
+      <li>workouts you shared with or sent to a team.</li>
+    </ul>
+    <p>To have any of these removed as well, or to have a profile that a coach created about you removed, ask that team's coach or <a href="#contact">contact us</a>.</p>
+    <p>If an administrator deletes an account, we keep a minimal record (the account's internal ID and who removed it) so the sign-in can't be reused.</p>
+    <p>You can also ask us for a copy of your data or to correct it by <a href="#contact">contacting us</a>.</p>
+
+    <h2 id="retention">7. How long we keep data</h2>
+    <p>We keep your data for as long as your account exists. When you delete your account, or ask us to, the data listed above is deleted from our live database straight away. Copies in Google's backup systems are removed on Google's own schedule. Technical sign-in logs kept by Firebase Authentication are held by Google for a limited period.</p>
+
+    <h2 id="security">8. Security</h2>
+    <p>Data is encrypted in transit between the app and Google's servers and encrypted at rest by Google. Access rules on the database limit each person to their own data and the data of teams they belong to. No system is perfectly secure, so we can't guarantee absolute security; if you think your account has been misused, <a href="#contact">contact us</a>.</p>
+
+    <h2 id="children">9. Children</h2>
+    <p>CatPack is intended for college-level athletes and their coaches. It isn't directed at children under 13, and we don't knowingly collect personal information from them. If you believe a child under 13 has created an account, <a href="#contact">contact us</a> and we'll delete it.</p>
+
+    <h2 id="changes">10. Changes to this policy</h2>
+    <p>If we change this policy we'll update this page and the effective date at the top. If a change significantly affects how your data is used, we'll also tell you in the app.</p>
+
+    <h2 id="contact">11. Contact us</h2>
+    <p>For privacy questions, or to request access, correction or deletion:</p>
+    <ul>
+      <!-- TODO before publishing: replace with the contact email shown on the Play Store listing. -->
+      <li>Email: <strong>[ADD CONTACT EMAIL]</strong></li>
+      <li>Developers: Garrett Miller and Gaige Bache, the CatPack team</li>
+    </ul>
+  </main>
+
+  <footer>
+    <div class="inner">CatPack · <a href="index.html">User Guide</a> · <a href="privacy.html">Privacy Policy</a></div>
+  </footer>
+</body>
+</html>
