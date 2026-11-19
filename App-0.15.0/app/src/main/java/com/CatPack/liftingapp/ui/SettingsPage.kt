@@ -290,15 +290,15 @@ class SettingsPage(
 
     private fun setupAppearance() {
         setupDistanceUnit()
-        val buttons = mapOf(R.id.themeSystem to AppTheme.SYSTEM, R.id.themeLight to AppTheme.LIGHT, R.id.themeDark to AppTheme.DARK)
+        val buttons = mapOf(R.id.themeSystem to AppTheme.SYSTEM, R.id.themeLight to AppTheme.LIGHT, R.id.themeDark to AppTheme.DARK, R.id.themeGraphite to AppTheme.GRAPHITE)
         val current = AppTheme.current(activity)
         binding.themeToggle.check(buttons.entries.first { it.value == current }.key)
         binding.themeToggle.addOnButtonCheckedListener { _, checkedId, isChecked ->
             val chosen = buttons[checkedId]
             if (isChecked && chosen != null && chosen != AppTheme.current(activity)) {
-                val wasDark = AppTheme.current(activity).isDark(activity)
+                val was = AppTheme.current(activity).styleRes(activity)
                 AppTheme.save(activity, chosen)
-                if (chosen.isDark(activity) != wasDark) activity.recreate()   // ViewModel and the selected tab survive this
+                if (chosen.styleRes(activity) != was) activity.recreate()   // ViewModel and the selected tab survive this
             }
         }
 

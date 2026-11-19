@@ -22,6 +22,7 @@ import com.example.liftingapp.data.Scope
 import com.example.liftingapp.databinding.ItemLeaderboardBinding
 import com.example.liftingapp.databinding.TabLeaderboardBinding
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 import androidx.appcompat.R as AppCompatR
 import com.google.android.material.R as MaterialR
@@ -31,15 +32,20 @@ import com.google.android.material.R as MaterialR
  *  - On a team: the team's roster.
  *  - General use: everyone using the app on their own who chose to appear (Account & settings → Privacy),
  *    the top GeneralBoard.LIMIT for the exercise.
- * The search field filters the list by name (ranks stay as on the full board). Tapping a row, or your
- * own follower count, shows who follows that person; followers are public to signed-in users.
+ * The search field filters the list by name (ranks stay as on the full board). Tapping a row opens
+ * that person's profile (ui/AthleteProfile.kt: picture, weight, followers, max lifts; coaches and
+ * staff can remove a fake lift there). Tapping your own follower count shows who follows you.
  */
 class LeaderboardTab(private val owner: LifecycleOwner, private val binding: TabLeaderboardBinding, private val viewModel: LiftViewModel) {
 
     private val adapter = LeaderboardAdapter(
         owner,
         onFollow = { targetUid, name, follow -> viewModel.setFollowing(targetUid, name, follow) },
-        onShowFollowers = { targetUid, name -> showFollowers(targetUid, "$name's followers") }
+        onOpenProfile = { row ->
+            showAthleteProfile(binding.root.context, owner, row, viewModel) { message ->
+                Snackbar.make(binding.root, message, Snackbar.LENGTH_LONG).show()
+            }
+        }
     )
 
     private var latest = LeaderboardState(EXERCISES.first(), RankBy.ESTIMATED_MAX, emptyList())
@@ -147,7 +153,7 @@ private fun showFollowersDialog(context: Context, title: String, names: List<Str
 private class LeaderboardAdapter(
     private val owner: LifecycleOwner,
     private val onFollow: (targetUid: String, name: String, follow: Boolean) -> Unit,
-    private val onShowFollowers: (targetUid: String, name: String) -> Unit
+    private val onOpenProfile: (LeaderboardRow) -> Unit
 ) : RecyclerView.Adapter<LeaderboardAdapter.Holder>() {
 
     /** Accounts the signed-in person follows. */
@@ -214,14 +220,9 @@ private class LeaderboardAdapter(
             RankBy.POUND_FOR_POUND -> if (hasBodyWeight) row.poundForPound.timesBodyWeight() else "—"
         }
 
-        // Tap anyone with an account to see who follows them (followers are public).
+        // Tap anyone to see their profile (picture, weight, followers, max lifts).
         val account = row.accountUid
-        if (account != null) {
-            b.root.setOnClickListener { onShowFollowers(account, row.name) }
-        } else {
-            b.root.setOnClickListener(null)
-            b.root.isClickable = false
-        }
+        b.root.setOnClickListener { onOpenProfile(row) }
 
         // Follow anyone with an account except yourself.
         val target = account?.takeIf { !row.isMine }

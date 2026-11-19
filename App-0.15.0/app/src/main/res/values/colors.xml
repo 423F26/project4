@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- ============================================================
-         Two palettes: dark mode (bg_) and light mode (dl_), one per theme in themes.xml.
+         Three palettes: Navy dark mode (bg_), Graphite dark mode (gr_) and light mode (dl_), one per theme in themes.xml.
          Layouts never use these directly: they use theme attributes
          (?attr/colorPrimary, ?attr/colorOnSurface, ...) so every screen
          re-colors when the theme changes.
@@ -63,4 +63,31 @@
 
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- Graphite: a neutral charcoal dark mode with the same gold accent (Account & settings → Theme). -->
+    <color name="gr_wash_top">#FF2A2D32</color>
+    <color name="gr_wash_mid">#FF1C1E22</color>
+    <color name="gr_wash_bottom">#FF121315</color>
+    <color name="gr_primary">#FFF2B535</color>
+    <color name="gr_on_primary">#FF231900</color>
+    <color name="gr_primary_container">#FF4A3A12</color>
+    <color name="gr_on_primary_container">#FFFFE3A6</color>
+    <color name="gr_secondary">#FFB9BEC7</color>
+    <color name="gr_on_secondary">#FF1A1C20</color>
+    <color name="gr_secondary_container">#FF3A3E45</color>
+    <color name="gr_on_secondary_container">#FFE6E8EC</color>
+    <color name="gr_surface">#FF1C1E22</color>
+    <color name="gr_on_surface">#FFF2F3F5</color>
+    <color name="gr_on_surface_variant">#FFA8ADB6</color>
+    <color name="gr_surface_variant">#FF2C2F35</color>
+    <color name="gr_outline">#FF6C717B</color>
+    <color name="gr_outline_variant">#FF363A41</color>
+    <color name="gr_container_lowest">#FF121315</color>
+    <color name="gr_container_low">#FF1E2024</color>
+    <color name="gr_container">#FF232529</color>
+    <color name="gr_container_high">#FF292C31</color>
+    <color name="gr_container_highest">#FF30333A</color>
+    <color name="gr_card_fill">#14FFFFFF</color>
+    <color name="gr_card_stroke">#1FFFFFFF</color>
+    <color name="gr_tab_track">#40000000</color>
 </resources>

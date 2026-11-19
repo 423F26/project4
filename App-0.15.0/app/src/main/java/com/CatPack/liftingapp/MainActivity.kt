@@ -33,12 +33,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var viewModel: LiftViewModel
 
-    /** Whether this screen was drawn in dark mode, so a change made in Account & settings can redraw it. */
-    private var drawnDark = false
+    /** The theme style this screen was drawn with, so a change made in Account & settings can redraw it. */
+    private var drawnStyle = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         AppTheme.apply(this)   // must happen before any views are inflated
-        drawnDark = AppTheme.current(this).isDark(this)
+        drawnStyle = AppTheme.current(this).styleRes(this)
         super.onCreate(savedInstanceState)
 
         // Not signed in (e.g. session expired) -> back to the login screen.
@@ -97,7 +97,7 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         if (!::binding.isInitialized) return
-        if (AppTheme.current(this).isDark(this) != drawnDark) recreate() else showHeaderAvatar()
+        if (AppTheme.current(this).styleRes(this) != drawnStyle) recreate() else showHeaderAvatar()
     }
 
     private fun showHeaderAvatar() {

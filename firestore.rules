@@ -23,6 +23,8 @@ rules_version = '2';
 //  - Followers are public to signed-in users: anyone signed in can see how many people follow someone
 //    and who they are (followers/{uid}/people). Only the follower can add or change their own entry,
 //    and only together with their own following doc. Who you follow (users/{uid}/following) stays private.
+//  - Fake lifts: coaches can delete sets and fix bests on their team (as before); staff can do the
+//    same on the General leaderboard (0.15).
 
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -264,6 +266,9 @@ service cloud.firestore {
       allow read, update, delete: if signedIn() && ownerId == me();
       allow create: if signedIn() && ownerId == me() && (isCoach() || athleteId == me());
       allow read, delete: if staffRemoving(ownerId);
+      // Staff removing a fake lift from the General leaderboard (Moderation.kt) re-store only the bests.
+      allow update: if staffRemoving(ownerId)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['bests']);
 
       match /{child}/{docId} {
         allow read, write: if signedIn() && ownerId == me();
@@ -278,6 +283,9 @@ service cloud.firestore {
         && request.resource.data.ownerUid == me()
         && entryId == me() + '_' + request.resource.data.athleteId
         && (isCoach() || request.resource.data.athleteId == me());
+      // Staff removing a fake lift (Moderation.kt): only the bests and timestamp change.
+      allow update: if staffRemoving(entryId.split('_')[0])
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['bests', 'updatedAt']);
       allow delete: if signedIn() && (entryId.split('_')[0] == me() || staffRemoving(entryId.split('_')[0]));
     }
   }

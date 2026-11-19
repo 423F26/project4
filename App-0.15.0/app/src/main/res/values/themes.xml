@@ -94,6 +94,52 @@
         <item name="tabTrackFill">@color/bg_tab_track</item>
     </style>
 
+    <!-- Graphite: the same dark styling as Navy, in neutral charcoal (gr_ colors). -->
+    <style name="Theme.LIFTINGAPP.Graphite" parent="Base.Theme.LIFTINGAPP.Dark">
+        <item name="android:windowBackground">@drawable/bg_graphite</item>
+        <item name="android:colorBackground">@color/gr_surface</item>
+        <item name="android:navigationBarColor">@color/gr_wash_bottom</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="27">false</item>
+
+        <item name="android:textColorPrimary">@color/gr_on_surface</item>
+        <item name="android:textColorSecondary">@color/gr_on_surface_variant</item>
+        <item name="android:textColorHint">@color/gr_on_surface_variant</item>
+
+        <item name="colorPrimary">@color/gr_primary</item>
+        <item name="colorOnPrimary">@color/gr_on_primary</item>
+        <item name="colorPrimaryContainer">@color/gr_primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/gr_on_primary_container</item>
+        <item name="colorSecondary">@color/gr_secondary</item>
+        <item name="colorOnSecondary">@color/gr_on_secondary</item>
+        <item name="colorSecondaryContainer">@color/gr_secondary_container</item>
+        <item name="colorOnSecondaryContainer">@color/gr_on_secondary_container</item>
+        <item name="colorTertiary">@color/gr_secondary</item>
+        <item name="colorOnTertiary">@color/gr_on_secondary</item>
+        <item name="colorTertiaryContainer">@color/gr_secondary_container</item>
+        <item name="colorOnTertiaryContainer">@color/gr_on_secondary_container</item>
+
+        <item name="colorSurface">@color/gr_surface</item>
+        <item name="colorOnSurface">@color/gr_on_surface</item>
+        <item name="colorOnBackground">@color/gr_on_surface</item>
+        <item name="colorSurfaceVariant">@color/gr_surface_variant</item>
+        <item name="colorOnSurfaceVariant">@color/gr_on_surface_variant</item>
+        <item name="colorOutline">@color/gr_outline</item>
+        <item name="colorOutlineVariant">@color/gr_outline_variant</item>
+        <item name="colorSurfaceContainerLowest">@color/gr_container_lowest</item>
+        <item name="colorSurfaceContainerLow">@color/gr_container_low</item>
+        <item name="colorSurfaceContainer">@color/gr_container</item>
+        <item name="colorSurfaceContainerHigh">@color/gr_container_high</item>
+        <item name="colorSurfaceContainerHighest">@color/gr_container_highest</item>
+
+        <item name="colorControlNormal">@color/gr_on_surface_variant</item>
+        <item name="colorControlActivated">@color/gr_primary</item>
+
+        <item name="cardFill">@color/gr_card_fill</item>
+        <item name="cardStroke">@color/gr_card_stroke</item>
+        <item name="tabTrackFill">@color/gr_tab_track</item>
+    </style>
+
     <!-- Light mode: navy and gold on white, for bright weight rooms -->
     <style name="Theme.LIFTINGAPP.Light" parent="Base.Theme.LIFTINGAPP.Light">
         <item name="android:windowBackground">@drawable/bg_daylight</item>

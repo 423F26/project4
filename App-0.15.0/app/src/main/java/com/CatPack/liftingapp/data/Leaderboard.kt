@@ -11,7 +11,12 @@ data class LeaderboardRow(
     val best: BestSet,
     val photoUid: String?,       // account whose profile picture to show, if any
     val isMine: Boolean,         // added by, or is, the signed-in person
-    val accountUid: String? = null // the account this athlete is, for following; null if they have none
+    val accountUid: String? = null, // the account this athlete is, for following; null if they have none
+    /** Every best this athlete has logged, for their profile (only what the leaderboard already shows). */
+    val allBests: Map<String, BestSet> = emptyMap(),
+    /** Where the athlete's sets live: the team athlete id, or (General) the owner's uid and athlete id. */
+    val athleteId: String = key,
+    val ownerUid: String? = null
 ) {
     val estimatedMax: Float get() = best.e1rm
     val poundForPound: Float get() = best.p4p
@@ -34,7 +39,9 @@ fun teamLeaderboard(athletes: List<Athlete>, exercise: String, rankBy: RankBy, m
             best = best,
             photoUid = athlete.linkedUid,
             isMine = athlete.id == myUid || athlete.linkedUid == myUid,
-            accountUid = athlete.linkedUid
+            accountUid = athlete.linkedUid,
+            allBests = athlete.bests,
+            athleteId = athlete.id
         )
     }.ranked(rankBy)
 
@@ -51,7 +58,10 @@ fun generalLeaderboard(entries: List<BoardEntry>, exercise: String, rankBy: Rank
             photoUid = entry.photoUid,
             isMine = entry.ownerUid == myUid,
             // A person's own General athlete has their uid as its id; athletes a coach added there have no account.
-            accountUid = entry.ownerUid.takeIf { entry.athleteId == entry.ownerUid }
+            accountUid = entry.ownerUid.takeIf { entry.athleteId == entry.ownerUid },
+            allBests = entry.bests,
+            athleteId = entry.athleteId,
+            ownerUid = entry.ownerUid
         )
     }.ranked(rankBy)
 

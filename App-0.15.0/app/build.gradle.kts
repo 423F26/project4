@@ -12,8 +12,8 @@ android {
         applicationId = "com.CatPack.liftingapp"
         minSdk = 24
         targetSdk = 36
-        versionCode = 14
-        versionName = "0.14.0"
+        versionCode = 15
+        versionName = "0.15.0"
     }
 
     // One debug key for everyone on the project (keys/catpack-debug.keystore), so Google sign-in works

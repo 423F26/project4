@@ -8,23 +8,29 @@ import androidx.core.content.edit
 import com.example.liftingapp.R
 
 /**
- * Light or dark mode, picked in Account & settings → Appearance. "System default" follows the phone's own
- * dark-mode setting (and switches with it). Each mode maps to a style in res/values/themes.xml:
- * Dark is the navy-and-gold look, Light is the bright navy-on-white look.
+ * The app's look, picked in Account & settings → Appearance. "System default" follows the phone's own
+ * dark-mode setting (Navy when it's dark). Each mode maps to a style in res/values/themes.xml:
+ * Navy is the navy-and-gold dark look, Graphite a neutral charcoal dark look with the same gold,
+ * Light the bright navy-on-white look. (Navy is saved as "DARK" so earlier choices carry over.)
  */
 enum class AppTheme(val label: String) {
     SYSTEM("System default"),
     LIGHT("Light"),
-    DARK("Dark");
+    DARK("Navy"),
+    GRAPHITE("Graphite");
 
     fun isDark(context: Context): Boolean = when (this) {
-        DARK -> true
+        DARK, GRAPHITE -> true
         LIGHT -> false
         SYSTEM -> (context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
     }
 
     @StyleRes
-    fun styleRes(context: Context): Int = if (isDark(context)) R.style.Theme_LIFTINGAPP_Dark else R.style.Theme_LIFTINGAPP_Light
+    fun styleRes(context: Context): Int = when {
+        this == GRAPHITE -> R.style.Theme_LIFTINGAPP_Graphite
+        isDark(context) -> R.style.Theme_LIFTINGAPP_Dark
+        else -> R.style.Theme_LIFTINGAPP_Light
+    }
 
     companion object {
         private const val PREFS = "appearance"
@@ -33,8 +39,8 @@ enum class AppTheme(val label: String) {
         fun current(context: Context): AppTheme {
             val saved = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(KEY_THEME, null)
             return when (saved) {
-                // Themes saved by 0.8 and earlier: the two dark palettes became Dark, Daylight became Light.
-                "BLUE_GOLD", "GRAPHITE" -> DARK
+                // Themes saved by 0.8 and earlier: Blue & Gold became Navy, Daylight became Light.
+                "BLUE_GOLD" -> DARK
                 "DAYLIGHT" -> LIGHT
                 else -> entries.firstOrNull { it.name == saved } ?: SYSTEM
             }

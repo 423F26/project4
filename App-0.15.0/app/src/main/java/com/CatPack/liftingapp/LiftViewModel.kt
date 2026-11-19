@@ -6,6 +6,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.liftingapp.data.Athlete
+import com.example.liftingapp.data.BestSet
+import com.example.liftingapp.data.Moderation
+import com.example.liftingapp.data.asInt
 import com.example.liftingapp.data.AthleteDetails
 import com.example.liftingapp.data.CloudPaths
 import com.example.liftingapp.data.Cardio
@@ -346,6 +349,21 @@ class LiftViewModel(application: Application) : AndroidViewModel(application) {
     /** Who follows [targetUid] (public to signed-in users). Null if it couldn't load. */
     suspend fun followersOf(targetUid: String): List<Follower>? =
         runCatching { Follows.followers(targetUid) }.onFailure { report("load followers", it) }.getOrNull()
+
+    /** How many people follow [targetUid] (public to signed-in users), for their profile. */
+    suspend fun followerCountOf(targetUid: String): Int? =
+        runCatching { maxOf(0, CloudPaths.followerCount(targetUid).get().awaitResult().get("count").asInt()) }.getOrNull()
+
+    // --- Moderation: taking a fake lift off the leaderboard (data/Moderation.kt) ---
+
+    /** Coaches on their team, and staff on the General leaderboard. */
+    fun canRemoveFromBoard(row: LeaderboardRow): Boolean =
+        Moderation.canRemove(scope, row, isCoach, currentProfile?.isStaff == true, uid)
+
+    /** Deletes [row]'s best [exercise] set; their next-best takes its place. Returns the new best, or null. */
+    suspend fun removeFromBoard(row: LeaderboardRow, exercise: String): Result<BestSet?> =
+        runCatching { Moderation.removeBest(scope, row, exercise, uid) }
+            .onFailure { report("remove that lift", it) }
 
     // --- Writes: athletes ---
 
